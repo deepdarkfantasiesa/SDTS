@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SDTS.ViewModels"
+             x:Class="SDTS.Views.SignPage">
+    <ContentPage.BindingContext>
+        <vm:SignViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        
+        <StackLayout>
+            <Grid>
+              
+                <Label Text="用户名" Grid.Column="0" Grid.Row="0"/>
+                <Entry Grid.Column="1" Grid.Row="0" Text="{Binding UserName}"/>
+                
+                <Label Text="密码" Grid.Column="0" Grid.Row="1" />
+                <Entry Grid.Column="1" Grid.Row="1" Text="{Binding PassWord}"/>
+            </Grid>
+            
+            
+            <Button Grid.Row="2"  Text="登录" Command="{Binding signin}"/>
+
+            <Grid>
+                <Button Grid.Column="0" Grid.Row="3"  Text="注册账号" Command="{Binding signup}"/>
+                <Button Grid.Column="1" Grid.Row="3" Text="忘记密码" Command="{Binding forgetpwd}"/>
+            </Grid>
+
+            
+
+
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
