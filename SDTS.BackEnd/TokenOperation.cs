@@ -12,13 +12,13 @@ namespace SDTS.BackEnd
 {
     public class TokenOperation
     {
-        public string CreateToken(User user)
+        public string CreateToken(User? user)
         {
             string key = "f47b558d-7654-458c-99f2-13b190ef0199";
             SecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
             var claims = new Claim[]
             {
-                new Claim(ClaimTypes.Name, user.Name)
+                new Claim(ClaimTypes.Name, "cqf")
                 //new Claim("Age", (DateTime.Now.Year- user.birthday.Year).ToString()),
                 //new Claim("Information", user.Information),
                 //new Claim("Type",user.type),
