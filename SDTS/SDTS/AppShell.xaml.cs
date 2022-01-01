@@ -13,11 +13,14 @@ namespace SDTS
             InitializeComponent();
             Routing.RegisterRoute(nameof(ItemDetailPage), typeof(ItemDetailPage));
             Routing.RegisterRoute(nameof(NewItemPage), typeof(NewItemPage));
+            Routing.RegisterRoute(nameof(SignInPage), typeof(SignInPage));
+            Routing.RegisterRoute("SignUpPage", typeof(SignUpPage));
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)
         {
             await Shell.Current.GoToAsync("//LoginPage");
+            
         }
     }
 }

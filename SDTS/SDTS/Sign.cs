@@ -28,7 +28,7 @@ namespace SDTS
         {
             User user = new User();
             user.Name = username;
-            user.password = password;
+            user.PassWord = password;
             Uri uri = new Uri(string.Format(Constants.SigninString+ "?username=" + username+ "&password=" + password, string.Empty));
             try
             {
@@ -47,5 +47,7 @@ namespace SDTS
             }
             return user;//返回对象待定
         }
+
+        
     }
 }

@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:SDTS.ViewModels"
-             x:Class="SDTS.Views.SignPage">
+             xmlns:views="clr-namespace:SDTS.Views"
+             x:Class="SDTS.Views.SignInPage">
     <ContentPage.BindingContext>
-        <vm:SignViewModel/>
+        <vm:SignInViewModel/>
     </ContentPage.BindingContext>
     <ContentPage.Content>
         

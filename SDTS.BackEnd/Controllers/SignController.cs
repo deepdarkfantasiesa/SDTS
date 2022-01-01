@@ -20,10 +20,7 @@ namespace SDTS.BackEnd.Controllers
             return Ok("index");
         }
 
-        //[HttpPost]
         [HttpGet]
-        //[HttpPut]
-        //[RequireHttps]
         [Route("signin")]
         public IActionResult SignIn(string username, string password)
         {
@@ -31,8 +28,7 @@ namespace SDTS.BackEnd.Controllers
             //此处需要查找数据库，若查询到，则创建token并返回给客户端
             //if(user!=null)
             //{
-            //    TokenOperation createToken = new TokenOperation();
-            //    token= createToken.CreateToken(user);
+            //
             //}
             //else
             //{
@@ -41,6 +37,14 @@ namespace SDTS.BackEnd.Controllers
             TokenOperation createToken = new TokenOperation();
             token = createToken.CreateToken(null);
             return Ok(token);
+        }
+
+        [HttpPost]
+        [Route("signup")]
+        public IActionResult Signup(User user)
+        {
+
+            return Ok();
         }
     }
 }

@@ -15,13 +15,26 @@ namespace Models
 
         public string Information { get; set; }
 
-        public string password { get; set; }
+        public string Account { get; set; }
 
-        public string type { get; set; }
+        public string PassWord { get; set; }
 
-        public string gender { get; set; }
+        public UserType Type { get; set; }
 
-        public DateTime birthday { get; set; }
+        public string Gender { get; set; }
+
+        public DateTime Birthday { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public enum UserType
+        {
+            guardian,
+            ward,
+            volunteer
+        }
+
+        public List<string> EmergencyContacts { get; set; }
 
         public static implicit operator Task<object>(User v)
         {

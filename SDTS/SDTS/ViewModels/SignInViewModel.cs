@@ -1,4 +1,5 @@
 ﻿using Models;
+using SDTS.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,9 +13,9 @@ using Xamarin.Forms;
 
 namespace SDTS.ViewModels
 {
-    class SignViewModel: INotifyPropertyChanged
+    class SignInViewModel:INotifyPropertyChanged
     {
-        public SignViewModel()
+        public SignInViewModel()
         {
             //client = new HttpClient();
             //serializerOptions = new JsonSerializerOptions
@@ -56,9 +57,16 @@ namespace SDTS.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        public Command signup => new Command(async()=> { });
+        public Command signup => new Command(async () => 
+        {
+            await Shell.Current.GoToAsync($"SignUpPage");
+            //Navigation.PushAsync(new SignUpPage(),false);
+        });
 
-        public Command forgetpwd => new Command(async () => { });
+        public Command forgetpwd => new Command(async () => 
+        {
+
+        });
 
         public Command signin => new Command(async () => 
         {
@@ -69,29 +77,5 @@ namespace SDTS.ViewModels
             Sign sign = new Sign();
             await sign.Signin(UserName, PassWord);
         });
-
-        //HttpClient client;
-        //JsonSerializerOptions serializerOptions;
-        //public async Task<User> Signin(string username,string password)
-        //{
-        //    User user = new User();
-        //    Uri uri = new Uri(string.Format(Constants.SigninString, string.Empty));
-        //    try
-        //    {
-        //        HttpResponseMessage message = await client.GetAsync(uri);
-        //        if (message.IsSuccessStatusCode)
-        //        {
-        //            string content = await message.Content.ReadAsStringAsync();
-        //            // users = JsonSerializer.Deserialize<List<User>>(content, serializerOptions);
-        //            user = JsonSerializer.Deserialize<User>(content, serializerOptions);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-        //    return user;
-        //}
-
     }
 }
