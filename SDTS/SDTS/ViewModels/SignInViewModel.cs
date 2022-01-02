@@ -51,7 +51,6 @@ namespace SDTS.ViewModels
         public Command signup => new Command(async () => 
         {
             await Shell.Current.GoToAsync($"SignUpPage");
-            //Navigation.PushAsync(new SignUpPage(),false);
         });
 
         public Command forgetpwd => new Command(async () => 
@@ -67,6 +66,8 @@ namespace SDTS.ViewModels
             
             Sign sign = new Sign();
             await sign.Signin(UserName, PassWord);
+            await Shell.Current.GoToAsync($"TestPage");
+            //Debug.WriteLine(TokenString.token);
         });
     }
 }

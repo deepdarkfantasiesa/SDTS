@@ -15,6 +15,7 @@ namespace SDTS
             Routing.RegisterRoute(nameof(NewItemPage), typeof(NewItemPage));
             Routing.RegisterRoute(nameof(SignInPage), typeof(SignInPage));
             Routing.RegisterRoute("SignUpPage", typeof(SignUpPage));
+            Routing.RegisterRoute("TestPage", typeof(TestPage));
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)

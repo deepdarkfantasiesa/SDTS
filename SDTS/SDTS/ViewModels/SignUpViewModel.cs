@@ -21,7 +21,7 @@ namespace SDTS.ViewModels
             set
             {
                 username = value;
-                //OnPropertyChanged("username");
+                OnPropertyChanged("username");
             }
         }
 
@@ -127,7 +127,12 @@ namespace SDTS.ViewModels
             user.Type = SelectedType;
             user.Birthday = Birthday;
             user.Gender = Gender;
-            await sign.Signup(user);
+            if (await sign.Signup(user))
+            {
+                //待添加，弹窗提示注册成功
+                await Shell.Current.GoToAsync("../");
+            }
+                
         });
 
         //没有get,OnPropertyChanged("emergencycontacts")可能有问题

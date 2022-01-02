@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace SDTS
 {
@@ -23,7 +24,7 @@ namespace SDTS
                 WriteIndented = true
             };
         }
-        public async Task Signup(User user)
+        public async Task<bool> Signup(User user)
         {
             Uri uri = new Uri(string.Format(Constants.SignupString, string.Empty));
 
@@ -37,6 +38,7 @@ namespace SDTS
                 if (response.IsSuccessStatusCode)
                 {
                     Debug.WriteLine(@"\tTodoItem successfully saved.");
+                    return true;
                 }
 
             }
@@ -44,6 +46,7 @@ namespace SDTS
             {
                 Debug.WriteLine(ex);
             }
+            return false;
         }
 
         public async Task Signin(string username, string password)
@@ -58,9 +61,9 @@ namespace SDTS
                 response = await client.GetAsync(uri);
                 if (response.IsSuccessStatusCode)
                 {
-                    string token = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine(token);
-                    //token需要通过全局变量存起来，每次请求要用
+                    //存储token，SignalR传数据、以及修改资料添加（被）监护人要用
+                    TokenString.token = await response.Content.ReadAsStringAsync();
+                    //Debug.WriteLine(token);
                 }
             }
             catch (Exception ex)
