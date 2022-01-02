@@ -15,15 +15,6 @@ namespace SDTS.ViewModels
 {
     class SignInViewModel:INotifyPropertyChanged
     {
-        public SignInViewModel()
-        {
-            //client = new HttpClient();
-            //serializerOptions = new JsonSerializerOptions
-            //{
-            //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            //    WriteIndented = true
-            //};
-        }
         string password;
         public string PassWord 
         {
@@ -34,7 +25,7 @@ namespace SDTS.ViewModels
             set 
             {
                 password = value;
-                OnPropertyChanged("username"); 
+                OnPropertyChanged("password"); 
             } 
         }
 

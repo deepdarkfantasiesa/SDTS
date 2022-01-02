@@ -1,12 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SDTS.ViewModels"
              x:Class="SDTS.Views.SignUpPage">
+    <ContentPage.BindingContext>
+        <vm:SignUpViewModel/>
+    </ContentPage.BindingContext>
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid>
+            <Label Grid.Row="0" Grid.Column="0" Text="名称"/>
+            <Label Grid.Row="1" Grid.Column="0" Text="密码"/>
+            <Label Grid.Row="2" Grid.Column="0" Text="信息"/>
+            <Label Grid.Row="3" Grid.Column="0" Text="性别"/>
+            <Label Grid.Row="4" Grid.Column="0" Text="电话号码"/>
+            <Label Grid.Row="5" Grid.Column="0" Text="用户类别"/>
+            <Label Grid.Row="6" Grid.Column="0" Text="生日"/>
+
+            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding UserName}"/>
+            <Entry Grid.Row="1" Grid.Column="1" Text="{Binding PassWord}"/>
+            <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Information}"/>
+            <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Gender}"/>
+            <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PhoneNumber}"/>
+            <Picker Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}"/>
+            <DatePicker Grid.Row="6" Grid.Column="1" Date="{Binding Birthday}"/>
+            <Button Text="注册" Grid.Row="6" Command="{Binding Register}"/>
+        </Grid>
+        
     </ContentPage.Content>
 </ContentPage>

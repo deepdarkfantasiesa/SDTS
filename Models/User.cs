@@ -19,20 +19,13 @@ namespace Models
 
         public string PassWord { get; set; }
 
-        public UserType Type { get; set; }
+        public string Type { get; set; }
 
         public string Gender { get; set; }
 
         public DateTime Birthday { get; set; }
 
         public string PhoneNumber { get; set; }
-
-        public enum UserType
-        {
-            guardian,
-            ward,
-            volunteer
-        }
 
         public List<string> EmergencyContacts { get; set; }
 
