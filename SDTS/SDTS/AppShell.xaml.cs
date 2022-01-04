@@ -1,4 +1,5 @@
-﻿using SDTS.ViewModels;
+﻿using SDTS.GuardianViews;
+using SDTS.ViewModels;
 using SDTS.Views;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,9 @@ namespace SDTS
             Routing.RegisterRoute(nameof(SignInPage), typeof(SignInPage));
             Routing.RegisterRoute("SignUpPage", typeof(SignUpPage));
             Routing.RegisterRoute("TestPage", typeof(TestPage));
+            Routing.RegisterRoute(nameof(WardsDetailPage), typeof(WardsDetailPage));
+            Routing.RegisterRoute(nameof(ManageWardsPage), typeof(ManageWardsPage));
+            Routing.RegisterRoute(nameof(AddWardPage), typeof(AddWardPage));
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)

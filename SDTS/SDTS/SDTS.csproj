@@ -28,6 +28,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="GuardianViews\AddWardPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GuardianViews\ManageWardsPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GuardianViews\WardsDetailPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="TestPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -43,5 +52,10 @@
     <None Update="Views\SignPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="VolunteerViews\" />
+    <Folder Include="WardsViews\" />
   </ItemGroup>
 </Project>

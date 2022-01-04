@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SDTS.GuardianViews.WardsDetailPage"
+             xmlns:vm="clr-namespace:SDTS.ViewModels">
+    <ContentPage.BindingContext>
+        <vm:WardDetailViewModel/>
+    </ContentPage.BindingContext>
+    <StackLayout Spacing="20" Padding="15">
+        <Label Text="Name:" FontSize="Medium" />
+        <Label Text="{Binding Name}" FontSize="Small"/>
+        <Label Text="Information:" FontSize="Medium" />
+        <Label Text="{Binding Information}" FontSize="Small"/>
+    </StackLayout>
+    <!--此处需要加入地图，用于创建安全区域，并上传到服务器存储-->
+</ContentPage>
