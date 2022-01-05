@@ -1,4 +1,5 @@
 ﻿using Models;
+using SDTS.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -118,7 +119,8 @@ namespace SDTS.ViewModels
 
         public Command Register => new Command(async () => 
         {
-            Sign sign = new Sign();
+            //Sign sign = new Sign();//321
+            CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
             User user = new User();
             user.Name = UserName;
             user.PassWord = PassWord;

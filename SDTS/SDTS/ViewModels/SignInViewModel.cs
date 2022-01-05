@@ -1,4 +1,5 @@
 ﻿using Models;
+using SDTS.Services;
 using SDTS.Views;
 using System;
 using System.Collections.Generic;
@@ -60,11 +61,12 @@ namespace SDTS.ViewModels
 
         public Command signin => new Command(async () => 
         {
-            
+
             //Debug.WriteLine("username:"+username);
             //Debug.WriteLine("password:" + password);
-            
-            Sign sign = new Sign();
+
+            //Sign sign = new Sign();//321
+            CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
             await sign.Signin(UserName, PassWord);
             await Shell.Current.GoToAsync($"TestPage");
             //Debug.WriteLine(TokenString.token);

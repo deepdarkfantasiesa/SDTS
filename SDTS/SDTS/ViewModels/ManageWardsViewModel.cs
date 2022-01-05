@@ -1,4 +1,5 @@
-﻿using SDTS.GuardianViews;
+﻿using Models;
+using SDTS.GuardianViews;
 using SDTS.Models;
 using SDTS.Services;
 using System;
@@ -16,21 +17,21 @@ namespace SDTS.ViewModels
     public class ManageWardsViewModel : BasesViewModel
     {
         public Command AddWardCommand { get; }
-        public ObservableCollection<Ward> Wards { get; }
+        public ObservableCollection<User> Wards { get; }
         public Command LoadWardsCommand { get; }
-        public Command<Ward> WardTapped { get; }
+        public Command<User> WardTapped { get; }
         
         public ManageWardsViewModel()
         {
             Title = "被监护人";
 
-            Wards = new ObservableCollection<Ward>();
+            Wards = new ObservableCollection<User>();
 
             AddWardCommand = new Command(OnAddWard);
 
             LoadWardsCommand = new Command(async () => await ExecuteLoadWardsCommand());
 
-            WardTapped = new Command<Ward>(OnItemSelected);
+            WardTapped = new Command<User>(OnItemSelected);
         }
 
         public void OnAppearing()
@@ -39,8 +40,8 @@ namespace SDTS.ViewModels
             SelectedWard = null;
         }
 
-        private Ward _selectedWard;
-        public Ward SelectedWard
+        private User _selectedWard;
+        public User SelectedWard
         {
             get => _selectedWard;
             set
@@ -50,7 +51,7 @@ namespace SDTS.ViewModels
             }
         }
 
-        async void OnItemSelected(Ward ward)
+        async void OnItemSelected(User ward)
         {
             if (ward == null)
                 return;
@@ -64,9 +65,13 @@ namespace SDTS.ViewModels
             try
             {
                 Wards.Clear();
-                WardStore dataStore = new WardStore();
+                //WardStore dataStore = new WardStore();//123
                 //此处需要请求服务器返回与此监护人绑定的被监护人的信息，并遍历载入Wards集合中，WardStore需要重写
-                var wards = await dataStore.GetWardsAsync(true);
+                //var wards = await dataStore.GetWardsAsync(true);
+                CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
+                //此处需要添加登录成功后解析token并将用户信息以全局变量的形式存储好，取出userid传入RefreshDataAsync
+                var wards = await getwards.RefreshDataAsync();
+
                 foreach (var ward in wards)
                 {
                     Wards.Add(ward);

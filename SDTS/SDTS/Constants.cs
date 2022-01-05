@@ -8,9 +8,14 @@ namespace SDTS
     {
         private static string http = "http://";
         private static string host = "10.0.2.2:5000";
+
         private static string SignController = "/api/sign/";
+        private static string WardsController = "/api/managewards/";
+
         public static string SigninString = http+host+SignController+"signin";
         public static string SignupString = http + host + SignController + "signup";
+        public static string ManageWardsString = http + host + WardsController + "getwards";
+
         //public static string SigninString = "http://10.0.2.2:5000/api/sign/signin";
 
 

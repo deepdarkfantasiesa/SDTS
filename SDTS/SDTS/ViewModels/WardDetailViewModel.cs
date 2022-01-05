@@ -40,13 +40,18 @@ namespace SDTS.ViewModels
             }
         }
 
+        //向服务器请求被选中的被监护人的详细信息
         public async void LoadWardId(string userid)
         {
             try
             {
                 //这里需要向服务器请求选中的用户数据，WardStore需要重写
-                WardStore wardStore = new WardStore();
+                WardStore wardStore = new WardStore();//123
                 var ward = await wardStore.GetWardAsync(userid);
+
+                //CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
+                
+
                 Id = ward.UserID;
                 Name = ward.Name;
                 Information = ward.Information;
