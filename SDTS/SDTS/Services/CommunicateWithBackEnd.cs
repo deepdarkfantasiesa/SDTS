@@ -74,6 +74,27 @@ namespace SDTS.Services
             //return user;//返回对象待定
         }
 
+        public async Task<User> GetWardDetail(int userid)
+        {
+            Uri uri = new Uri(string.Format(Constants.GetWardDetailString + "?access_token=" + TokenString.token+"&userid="+userid, string.Empty));
+            User ward=new User();
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    ward = JsonSerializer.Deserialize<User>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+
+            return ward;
+        }
+
         public async Task<ObservableCollection<User>> RefreshDataAsync()
         {
             ObservableCollection<User> wards = new ObservableCollection<User>();

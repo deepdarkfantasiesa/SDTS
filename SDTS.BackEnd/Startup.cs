@@ -50,7 +50,7 @@ namespace SDTS.BackEnd
 
                            var path = context.HttpContext.Request.Path;
                            if (!string.IsNullOrEmpty(accessToken) &&
-                            path.StartsWithSegments("/api/managewards/getwards"))
+                            path.StartsWithSegments("/api/managewards"))
                            {
                                context.Token = accessToken;
                            }

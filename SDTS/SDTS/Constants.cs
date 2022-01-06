@@ -15,7 +15,7 @@ namespace SDTS
         public static string SigninString = http+host+SignController+"signin";
         public static string SignupString = http + host + SignController + "signup";
         public static string ManageWardsString = http + host + WardsController + "getwards";
-
+        public static string GetWardDetailString = http + host + WardsController + "getdetail";
         //public static string SigninString = "http://10.0.2.2:5000/api/sign/signin";
 
 

@@ -1,9 +1,11 @@
 ﻿using System;
-
+using Xamarin.Forms.GoogleMaps.Android;
 using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
+
+
 
 namespace SDTS.Droid
 {
@@ -13,9 +15,15 @@ namespace SDTS.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
+            //github的
+            Xamarin.FormsGoogleMapsBindings.Init();
+            Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
+            //官方包
+            //Xamarin.FormsMaps.Init(this, savedInstanceState);
+
             LoadApplication(new App());
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

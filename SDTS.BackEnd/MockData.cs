@@ -9,16 +9,21 @@ namespace SDTS.BackEnd
 {
     public class MockData
     {
-        ObservableCollection<User> wards;
+        ObservableCollection<User> wards = new ObservableCollection<User>()
+            {
+                new User{UserID = 1,Name="cqf",Information="1",Birthday=DateTime.Now,Gender="male",PhoneNumber="2"},
+                new User{UserID = 2,Name="ccc",Information="2",Birthday=DateTime.Now,Gender="female",PhoneNumber="2"},
+                new User{UserID = 3,Name="qqq",Information="3",Birthday=DateTime.Now,Gender="unknow",PhoneNumber="2"},
+                new User{UserID = 4,Name="fff",Information="4",Birthday=DateTime.Now,Gender="male",PhoneNumber="2"}
+            };
+
+        public User getdetail(int userid)
+        {
+            return wards.FirstOrDefault(p => p.UserID == userid);
+        }
+
         public ObservableCollection<User> getwards(int userid)
         {
-            wards = new ObservableCollection<User>()
-            {
-                new User{UserID = 1,Name="cqf",Information="1",Birthday=DateTime.Now,Gender="1",PhoneNumber="2"},
-                new User{UserID = 2,Name="ccc",Information="2",Birthday=DateTime.Now,Gender="1",PhoneNumber="2"},
-                new User{UserID = 3,Name="qqq",Information="3",Birthday=DateTime.Now,Gender="1",PhoneNumber="2"},
-                new User{UserID = 4,Name="fff",Information="4",Birthday=DateTime.Now,Gender="1",PhoneNumber="2"}
-            };
             return wards;
         }
 
