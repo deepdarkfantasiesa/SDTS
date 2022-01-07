@@ -16,5 +16,10 @@ namespace SDTS.GuardianViews
         {
             InitializeComponent();
         }
+
+        private void Create(object sender, EventArgs e)
+        {
+            Navigation.PushAsync(new CreateSecureArea());
+        }
     }
 }

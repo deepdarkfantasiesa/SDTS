@@ -20,6 +20,7 @@ namespace SDTS
             Routing.RegisterRoute(nameof(WardsDetailPage), typeof(WardsDetailPage));
             Routing.RegisterRoute(nameof(ManageWardsPage), typeof(ManageWardsPage));
             Routing.RegisterRoute(nameof(AddWardPage), typeof(AddWardPage));
+            
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)

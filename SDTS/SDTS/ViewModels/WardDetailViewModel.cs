@@ -1,9 +1,13 @@
-﻿using SDTS.Services;
+﻿
+using SDTS.GuardianViews;
+using SDTS.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms;
+using Xamarin.Forms.GoogleMaps;
 
 namespace SDTS.ViewModels
 {
@@ -15,6 +19,8 @@ namespace SDTS.ViewModels
         private string information;
         private string gender;
         private string age;
+        //public Command CreateSecureArea = new Command(async () => { await Shell.Current.GoToAsync($"//WardsDetailPage/CreateSecureArea"); });
+
         public int Id { get; set; }
 
         public string Name
@@ -54,6 +60,12 @@ namespace SDTS.ViewModels
             set => SetProperty(ref age, value);
         }
 
+        public WardDetailViewModel()
+        {
+            //CreateSafeArea = new Command(async (args) =>await createarea(args));
+            //CreateSecureArea = new Command(async () => { await Shell.Current.GoToAsync($"CreateSecureArea"); });
+        }
+
         //向服务器请求被选中的被监护人的详细信息
         public async void LoadWardId(string userid)
         {
@@ -74,6 +86,8 @@ namespace SDTS.ViewModels
                 Debug.WriteLine("Failed to Load Ward");
             }
         }
+
+
 
     }
 }

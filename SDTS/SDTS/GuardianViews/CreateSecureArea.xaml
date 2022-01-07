@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SDTS.GuardianViews.CreateSecureArea"
+             xmlns:googleMaps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
+             xmlns:bindings="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
+             
+             xmlns:vm="clr-namespace:SDTS.ViewModels" x:DataType="vm:CreateSecureAreaViewModel">
+    <ContentPage.BindingContext>
+        <vm:CreateSecureAreaViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <StackLayout>
+            <!--<StackLayout Orientation="Horizontal">
+                <Label Text="CreateArea:"/>
+                <Switch IsToggled="{Binding Pin.IsDraggable}"/>
+            </StackLayout>-->
+            <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
+                <googleMaps:Map.Behaviors>
+                    <bindings:MapClickedToCommandBehavior Command="{Binding MapClickedCommand}"/>
+                    <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
+
+                    <bindings:PinDragStartToCommandBehavior Command="{Binding PinDragStartCommand}"/>
+                    <bindings:PinDraggingToCommandBehavior Command="{Binding PinDraggingCommand}"/>
+                    <bindings:PinDragEndToCommandBehavior Command="{Binding PinDragEndCommand}"/>
+                    <bindings:BindingPolygonsBehavior Value="{Binding Polygons}"/>
+
+                </googleMaps:Map.Behaviors>
+            </googleMaps:Map>
+            
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
