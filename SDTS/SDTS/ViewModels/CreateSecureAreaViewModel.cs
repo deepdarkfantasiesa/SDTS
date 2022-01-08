@@ -7,6 +7,7 @@ using Xamarin.Forms.GoogleMaps;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Xamarin.Essentials;
+using Models;
 //using Xamarin.Forms.Maps;
 
 namespace SDTS.ViewModels
@@ -67,6 +68,8 @@ namespace SDTS.ViewModels
                 Pin = args.Pin;
                 polygon = new Polygon();
                 polygon.Positions.Add(args.Pin.Position);
+
+                area.Add(args.Pin.Position);
             });
 
         public Command<PinDragEventArgs> PinDraggingCommand => new Command<PinDragEventArgs>(
@@ -74,9 +77,12 @@ namespace SDTS.ViewModels
             {
                 Pin = args.Pin;
                 polygon.Positions.Add(args.Pin.Position);
+
+                area.Add(args.Pin.Position);
             });
 
         public ObservableCollection<Polygon> Polygons { get; set; }
+        List<SecureArea> secureAreas = new List<SecureArea>();
         int i = 0;
         public Command<PinDragEventArgs> PinDragEndCommand => new Command<PinDragEventArgs>(
             args =>
@@ -87,21 +93,72 @@ namespace SDTS.ViewModels
                 polygon.StrokeWidth = 3f;
                 polygon.FillColor = Color.FromRgba(255, 0, 0, 64);
                 polygon.IsClickable = true;
-                polygon.Tag = "POLYGON"+i++;
+                polygon.Tag = "POLYGON";
+                polygon.ZIndex = i;//暂时用这个属性充当唯一标识（id）
                 polygon.Clicked += Polygon_Clicked;
                 Polygons.Add(polygon);
                 Pins.Clear();
+
+
+                area.Add(args.Pin.Position);
+                MainThread.BeginInvokeOnMainThread(async () => 
+                {
+                    string result =await Application.Current.MainPage.DisplayPromptAsync("Information", $"请输入此安全区域的描述信息");
+                    if (result==null)
+                    {//这里可能有bug，如果未输入任何information不知道返回的是什么
+                        Polygons.Remove(polygon);
+                        return;
+                    }
+                    SecureArea secureArea = new SecureArea();
+                    secureArea.area = area;
+                    secureArea.createtime = DateTime.Now;
+                    secureArea.information = result;
+                    secureArea.status = true;
+                    secureAreas.Add(secureArea);
+                    //id需要在插入数据库时添加，并请求回客户端
+                    secureArea.id = i++;
+                });
+                
+                //此处要跟后端通讯，传送安全区域的范围，creater需要在后端解析token后再添加,安全区域绑定的对象要在通讯时发送给后端
             });
 
         private async void Polygon_Clicked(object sender, EventArgs e)
         {
             var pol = (Polygon)sender;
-            Debug.WriteLine(Polygons[Polygons.IndexOf(pol)].Tag);
-            //Polygons[Polygons.IndexOf(pol)]=pol;
-            //await Application.Current.MainPage.DisplayAlert("Circle", $"{(string)pol.Tag} Clicked!", "Close");
-            //string introduce= await Application.Current.MainPage.DisplayPromptAsync("Question 1", "What's your name?");
-            //Debug.WriteLine(introduce);
+            string action;
+            var se = secureAreas.Find(p => p.id == pol.ZIndex);
+            if (se.status)
+            {
+                action = await Application.Current.MainPage.DisplayActionSheet("ActionSheet: Send to?", null, null, "停用", "删除", "取消");
+            }
+            else
+            {
+                action = await Application.Current.MainPage.DisplayActionSheet("ActionSheet: Send to?", null, null, "启用", "删除", "取消");
+            }
 
+            if (action.Equals("启用"))
+            {
+                pol.StrokeColor = Color.Green;
+                pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+            }
+            else if (action.Equals("停用"))
+            {
+                //停用的话可能要判断被监护人和监护人的距离
+                pol.StrokeColor = Color.Black;
+                pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+            }
+            else if (action.Equals("删除"))
+            {
+                Polygons.Remove(pol);
+                secureAreas.Remove(se);
+                return;
+            }
+            else
+            {
+                return;
+            }
+            secureAreas.Find(p => p.id == pol.ZIndex).status = !se.status;
+            //跟后端通讯
         }
     }
 }
