@@ -74,7 +74,7 @@ namespace SDTS.ViewModels
                 //这里需要向服务器请求选中的用户数据
                 CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
                 var ward = await getwards.GetWardDetail(int.Parse(userid));
-
+                
                 Id = ward.UserID;
                 Name = ward.Name;
                 Information = ward.Information;
@@ -87,7 +87,9 @@ namespace SDTS.ViewModels
             }
         }
 
-
+        public Command CreateSecureArea => new Command(async () => {
+            await Application.Current.MainPage.Navigation.PushAsync(new CreateSecureArea(UserId, Name));
+        });
 
     }
 }

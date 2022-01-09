@@ -119,18 +119,18 @@ namespace SDTS.Services
             return wards;
         }
 
-        public async Task<SecureArea> PostSecureArea(SecureArea area)
+        public async Task<SecureArea> PutSecureArea(SecureArea area)
         {
-            Uri uri = new Uri(string.Format(Constants.PostSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.PutSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
             SecureArea newarea=new SecureArea();
             try
             {
                  
                  var json= JsonSerializer.Serialize(area,serializerOptions);
                 StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-                Debug.WriteLine(content.ReadAsStringAsync().Result);
+                //Debug.WriteLine(content.ReadAsStringAsync().Result);
 
-                HttpResponseMessage response = await client.PostAsync(uri, content);
+                HttpResponseMessage response = await client.PutAsync(uri, content);
 
                 //HttpResponseMessage response = await client.GetAsync(uri);
 
@@ -149,6 +149,38 @@ namespace SDTS.Services
             return null;
         }
 
+        
+        public async Task<SecureArea> PostSecureArea(SecureArea area)
+        {
+            Uri uri = new Uri(string.Format(Constants.PostSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            SecureArea newarea = new SecureArea();
+
+            try
+            {
+
+                var json = JsonSerializer.Serialize(area, serializerOptions);
+                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+                //Debug.WriteLine(content.ReadAsStringAsync().Result);
+
+                HttpResponseMessage response = await client.PostAsync(uri, content);
+
+                //HttpResponseMessage response = await client.GetAsync(uri);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string res = await response.Content.ReadAsStringAsync();
+                    newarea = JsonSerializer.Deserialize<SecureArea>(res, serializerOptions);
+                    return newarea;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return null;
+        }
 
     }
 }

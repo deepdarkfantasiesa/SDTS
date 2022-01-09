@@ -14,6 +14,7 @@ using SDTS.Services;
 
 namespace SDTS.ViewModels
 {
+    //[QueryProperty(nameof(WardId), nameof(WardId))]
     public class CreateSecureAreaViewModel:BasesViewModel
     {
         //public CreateSecureAreaViewModel(Map map)
@@ -23,7 +24,43 @@ namespace SDTS.ViewModels
         //    map.MoveToRegion(mapSpan);
         //    Pin.IsDraggable = true;
         //}
+        public CreateSecureAreaViewModel()
+        {
 
+        }
+        public CreateSecureAreaViewModel(string warid,string wardname)
+        {
+            WardId = warid;
+            WardName = wardname;
+        }
+
+        private string wardid;
+        public string WardId
+        {
+            get
+            {
+                return wardid;
+            }
+            set
+            {
+                wardid = value;
+                //LoadWardId(value);
+            }
+        }
+
+        private string wardname;
+        public string WardName
+        {
+            get
+            {
+                return wardname;
+            }
+            set
+            {
+                wardname = value;
+                //LoadWardId(value);
+            }
+        }
 
         private Pin _pin;
         public ObservableCollection<Pin> Pins
@@ -86,7 +123,7 @@ namespace SDTS.ViewModels
 
         public ObservableCollection<Polygon> Polygons { get; set; }
         List<SecureArea> secureAreas = new List<SecureArea>();
-        int i = 0;
+        
         public Command<PinDragEventArgs> PinDragEndCommand => new Command<PinDragEventArgs>(
             args =>
             {
@@ -115,11 +152,11 @@ namespace SDTS.ViewModels
                     secureArea.createtime = DateTime.Now;
                     secureArea.information = result;
                     secureArea.status = true;
-                    
-                    
+                    secureArea.wardid = WardId;
+                    secureArea.wardname = WardName;
 
                     CommunicateWithBackEnd postarea = new CommunicateWithBackEnd();
-                    var newarea= await postarea.PostSecureArea(secureArea);
+                    var newarea= await postarea.PutSecureArea(secureArea);
                     if(newarea!=null)
                     {
                         polygon.ZIndex = newarea.id;//暂时用这个属性充当唯一标识（id）
@@ -134,11 +171,16 @@ namespace SDTS.ViewModels
 
         private async void Polygon_Clicked(object sender, EventArgs e)
         {
+            //Polygon temppol = new Polygon();
+            //SecureArea temparea = new SecureArea();
             var pol = (Polygon)sender;//选中的安全区域
+            //temppol = pol;
+            
             string action;
             var se = secureAreas.Find(p => p.id == pol.ZIndex);
+            //temparea = se;
             bool res;
-            res = await Application.Current.MainPage.DisplayAlert("Information", "创建者：" + se.creater + "\n创建时间：" + se.createtime + "\n信息：" + se.information + "\n状态：" + se.status, "编辑", "取消");
+            res = await Application.Current.MainPage.DisplayAlert("安全区域基本信息", "创建者：" + se.creatername + "\n被监护人：" + se.wardname + "\n创建时间：" + se.createtime + "\n信息：" + se.information + "\n状态：" + se.status, "编辑", "取消");
             
             if(res==false)
             {
@@ -147,23 +189,27 @@ namespace SDTS.ViewModels
 
             if (se.status)
             {
-                action = await Application.Current.MainPage.DisplayActionSheet("ActionSheet: Send to?", null, null, "停用", "删除", "取消");
+                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null, "停用", "删除", "取消");
             }
             else
             {
-                action = await Application.Current.MainPage.DisplayActionSheet("ActionSheet: Send to?", null, null, "启用", "删除", "取消");
+                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null, "启用", "删除", "取消");
             }
 
+            CommunicateWithBackEnd alter = new CommunicateWithBackEnd();
+            //await alterarea.PostSecureArea(se);
             if (action.Equals("启用"))
             {
                 pol.StrokeColor = Color.Green;
                 pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+                se.status = true;
             }
             else if (action.Equals("停用"))
             {
                 //停用的话可能要判断被监护人和监护人的距离
                 pol.StrokeColor = Color.Black;
                 pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+                se.status = false;
             }
             else if (action.Equals("删除"))
             {
@@ -175,8 +221,17 @@ namespace SDTS.ViewModels
             {
                 return;
             }
-            secureAreas.Find(p => p.id == pol.ZIndex).status = !se.status;
             //跟后端通讯
+            var newarea = await alter.PostSecureArea(se);
+            if (newarea != null)
+            {
+                se.createtime = newarea.createtime;
+            }
+            else
+            {//回滚
+                //pol = temppol;
+                //se = temparea;
+            }
         }
     }
 }

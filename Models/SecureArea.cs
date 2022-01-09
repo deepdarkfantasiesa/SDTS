@@ -9,10 +9,13 @@ namespace Models
     {
         public int id { get; set; }
         public IList<Position> area { get; set; }
-        public string creater { get; set; }
+        public string createrid { get; set; }
+        public string creatername { get; set; }
         public DateTime createtime { get; set; }
         public string information { get; set; }
         public bool status { get; set; }
         public string wardid { get; set; }
+
+        public string wardname { get; set; }
     }
 }

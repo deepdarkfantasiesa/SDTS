@@ -23,18 +23,28 @@ namespace SDTS.BackEnd.Controllers
             return View();
         }
 
-        int i = 0;
-        [HttpPost]
-        //[HttpGet]
-        [Route("postarea")]
-        public IActionResult PostArea( SecureArea Area)
+        //[HttpPost]
+        //[Route("postarea")]
+        [HttpPut]
+        [Route("ctreatearea")]
+        public IActionResult CreateArea( SecureArea Area)
         {
-            var userid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            
-            Area.id = i++;
-            Area.creater = userid;
+            var createrid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
+            Random random = new Random();
+
+            Area.createrid = createrid;
+            Area.creatername = creatername;
             //此处需要执行数据库插入操作，然后查询返回此area返回给客户端
-            //area.id = i++;//这个实际获取需要通过数据库查询返回
+            Area.id = random.Next(101);//这个实际获取需要通过数据库查询返回
+            return Ok(Area);
+        }
+
+        [HttpPost]
+        [Route("alterarea")]
+        public IActionResult AlterArea(SecureArea Area)
+        {
+            Area.createtime = DateTime.Now;
             return Ok(Area);
         }
     }
