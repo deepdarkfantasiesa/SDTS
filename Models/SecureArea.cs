@@ -7,11 +7,12 @@ namespace Models
 {
     public class SecureArea
     {
-        public int id;
-        public IList<Position> area;
-        public string creater;
-        public DateTime createtime;
-        public string information;
-        public bool status;
+        public int id { get; set; }
+        public IList<Position> area { get; set; }
+        public string creater { get; set; }
+        public DateTime createtime { get; set; }
+        public string information { get; set; }
+        public bool status { get; set; }
+        public string wardid { get; set; }
     }
 }

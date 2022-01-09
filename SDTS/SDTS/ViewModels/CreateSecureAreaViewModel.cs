@@ -8,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Xamarin.Essentials;
 using Models;
+using System.Threading.Tasks;
+using SDTS.Services;
 //using Xamarin.Forms.Maps;
 
 namespace SDTS.ViewModels
@@ -21,6 +23,7 @@ namespace SDTS.ViewModels
         //    map.MoveToRegion(mapSpan);
         //    Pin.IsDraggable = true;
         //}
+
 
         private Pin _pin;
         public ObservableCollection<Pin> Pins
@@ -94,9 +97,8 @@ namespace SDTS.ViewModels
                 polygon.FillColor = Color.FromRgba(255, 0, 0, 64);
                 polygon.IsClickable = true;
                 polygon.Tag = "POLYGON";
-                polygon.ZIndex = i;//暂时用这个属性充当唯一标识（id）
                 polygon.Clicked += Polygon_Clicked;
-                Polygons.Add(polygon);
+                
                 Pins.Clear();
 
 
@@ -105,8 +107,7 @@ namespace SDTS.ViewModels
                 {
                     string result =await Application.Current.MainPage.DisplayPromptAsync("Information", $"请输入此安全区域的描述信息");
                     if (result==null)
-                    {//这里可能有bug，如果未输入任何information不知道返回的是什么
-                        Polygons.Remove(polygon);
+                    {
                         return;
                     }
                     SecureArea secureArea = new SecureArea();
@@ -114,9 +115,18 @@ namespace SDTS.ViewModels
                     secureArea.createtime = DateTime.Now;
                     secureArea.information = result;
                     secureArea.status = true;
-                    secureAreas.Add(secureArea);
-                    //id需要在插入数据库时添加，并请求回客户端
-                    secureArea.id = i++;
+                    
+                    
+
+                    CommunicateWithBackEnd postarea = new CommunicateWithBackEnd();
+                    var newarea= await postarea.PostSecureArea(secureArea);
+                    if(newarea!=null)
+                    {
+                        polygon.ZIndex = newarea.id;//暂时用这个属性充当唯一标识（id）
+                        secureAreas.Add(newarea);
+                        Polygons.Add(polygon);
+                    }
+
                 });
                 
                 //此处要跟后端通讯，传送安全区域的范围，creater需要在后端解析token后再添加,安全区域绑定的对象要在通讯时发送给后端
@@ -124,9 +134,17 @@ namespace SDTS.ViewModels
 
         private async void Polygon_Clicked(object sender, EventArgs e)
         {
-            var pol = (Polygon)sender;
+            var pol = (Polygon)sender;//选中的安全区域
             string action;
             var se = secureAreas.Find(p => p.id == pol.ZIndex);
+            bool res;
+            res = await Application.Current.MainPage.DisplayAlert("Information", "创建者：" + se.creater + "\n创建时间：" + se.createtime + "\n信息：" + se.information + "\n状态：" + se.status, "编辑", "取消");
+            
+            if(res==false)
+            {
+                return;
+            }
+
             if (se.status)
             {
                 action = await Application.Current.MainPage.DisplayActionSheet("ActionSheet: Send to?", null, null, "停用", "删除", "取消");

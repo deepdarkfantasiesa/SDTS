@@ -49,8 +49,8 @@ namespace SDTS.BackEnd
                            var accessToken = context.Request.Query["access_token"];
 
                            var path = context.HttpContext.Request.Path;
-                           if (!string.IsNullOrEmpty(accessToken) &&
-                            path.StartsWithSegments("/api/managewards"))
+                           if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api"))
+                           //path.StartsWithSegments("/api/managewards"))
                            {
                                context.Token = accessToken;
                            }
