@@ -15,7 +15,7 @@ namespace SDTS.BackEnd
         public string CreateToken(User? user)
         {
             //将来连上数据库后需要注释掉
-            MockData data = new MockData();
+            MockData data = new MockData();//ccchhh
             user = data.newuser();
 
             string key = "f47b558d-7654-458c-99f2-13b190ef0199";

@@ -31,6 +31,8 @@ namespace SDTS.BackEnd
 
             services.AddControllers();
 
+            services.AddSingleton<IMockData,MockData>();
+            
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                .AddJwtBearer(o =>
                {

@@ -27,6 +27,8 @@ namespace Models
 
         public string PhoneNumber { get; set; }
 
+        public List<int> GuardianID { get; set; }
+
         public List<string> EmergencyContacts { get; set; }
 
         public static implicit operator Task<object>(User v)
