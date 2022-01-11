@@ -87,8 +87,8 @@ namespace SDTS.ViewModels
             }
         }
 
-        public Command CreateSecureArea => new Command(async () => {
-            await Application.Current.MainPage.Navigation.PushAsync(new CreateSecureArea(UserId, Name));
+        public Command ManageSecureArea => new Command(async () => {
+            await Application.Current.MainPage.Navigation.PushAsync(new ManageSecureArea(UserId, Name));
         });
 
     }

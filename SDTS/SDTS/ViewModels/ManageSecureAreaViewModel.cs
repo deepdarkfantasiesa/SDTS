@@ -15,20 +15,20 @@ using SDTS.Services;
 namespace SDTS.ViewModels
 {
     //[QueryProperty(nameof(WardId), nameof(WardId))]
-    public class CreateSecureAreaViewModel:BasesViewModel
+    public class ManageSecureAreaViewModel : BasesViewModel
     {
-        //public CreateSecureAreaViewModel(Map map)
+        //public ManageSecureAreaViewModel(Map map)
         //{
         //    //这里的经纬度需要请求服务器返回被监护人当前的位置
         //    MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(22, 114), Distance.FromKilometers(0));
         //    map.MoveToRegion(mapSpan);
         //    Pin.IsDraggable = true;
         //}
-        public CreateSecureAreaViewModel()
+        public ManageSecureAreaViewModel()
         {
 
         }
-        public CreateSecureAreaViewModel(string warid,string wardname)
+        public ManageSecureAreaViewModel(string warid,string wardname)
         {
             WardId = warid;
             WardName = wardname;
@@ -166,21 +166,17 @@ namespace SDTS.ViewModels
 
                 });
                 
-                //此处要跟后端通讯，传送安全区域的范围，creater需要在后端解析token后再添加,安全区域绑定的对象要在通讯时发送给后端
             });
 
         private async void Polygon_Clicked(object sender, EventArgs e)
         {
-            //Polygon temppol = new Polygon();
-            //SecureArea temparea = new SecureArea();
             var pol = (Polygon)sender;//选中的安全区域
-            //temppol = pol;
             
             string action;
             var se = secureAreas.Find(p => p.id == pol.ZIndex);
-            //temparea = se;
+            
             bool res;
-            res = await Application.Current.MainPage.DisplayAlert("安全区域基本信息", "创建者：" + se.creatername + "\n被监护人：" + se.wardname + "\n创建时间：" + se.createtime + "\n信息：" + se.information + "\n状态：" + se.status, "编辑", "取消");
+            res = await Application.Current.MainPage.DisplayAlert("安全区域基本信息", "创建者：" + se.creatername + "\n被监护人：" + se.wardname + "\n创建时间：" + se.createtime + "\n说明：" + se.information + "\n状态：" + se.status, "编辑", "取消");
             
             if(res==false)
             {
@@ -189,49 +185,117 @@ namespace SDTS.ViewModels
 
             if (se.status)
             {
-                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null, "停用", "删除", "取消");
+                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null,"修改说明", "停用", "删除", "取消");
             }
             else
             {
-                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null, "启用", "删除", "取消");
+                action = await Application.Current.MainPage.DisplayActionSheet("编辑", null, null, "修改说明", "启用", "删除", "取消");
             }
 
-            CommunicateWithBackEnd alter = new CommunicateWithBackEnd();
-            //await alterarea.PostSecureArea(se);
+            CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
             if (action.Equals("启用"))
             {
-                pol.StrokeColor = Color.Green;
-                pol.FillColor = Color.FromRgba(255, 0, 0, 64);
                 se.status = true;
+                var newarea = await cwb.PostSecureArea(se);
+                if (newarea != null)
+                {
+                    se.createtime = newarea.createtime;
+                    pol.StrokeColor = Color.Green;
+                    pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+                }
+                else
+                {
+                    se.status = !se.status;
+                    //弹窗提示修改失败
+                }
             }
             else if (action.Equals("停用"))
             {
-                //停用的话可能要判断被监护人和监护人的距离
-                pol.StrokeColor = Color.Black;
-                pol.FillColor = Color.FromRgba(126, 0, 0, 20);
                 se.status = false;
+                var newarea = await cwb.PostSecureArea(se);
+                if (newarea != null)
+                {
+                    se.createtime = newarea.createtime;
+                    pol.StrokeColor = Color.Black;
+                    pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+                }
+                else
+                {
+                    se.status = !se.status;
+                    //弹窗提示修改失败
+                }
+            }
+            else if (action.Equals("修改说明"))
+            {
+                string result = await Application.Current.MainPage.DisplayPromptAsync("修改说明", $"请输入此安全区域的描述信息");
+                if (result == null)
+                {
+                    return;
+                }
+                se.information = result;
+                var newarea = await cwb.PostSecureArea(se);
+                if(newarea!=null)
+                {
+                    se.createtime = newarea.createtime;
+                    se.createrid = newarea.createrid;
+                    se.creatername = newarea.creatername;
+                }
             }
             else if (action.Equals("删除"))
             {
-                Polygons.Remove(pol);
-                secureAreas.Remove(se);
-                return;
+                //先跟后端通讯再移除客户端的对象
+                var result=await cwb.DeleteSecureArea(se.id);
+                if(result == true)
+                {
+                    Polygons.Remove(pol);
+                    secureAreas.Remove(se);
+                }
+                else
+                {
+                    //弹窗提示删除失败
+                }
             }
-            else
+            else//取消
             {
                 return;
             }
-            //跟后端通讯
-            var newarea = await alter.PostSecureArea(se);
-            if (newarea != null)
-            {
-                se.createtime = newarea.createtime;
-            }
-            else
-            {//回滚
-                //pol = temppol;
-                //se = temparea;
-            }
+
+            //CommunicateWithBackEnd alter = new CommunicateWithBackEnd();
+
+            //if (action.Equals("启用"))
+            //{
+            //    pol.StrokeColor = Color.Green;
+            //    pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+            //    se.status = true;
+            //}
+            //else if (action.Equals("停用"))
+            //{
+            //    //停用的话可能要判断被监护人和监护人的距离
+            //    pol.StrokeColor = Color.Black;
+            //    pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+            //    se.status = false;
+            //}
+            //else if (action.Equals("删除"))
+            //{
+            //    Polygons.Remove(pol);
+            //    secureAreas.Remove(se);
+            //    return;
+            //}
+            //else
+            //{
+            //    return;
+            //}
+            ////跟后端通讯
+            //var newarea = await alter.PostSecureArea(se);
+            //if (newarea != null)
+            //{
+            //    se.createtime = newarea.createtime;
+            //}
+            //else
+            //{//回滚
+            //    //pol = temppol;
+            //    //se = temparea;
+            //}
         }
     }
 }

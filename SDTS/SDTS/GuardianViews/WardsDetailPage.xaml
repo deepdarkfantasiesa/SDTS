@@ -22,7 +22,7 @@
                 <Label Grid.Row="1" Grid.Column="0" Text="Information:" FontSize="Medium" />
                 <Label Grid.Row="1" Grid.Column="1" Text="{Binding Information}" FontSize="Small"/>
             </Grid>
-            <Button Text="CreateSecureArea" Command="{Binding CreateSecureArea}"/>
+            <Button Text="ManageSecureArea" Command="{Binding ManageSecureArea}"/>
             <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
                 
             </googleMaps:Map>

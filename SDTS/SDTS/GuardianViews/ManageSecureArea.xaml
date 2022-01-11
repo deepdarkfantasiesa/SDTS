@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SDTS.GuardianViews.CreateSecureArea"
+             x:Class="SDTS.GuardianViews.ManageSecureArea"
              xmlns:googleMaps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
              xmlns:bindings="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
              
-             xmlns:vm="clr-namespace:SDTS.ViewModels" x:DataType="vm:CreateSecureAreaViewModel">
+             xmlns:vm="clr-namespace:SDTS.ViewModels" x:DataType="vm:ManageSecureAreaViewModel">
     <ContentPage.BindingContext>
-        <vm:CreateSecureAreaViewModel/>
+        <vm:ManageSecureAreaViewModel/>
     </ContentPage.BindingContext>
     <ContentPage.Content>
         <StackLayout>

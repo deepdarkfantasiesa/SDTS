@@ -182,5 +182,27 @@ namespace SDTS.Services
             return null;
         }
 
+        public async Task<bool> DeleteSecureArea(int areaid)
+        {
+            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + TokenString.token+"&areaid="+areaid, string.Empty));
+            bool res;
+
+            try
+            {
+                HttpResponseMessage message = await client.DeleteAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    res = JsonSerializer.Deserialize<bool>(content, serializerOptions);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return false;
+        }
+
     }
 }

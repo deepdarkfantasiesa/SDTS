@@ -45,7 +45,22 @@ namespace SDTS.BackEnd.Controllers
         public IActionResult AlterArea(SecureArea Area)
         {
             Area.createtime = DateTime.Now;
+
+            var createrid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
+            Area.createrid = createrid;
+            Area.creatername = creatername;
+
             return Ok(Area);
+        }
+
+        [HttpDelete]
+        [Route("deletearea")]
+        public IActionResult DeleteArea(int areaid)
+        {
+            //执行数据库操作
+            
+            return Ok(true);
         }
     }
 }
