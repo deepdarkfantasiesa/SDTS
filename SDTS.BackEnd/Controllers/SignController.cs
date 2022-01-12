@@ -20,6 +20,12 @@ namespace SDTS.BackEnd.Controllers
             return Ok("index");
         }
 
+        IMockData mock;
+        public SignController(IMockData data)
+        {
+            mock = data;
+        }
+
         [HttpGet]
         [Route("signin")]
         public IActionResult SignIn(string username, string password)
@@ -34,9 +40,17 @@ namespace SDTS.BackEnd.Controllers
             //{
             //    return null;
             //}
-            TokenOperation createToken = new TokenOperation();
-            token = createToken.CreateToken(null);
-            return Ok(token);
+            TokenOperation createToken = new TokenOperation(mock);
+            token = createToken.CreateToken(username,password);
+            if(token!=null)
+            {
+
+                return Ok(token);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]

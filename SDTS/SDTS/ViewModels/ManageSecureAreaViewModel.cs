@@ -32,6 +32,51 @@ namespace SDTS.ViewModels
         {
             WardId = warid;
             WardName = wardname;
+            LoadSecureAreasCommand = new Command(async () => await ExecuteLoadSecureAreasCommand());
+            Polygons = new ObservableCollection<Polygon>();
+            LoadSecureAreasCommand.Execute(this);
+        }
+
+        public Command LoadSecureAreasCommand { get; }
+
+        async Task ExecuteLoadSecureAreasCommand()
+        {
+            try
+            {
+                Polygons.Clear();
+                secureAreas.Clear();
+                CommunicateWithBackEnd getareas = new CommunicateWithBackEnd();
+                secureAreas= await getareas.GetWardSecureArea(int.Parse(WardId));
+                Polygon pol;
+                foreach (var area in secureAreas)
+                {
+                    pol = new Polygon();
+                    foreach(var pos in area.area)
+                    {
+                        pol.Positions.Add(new Position(pos.Latitude,pos.Longitude));
+                    }
+                    pol.Clicked += Polygon_Clicked;
+                    pol.StrokeWidth = 3f;
+                    pol.IsClickable = true;
+                    pol.Tag = "POLYGON";
+                    pol.ZIndex = area.id;
+                    if (area.status)
+                    {
+                        pol.StrokeColor = Color.Green;
+                        pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+                    }
+                    else
+                    {
+                        pol.StrokeColor = Color.Black;
+                        pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+                    }
+                    Polygons.Add(pol);
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
         }
 
         private string wardid;
@@ -147,8 +192,18 @@ namespace SDTS.ViewModels
                     {
                         return;
                     }
+                    List<MyPosition> myPositions = new List<MyPosition>();
+                    MyPosition pos;
                     SecureArea secureArea = new SecureArea();
-                    secureArea.area = area;
+
+                    foreach(var newpos in area)
+                    {
+                        pos = new MyPosition();
+                        pos.Latitude = newpos.Latitude;
+                        pos.Longitude = newpos.Longitude;
+                        myPositions.Add(pos);
+                    }
+                    secureArea.area = myPositions;
                     secureArea.createtime = DateTime.Now;
                     secureArea.information = result;
                     secureArea.status = true;
@@ -215,6 +270,9 @@ namespace SDTS.ViewModels
                 var newarea = await cwb.PostSecureArea(se);
                 if (newarea != null)
                 {
+                    se.createrid = newarea.createrid;
+                    se.creatername = newarea.creatername;
+
                     se.createtime = newarea.createtime;
                     pol.StrokeColor = Color.Black;
                     pol.FillColor = Color.FromRgba(126, 0, 0, 20);
@@ -244,7 +302,7 @@ namespace SDTS.ViewModels
             else if (action.Equals("删除"))
             {
                 //先跟后端通讯再移除客户端的对象
-                var result=await cwb.DeleteSecureArea(se.id);
+                var result=await cwb.DeleteSecureArea(se);
                 if(result == true)
                 {
                     Polygons.Remove(pol);

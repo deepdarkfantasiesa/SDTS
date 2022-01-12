@@ -11,5 +11,12 @@ namespace SDTS.BackEnd
         public User getdetail(int userid);
         public List<User> getwards(int userid);
 
+        public List<SecureArea> getareas(int wardid);
+
+        public bool addarea(SecureArea secureArea);
+        public bool deletearea(SecureArea secureArea);
+        public bool alterarea(SecureArea secureArea);
+        public SecureArea getarea(int areaid);
+        public User FindUser(string account, string password);
     }
 }

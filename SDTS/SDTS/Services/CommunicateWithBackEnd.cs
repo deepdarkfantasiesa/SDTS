@@ -182,19 +182,22 @@ namespace SDTS.Services
             return null;
         }
 
-        public async Task<bool> DeleteSecureArea(int areaid)
+        public async Task<bool> DeleteSecureArea(SecureArea area)
         {
-            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + TokenString.token+"&areaid="+areaid, string.Empty));
-            bool res;
+            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            bool result;
 
             try
             {
-                HttpResponseMessage message = await client.DeleteAsync(uri);
+                var json = JsonSerializer.Serialize(area, serializerOptions);
+                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage message = await client.PostAsync(uri,content);
                 if (message.IsSuccessStatusCode)
                 {
-                    string content = await message.Content.ReadAsStringAsync();
-                    res = JsonSerializer.Deserialize<bool>(content, serializerOptions);
-                    return res;
+                    string res = await message.Content.ReadAsStringAsync();
+                    result = JsonSerializer.Deserialize<bool>(res, serializerOptions);
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -204,5 +207,26 @@ namespace SDTS.Services
             return false;
         }
 
+        public async Task<List<SecureArea>> GetWardSecureArea(int wardid)
+        {
+            List<SecureArea> areas = new List<SecureArea>();
+            
+            Uri uri = new Uri(string.Format(Constants.GetSecureAreasString + "?access_token=" + TokenString.token + "&wardid=" + wardid, string.Empty));
+
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    areas = JsonSerializer.Deserialize<List<SecureArea>>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return areas;
+        }
     }
 }

@@ -37,6 +37,7 @@ namespace SDTS.BackEnd.Controllers
             //以下方法只是模拟数据，真实场景需要查数据库,返回部分需要显示的数据即可，详细数据再GetDetail请求
             //var wards = data.getwards(int.Parse(userid));
             var wards = mock.getwards(int.Parse(userid));
+            
             return Ok(wards);
         }
 

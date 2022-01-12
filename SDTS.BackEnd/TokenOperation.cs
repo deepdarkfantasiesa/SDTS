@@ -12,12 +12,19 @@ namespace SDTS.BackEnd
 {
     public class TokenOperation
     {
-        public string CreateToken(User? user)
+        IMockData mock;
+        public TokenOperation(IMockData data)
+        {
+            mock = data;
+        }
+
+        public string CreateToken(string account,string password)
         {
             //将来连上数据库后需要注释掉
-            MockData data = new MockData();//ccchhh
-            user = data.newuser();
-
+            //MockData data = new MockData();//ccchhh
+            var user = mock.FindUser(account,password);
+            if (user == null)
+                return null;
             string key = "f47b558d-7654-458c-99f2-13b190ef0199";
             SecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
             var claims = new Claim[]

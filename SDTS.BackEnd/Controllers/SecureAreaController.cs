@@ -23,6 +23,12 @@ namespace SDTS.BackEnd.Controllers
             return View();
         }
 
+        IMockData mock;
+        public SecureAreaController(IMockData data)
+        {
+            mock = data;
+        }
+
         //[HttpPost]
         //[Route("postarea")]
         [HttpPut]
@@ -35,9 +41,10 @@ namespace SDTS.BackEnd.Controllers
 
             Area.createrid = createrid;
             Area.creatername = creatername;
-            //此处需要执行数据库插入操作，然后查询返回此area返回给客户端
             Area.id = random.Next(101);//这个实际获取需要通过数据库查询返回
-            return Ok(Area);
+            mock.addarea(Area);
+            var newarea = mock.getarea(Area.id);//此处需要执行数据库插入操作，然后查询返回此area返回给客户端
+            return Ok(newarea);
         }
 
         [HttpPost]
@@ -50,17 +57,31 @@ namespace SDTS.BackEnd.Controllers
             var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
             Area.createrid = createrid;
             Area.creatername = creatername;
+            var result= mock.alterarea(Area);
+            if(result==true)
+            {
+                var newarea = mock.getarea(Area.id);
 
-            return Ok(Area);
+                return Ok(newarea);
+            }
+            return BadRequest();
         }
 
-        [HttpDelete]
+        [HttpPost]
         [Route("deletearea")]
-        public IActionResult DeleteArea(int areaid)
+        public IActionResult DeleteArea(SecureArea area)
         {
             //执行数据库操作
-            
-            return Ok(true);
+            var result= mock.deletearea(area);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("getareas")]
+        public IActionResult GetAreas(int wardid)
+        {
+            var areas = mock.getareas(wardid);
+            return Ok(areas);
         }
     }
 }

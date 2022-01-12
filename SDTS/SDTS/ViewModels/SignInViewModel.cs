@@ -67,8 +67,16 @@ namespace SDTS.ViewModels
 
             //Sign sign = new Sign();//321
             CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
+            TokenString.token = null;
             await sign.Signin(UserName, PassWord);
-            await Shell.Current.GoToAsync($"TestPage");
+            if(TokenString.token!=null)
+            {
+                await Shell.Current.GoToAsync($"TestPage");
+            }
+            else
+            {
+                //弹窗提示登陆失败
+            }
             //Debug.WriteLine(TokenString.token);
         });
     }
