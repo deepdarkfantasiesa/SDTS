@@ -71,12 +71,12 @@ namespace SDTS.BackEnd
             services.AddTransient<IAuthorizationHandler, PermissionHandler>();
 
 
-            //services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
-            //{
-            //    builder.AllowAnyMethod()
-            //        .AllowAnyHeader()
-            //        .WithOrigins("http://localhost:5002");
-            //}));
+            services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
+            {
+                builder.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithOrigins("http://localhost:5002");
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,7 +89,7 @@ namespace SDTS.BackEnd
 
             app.UseRouting();
 
-            //app.UseCors("CorsPolicy");
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
 

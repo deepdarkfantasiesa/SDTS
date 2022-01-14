@@ -7,7 +7,9 @@ namespace SDTS
     public class Constants
     {
         private static string http = "http://";
-        private static string host = "10.0.2.2:5000";
+        //private static string host = "10.0.2.2:5000";//用项目名启动后端用这个
+        //private static string host = "192.168.50.113";
+        private static string host = "192.168.50.113:24082";
 
         private static string SignController = "/api/sign/";
         private static string WardsController = "/api/managewards/";
