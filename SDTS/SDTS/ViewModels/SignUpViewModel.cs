@@ -26,6 +26,20 @@ namespace SDTS.ViewModels
             }
         }
 
+        string account;
+        public string Account
+        {
+            get
+            {
+                return account;
+            }
+            set
+            {
+                account = value;
+                OnPropertyChanged("account");
+            }
+        }
+
         string password;
         public string PassWord
         {
@@ -123,18 +137,21 @@ namespace SDTS.ViewModels
             CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
             User user = new User();
             user.Name = UserName;
+            user.Account = Account;
             user.PassWord = PassWord;
             user.Information = Information;
             user.PhoneNumber = PhoneNumber;
             user.Type = SelectedType;
             user.Birthday = Birthday;
             user.Gender = Gender;
-            if (await sign.Signup(user))
+            var result=await sign.Signup(user);
+            if (result.Equals("注册成功"))
             {
                 //待添加，弹窗提示注册成功
-                await Shell.Current.GoToAsync("../");
+                //await Shell.Current.GoToAsync("../");
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
             }
-                
+            //待添加，弹窗提示注册失败
         });
 
         //没有get,OnPropertyChanged("emergencycontacts")可能有问题

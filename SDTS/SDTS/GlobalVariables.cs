@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace SDTS
 {
-    public class TokenString
+    public class GlobalVariables
     {
         public static string token;
+
+        public static User user;
     }
 }

@@ -9,11 +9,12 @@
     </ContentPage.BindingContext>
     <ContentPage.Content>
         
-        <StackLayout>
+        <StackLayout BackgroundColor="White">
+            
             <Grid>
               
-                <Label Text="用户名" Grid.Column="0" Grid.Row="0"/>
-                <Entry Grid.Column="1" Grid.Row="0" Text="{Binding UserName}"/>
+                <Label Text="账号" Grid.Column="0" Grid.Row="0"/>
+                <Entry Grid.Column="1" Grid.Row="0" Text="{Binding Account}"/>
                 
                 <Label Text="密码" Grid.Column="0" Grid.Row="1" />
                 <Entry Grid.Column="1" Grid.Row="1" Text="{Binding PassWord}"/>

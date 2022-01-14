@@ -28,10 +28,10 @@ namespace SDTS.Services
                 IncludeFields = true
             };
         }
-        public async Task<bool> Signup(User user)
+        public async Task<string> Signup(User user)
         {
             Uri uri = new Uri(string.Format(Constants.SignupString, string.Empty));
-
+            string result=null;
             try
             {
                 string json = JsonSerializer.Serialize<User>(user, serializerOptions);
@@ -39,25 +39,22 @@ namespace SDTS.Services
 
                 HttpResponseMessage response = null;
                 response = await client.PostAsync(uri, content);
-                if (response.IsSuccessStatusCode)
-                {
-                    Debug.WriteLine(@"\tTodoItem successfully saved.");
-                    return true;
-                }
+
+                result = await response.Content.ReadAsStringAsync();
 
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
             }
-            return false;
+            return result;
         }
-        public async Task Signin(string username, string password)
+        public async Task Signin(string account, string password)
         {
             User user = new User();
             //user.Name = username;
             //user.PassWord = password;
-            Uri uri = new Uri(string.Format(Constants.SigninString + "?username=" + username + "&password=" + password, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.SigninString + "?account=" + account + "&password=" + password, string.Empty));
             try
             {
                 HttpResponseMessage response = null;
@@ -65,7 +62,7 @@ namespace SDTS.Services
                 if (response.IsSuccessStatusCode)
                 {
                     //存储token，SignalR传数据、以及修改资料添加（被）监护人要用
-                    TokenString.token = await response.Content.ReadAsStringAsync();
+                    GlobalVariables.token = await response.Content.ReadAsStringAsync();
                     //Debug.WriteLine(token);
                 }
             }
@@ -78,7 +75,7 @@ namespace SDTS.Services
 
         public async Task<User> GetWardDetail(int userid)
         {
-            Uri uri = new Uri(string.Format(Constants.GetWardDetailString + "?access_token=" + TokenString.token+"&userid="+userid, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.GetWardDetailString + "?access_token=" + GlobalVariables.token+"&userid="+userid, string.Empty));
             User ward=new User();
             try
             {
@@ -101,7 +98,7 @@ namespace SDTS.Services
         {
             ObservableCollection<User> wards = new ObservableCollection<User>();
             //token放在哪需要验证
-            Uri uri = new Uri(string.Format(Constants.ManageWardsString+"?access_token="+TokenString.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.ManageWardsString+"?access_token="+ GlobalVariables.token, string.Empty));
             
             try
             {
@@ -121,7 +118,7 @@ namespace SDTS.Services
 
         public async Task<SecureArea> PutSecureArea(SecureArea area)
         {
-            Uri uri = new Uri(string.Format(Constants.PutSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.PutSecureAreaString + "?access_token=" + GlobalVariables.token, string.Empty));
             SecureArea newarea=new SecureArea();
             try
             {
@@ -152,7 +149,7 @@ namespace SDTS.Services
         
         public async Task<SecureArea> PostSecureArea(SecureArea area)
         {
-            Uri uri = new Uri(string.Format(Constants.PostSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.PostSecureAreaString + "?access_token=" + GlobalVariables.token, string.Empty));
             SecureArea newarea = new SecureArea();
 
             try
@@ -184,7 +181,7 @@ namespace SDTS.Services
 
         public async Task<bool> DeleteSecureArea(SecureArea area)
         {
-            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + TokenString.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + GlobalVariables.token, string.Empty));
             bool result;
 
             try
@@ -211,7 +208,7 @@ namespace SDTS.Services
         {
             List<SecureArea> areas = new List<SecureArea>();
             
-            Uri uri = new Uri(string.Format(Constants.GetSecureAreasString + "?access_token=" + TokenString.token + "&wardid=" + wardid, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.GetSecureAreasString + "?access_token=" + GlobalVariables.token + "&wardid=" + wardid, string.Empty));
 
             try
             {
@@ -227,6 +224,26 @@ namespace SDTS.Services
                 Debug.WriteLine(@"\tERROR {0}", ex.Message);
             }
             return areas;
+        }
+
+        public async Task GetUserInfo()
+        {
+            Uri uri = new Uri(string.Format(Constants.GetUserInfoString + "?access_token=" + GlobalVariables.token, string.Empty));
+            User user=new User();
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    user = JsonSerializer.Deserialize<User>(content, serializerOptions);
+                    GlobalVariables.user = user;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ namespace SDTS.BackEnd
 
         public string Type { get; set; }
 
+        public List<string> LType { get; set; }
     }
 
 
@@ -24,7 +25,8 @@ namespace SDTS.BackEnd
         {
             //var age = context.User.Claims.First(p => p.Type.Equals("Age")).Value;
             var type= context.User.Claims.First(p => p.Type.Equals("Type")).Value;
-            if (type.Equals(requirement.Type.ToString()))
+            //if (type.Equals(requirement.Type.ToString())||type.Equals("志愿者"))
+            if (requirement.LType.Exists(p=>p.Equals(type)))
             {
                 context.Succeed(requirement);
             }

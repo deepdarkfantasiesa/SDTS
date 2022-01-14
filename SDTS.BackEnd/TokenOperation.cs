@@ -36,7 +36,7 @@ namespace SDTS.BackEnd
                 //new Claim("Gender",user.gender),
                 //new Claim(JwtRegisteredClaimNames.Email, "2752154844@qq.com"),
                 //new Claim(JwtRegisteredClaimNames.Sub, "D21D099B-B49B-4604-A247-71B0518A0B1C"),
-                
+                new Claim("Account", user.Account),
                 new Claim("Name", user.Name),
                 //new Claim(ClaimTypes.Name, user.Name),
                 new Claim("UserID", user.UserID.ToString()),

@@ -6,25 +6,33 @@
     <ContentPage.BindingContext>
         <vm:SignUpViewModel/>
     </ContentPage.BindingContext>
-    <ContentPage.Content>
+
+
+    <!--<ContentPage.Content>-->
+    <ScrollView>
         <Grid>
-            <Label Grid.Row="0" Grid.Column="0" Text="名称"/>
+            
+            <Label Grid.Row="0" Grid.Column="0" Text="账号"/>
             <Label Grid.Row="1" Grid.Column="0" Text="密码"/>
             <Label Grid.Row="2" Grid.Column="0" Text="信息"/>
             <Label Grid.Row="3" Grid.Column="0" Text="性别"/>
             <Label Grid.Row="4" Grid.Column="0" Text="电话号码"/>
             <Label Grid.Row="5" Grid.Column="0" Text="用户类别"/>
             <Label Grid.Row="6" Grid.Column="0" Text="生日"/>
+            <Label Grid.Row="7" Grid.Column="0" Text="名称"/>
 
-            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding UserName}"/>
+            
+            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Account}"/>
             <Entry Grid.Row="1" Grid.Column="1" Text="{Binding PassWord}"/>
             <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Information}"/>
             <Entry Grid.Row="3" Grid.Column="1" Text="{Binding Gender}"/>
             <Entry Grid.Row="4" Grid.Column="1" Text="{Binding PhoneNumber}"/>
             <Picker Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}"/>
             <DatePicker Grid.Row="6" Grid.Column="1" Date="{Binding Birthday}"/>
-            <Button Text="注册" Grid.Row="6" Command="{Binding Register}"/>
+            <Entry Grid.Row="7" Grid.Column="1" Text="{Binding UserName}"/>
+            <Button Text="注册" Grid.Row="8" Grid.Column="1" Command="{Binding Register}"/>
         </Grid>
-        
-    </ContentPage.Content>
+
+        </ScrollView>
+    <!--</ContentPage.Content>-->
 </ContentPage>

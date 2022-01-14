@@ -62,7 +62,7 @@ namespace SDTS
                 if (response.IsSuccessStatusCode)
                 {
                     //存储token，SignalR传数据、以及修改资料添加（被）监护人要用
-                    TokenString.token = await response.Content.ReadAsStringAsync();
+                    GlobalVariables.token = await response.Content.ReadAsStringAsync();
                     //Debug.WriteLine(token);
                 }
             }

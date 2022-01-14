@@ -28,7 +28,7 @@ namespace SDTS.BackEnd.Controllers
 
         [HttpGet]
         [Route("signin")]
-        public IActionResult SignIn(string username, string password)
+        public IActionResult SignIn(string account, string password)
         {
             string token;
             //此处需要查找数据库，若查询到，则创建token并返回给客户端
@@ -41,7 +41,7 @@ namespace SDTS.BackEnd.Controllers
             //    return null;
             //}
             TokenOperation createToken = new TokenOperation(mock);
-            token = createToken.CreateToken(username,password);
+            token = createToken.CreateToken(account, password);
             if(token!=null)
             {
 
@@ -57,8 +57,18 @@ namespace SDTS.BackEnd.Controllers
         [Route("signup")]
         public IActionResult Signup(User user)
         {
+            var result = mock.signup(user);
+            if (result.Equals("注册成功"))
+            {
 
-            return Ok();
+                return Ok(result);
+            }
+            else
+            {
+
+                return BadRequest(result);
+            }
+            
         }
     }
 }

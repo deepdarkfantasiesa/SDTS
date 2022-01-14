@@ -14,7 +14,9 @@ namespace SDTS
             InitializeComponent();
 
             DependencyService.Register<MockDataStore>();
-            MainPage = new AppShell();
+            //MainPage = new AppShell();
+
+            MainPage =new NavigationPage(new SignInPage());
         }
 
         protected override void OnStart()

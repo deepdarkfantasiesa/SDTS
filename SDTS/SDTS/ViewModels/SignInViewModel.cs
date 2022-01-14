@@ -1,6 +1,7 @@
 ﻿using Models;
 using SDTS.Services;
 using SDTS.Views;
+using SDTS.VolunteerViews;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,6 +45,20 @@ namespace SDTS.ViewModels
             }
         }
 
+        string account;
+        public string Account
+        {
+            get
+            {
+                return account;
+            }
+            set
+            {
+                account = value;
+                OnPropertyChanged("account");
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
         {
@@ -51,7 +66,8 @@ namespace SDTS.ViewModels
         }
         public Command signup => new Command(async () => 
         {
-            await Shell.Current.GoToAsync($"SignUpPage");
+            //await Shell.Current.GoToAsync($"SignUpPage");
+            await Application.Current.MainPage.Navigation.PushAsync(new SignUpPage());
         });
 
         public Command forgetpwd => new Command(async () => 
@@ -67,11 +83,32 @@ namespace SDTS.ViewModels
 
             //Sign sign = new Sign();//321
             CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
-            TokenString.token = null;
-            await sign.Signin(UserName, PassWord);
-            if(TokenString.token!=null)
+            /*
+            GlobalVariables.token = null;
+            GlobalVariables.user = null;
+            */
+            await sign.Signin(Account, PassWord);
+            await sign.GetUserInfo();
+            //监护人暂时无法登录
+            if (GlobalVariables.token != null && GlobalVariables.user != null)
             {
-                await Shell.Current.GoToAsync($"TestPage");
+                //await Shell.Current.GoToAsync($"TestPage");
+
+
+                //判断用户类型，返回到指定的页面
+                if(GlobalVariables.user.Type.Equals("监护人"))
+                {
+
+                    Application.Current.MainPage = new AppShell();
+                }
+                else if(GlobalVariables.user.Type.Equals("志愿者"))
+                {
+                    Application.Current.MainPage = new VolunteerFlyoutPageFlyout();
+                }
+                else if (GlobalVariables.user.Type.Equals("被监护人"))
+                {
+
+                }
             }
             else
             {

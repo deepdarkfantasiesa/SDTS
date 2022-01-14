@@ -18,5 +18,7 @@ namespace SDTS.BackEnd
         public bool alterarea(SecureArea secureArea);
         public SecureArea getarea(int areaid);
         public User FindUser(string account, string password);
+        public string signup(User user);
+        public User getuser(string useraccount);
     }
 }

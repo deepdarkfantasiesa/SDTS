@@ -12,7 +12,7 @@ namespace SDTS.BackEnd
         //模拟用户表，将来三种角色可能要分成三个表
         ObservableCollection<User> users = new ObservableCollection<User>()
             {
-                new User{UserID = 0,Name="cqf",Information="1",Account=null,PassWord=null,Birthday=DateTime.Now,Gender="male",PhoneNumber="13112627289",GuardianID=new List<int>(),Type="监护人" },
+                new User{UserID = 0,Name="cqf",Information="1",Account="0",PassWord="0",Birthday=DateTime.Now,Gender="male",PhoneNumber="13112627289",GuardianID=new List<int>(),Type="监护人" },
                 new User{UserID = 1,Name="hjy",Information="1",Account="1",PassWord="1",Birthday=DateTime.Now,Gender="male",PhoneNumber="1",GuardianID=new List<int>(){ 0,5},Type="被监护人" },
                 new User{UserID = 2,Name="ccc",Information="2",Account="2",PassWord="2",Birthday=DateTime.Now,Gender="female",PhoneNumber="2",GuardianID=new List<int>(),Type="志愿者" },
                 new User{UserID = 3,Name="qqq",Information="3",Account="3",PassWord="3",Birthday=DateTime.Now,Gender="unknow",PhoneNumber="3",GuardianID=new List<int>(){ 0},Type="被监护人" },
@@ -65,6 +65,11 @@ namespace SDTS.BackEnd
             oldarea.area = newarea.area;
         }
 
+        public User getuser(string useraccount)
+        {
+            return users.FirstOrDefault(p => p.Account == useraccount);
+        }
+
         public User getdetail(int userid)
         {
             return users.FirstOrDefault(p => p.UserID == userid);
@@ -84,6 +89,25 @@ namespace SDTS.BackEnd
         public User FindUser(string account,string password)
         {
             return users.Where(p => p.Account == account && p.PassWord == password).FirstOrDefault();
+        }
+
+        public string signup(User user)
+        {
+            //账号不能重复
+            if(users.Where(p => p.Account == user.Account).FirstOrDefault()==null)
+            {
+                user.UserID = users.Count + 1;
+                users.Add(user);
+            }
+            else
+            {
+                return "账号与其他用户的冲突";
+            }
+            if(users.Where(p=>p==user).FirstOrDefault()!=null)
+            {
+                return "注册成功";
+            }
+            return "注册失败";
         }
 
         public User newuser()
