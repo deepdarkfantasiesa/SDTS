@@ -13,7 +13,8 @@ using Xamarin.Forms.GoogleMaps;
 namespace SDTS.BackEnd.Controllers
 {
 
-    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "guardianspolicy")]
     [ApiController]
     [Route("api/[controller]")]
     public class SecureAreaController : Controller

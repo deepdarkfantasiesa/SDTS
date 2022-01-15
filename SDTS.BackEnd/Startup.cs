@@ -65,7 +65,25 @@ namespace SDTS.BackEnd
                 options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
                 {
                     policy.Requirements.Add(
-                        new PermissionRequirement { Type = "监护人" ,LType=new List<string>() {"监护人","志愿者","被监护人" } });
+                        new PermissionRequirement { Type = "unknow" ,LType=new List<string>() {"监护人","志愿者","被监护人" } });
+                });
+
+                options.AddPolicy("wardspolicy", policy =>
+                {
+                    policy.Requirements.Add(
+                        new PermissionRequirement { Type = "被监护人", LType = new List<string>() });
+                });
+
+                options.AddPolicy("vlounteerspolicy", policy =>
+                {
+                    policy.Requirements.Add(
+                        new PermissionRequirement { Type = "志愿者", LType = new List<string>() });
+                });
+
+                options.AddPolicy("guardianspolicy", policy =>
+                {
+                    policy.Requirements.Add(
+                        new PermissionRequirement { Type = "监护人", LType = new List<string>() });
                 });
             });
             services.AddTransient<IAuthorizationHandler, PermissionHandler>();

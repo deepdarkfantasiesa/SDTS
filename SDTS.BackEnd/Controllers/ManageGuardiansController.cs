@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace SDTS.BackEnd.Controllers
 {
 
-    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "wardspolicy")]
     [ApiController]
     [Route("api/[controller]")]
     public class ManageGuardiansController : Controller
