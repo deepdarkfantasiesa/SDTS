@@ -70,7 +70,7 @@ namespace SDTS.ViewModels
                 //var wards = await dataStore.GetWardsAsync(true);
                 CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
                 //此处需要添加登录成功后解析token并将用户信息以全局变量的形式存储好，取出userid传入RefreshDataAsync
-                var wards = await getwards.RefreshDataAsync();
+                var wards = await getwards.RefreshWardsDataAsync();
 
                 foreach (var ward in wards)
                 {
@@ -91,7 +91,14 @@ namespace SDTS.ViewModels
 
         private async void OnAddWard(object obj)
         {
-            await Shell.Current.GoToAsync(nameof(AddWardPage));
+            //await Shell.Current.GoToAsync(nameof(AddWardPage));
+            var code = await Application.Current.MainPage.DisplayPromptAsync("添加被监护人", $"请在框内输入邀请码", "完成", "取消");
+            CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
+            var result= await cwb.AddWard(code);
+            if(result.Equals(true))
+            {
+                OnAppearing();
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:SDTS.Views"
        xmlns:guardianviews="clr-namespace:SDTS.GuardianViews"
+       xmlns:wardviews="clr-namespace:SDTS.WardsViews"
        Title="SDTS"
        x:Class="SDTS.AppShell">
 
@@ -96,15 +97,19 @@
         <ShellContent Route="SignInPage" ContentTemplate="{DataTemplate local:SignInPage}" />
         <ShellContent Route="SignUpPage" ContentTemplate="{DataTemplate local:SignUpPage}" />
         </FlyoutItem>-->
-    <FlyoutItem Title="教程">
-        <ShellContent Route="TutorialPage" ContentTemplate="{DataTemplate local:TutorialPage}" />
+    <FlyoutItem Title="教程" x:Name="totorial">
+        <ShellContent Route="TutorialPage" ContentTemplate="{DataTemplate local:TutorialPage} " />
     </FlyoutItem>
-    
-    <FlyoutItem Title="个人信息">
+
+    <FlyoutItem Title="个人信息" x:Name="personalinformation">
         <ShellContent Route="PersongalInformationPage" ContentTemplate="{DataTemplate local:PersonalInformationPage}" />
     </FlyoutItem>
-    
-    <FlyoutItem Title="被监护人管理">
+
+    <FlyoutItem Title="监护人管理" x:Name="manageguardian"  FlyoutItemIsVisible="False">
+        <ShellContent Route="ManageGuardianPage" ContentTemplate="{DataTemplate wardviews:ManageGuardianPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="被监护人管理" x:Name="managewards"  FlyoutItemIsVisible="False">
         <ShellContent Route="ManageWardsPage" ContentTemplate="{DataTemplate guardianviews:ManageWardsPage}" />
     </FlyoutItem>
     <MenuItem Text="退出" StyleClass="MenuItemLayoutStyle" Clicked="OnMenuItemClicked">

@@ -17,13 +17,63 @@ namespace SDTS.BackEnd
                 new User{UserID = 2,Name="ccc",Information="2",Account="2",PassWord="2",Birthday=DateTime.Now,Gender="female",PhoneNumber="2",GuardianID=new List<int>(),Type="志愿者" },
                 new User{UserID = 3,Name="qqq",Information="3",Account="3",PassWord="3",Birthday=DateTime.Now,Gender="unknow",PhoneNumber="3",GuardianID=new List<int>(){ 0},Type="被监护人" },
                 new User{UserID = 4,Name="fff",Information="4",Account="4",PassWord="4",Birthday=DateTime.Now,Gender="male",PhoneNumber="4",GuardianID=new List<int>(){ 5,0},Type="被监护人" },
-                new User{UserID = 5,Name="cyq",Information="1",Account="1234",PassWord="1234",Birthday=DateTime.Now,Gender="female",PhoneNumber="180003080888",GuardianID=new List<int>(),Type="监护人" }
+                new User{UserID = 5,Name="cyq",Information="1234",Account="1234",PassWord="1234",Birthday=DateTime.Now,Gender="female",PhoneNumber="180003080888",GuardianID=new List<int>(),Type="监护人" }
             };
 
+        Dictionary<string, int> Inviter = new Dictionary<string, int>();
 
         int i = 0;
 
         ObservableCollection<SecureArea> secureAreas = new ObservableCollection<SecureArea>();
+
+        public bool addward(int guardianid,int code)
+        {
+
+            var wardaccount= Inviter.Where(p => p.Value == code).FirstOrDefault().Key;
+            if(wardaccount==null)
+            {
+                return false;//邀请码不正确
+            }
+
+            if(users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count()!=0)
+            {
+                return false;//已存在此被监护人
+            }
+
+            users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Add(guardianid);
+            var result= users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count();
+            if(result!=0)
+            {
+                Inviter.Remove(wardaccount);
+                return true;//添加成功
+            }
+            return false;//未知错误
+        }
+
+        public int invite(string account,int code)
+        {
+            if(Inviter.Where(p=>p.Key==account).Count()!=0)
+            {
+                Inviter[account] = code;
+            }
+            else
+            {
+                Inviter.Add(account, code);
+            }
+            var num= Inviter.Where(p => p.Key == account).FirstOrDefault().Value;
+            return num;
+        }
+        public List<User> getguardians(string account)
+        {
+            var ward = users.Where(p => p.Account == account).FirstOrDefault();
+            List<User> guars = new List<User>();
+            foreach(var id in ward.GuardianID)
+            {
+                guars.Add(users.Where(p => p.UserID == id).FirstOrDefault());
+            }
+            return guars;
+        }
+
 
         public List<SecureArea> getareas(int wardid)
         {

@@ -1,7 +1,6 @@
 ﻿using Models;
 using SDTS.Services;
 using SDTS.Views;
-using SDTS.VolunteerViews;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -93,22 +92,22 @@ namespace SDTS.ViewModels
             if (GlobalVariables.token != null && GlobalVariables.user != null)
             {
                 //await Shell.Current.GoToAsync($"TestPage");
-
+                Application.Current.MainPage = new AppShell();
 
                 //判断用户类型，返回到指定的页面
-                if(GlobalVariables.user.Type.Equals("监护人"))
-                {
+                //if(GlobalVariables.user.Type.Equals("监护人"))
+                //{
 
-                    Application.Current.MainPage = new AppShell();
-                }
-                else if(GlobalVariables.user.Type.Equals("志愿者"))
-                {
-                    Application.Current.MainPage = new VolunteerFlyoutPageFlyout();
-                }
-                else if (GlobalVariables.user.Type.Equals("被监护人"))
-                {
+                //    Application.Current.MainPage = new AppShell();
+                //}
+                //else if(GlobalVariables.user.Type.Equals("志愿者"))
+                //{
+                //    Application.Current.MainPage = new AppShell();
+                //}
+                //else if (GlobalVariables.user.Type.Equals("被监护人"))
+                //{
 
-                }
+                //}
             }
             else
             {

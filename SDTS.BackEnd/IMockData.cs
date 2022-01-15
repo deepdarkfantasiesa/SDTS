@@ -20,5 +20,8 @@ namespace SDTS.BackEnd
         public User FindUser(string account, string password);
         public string signup(User user);
         public User getuser(string useraccount);
+        public int invite(string account, int code);
+        public List<User> getguardians(string account);
+        public bool addward(int guardianid, int code);
     }
 }

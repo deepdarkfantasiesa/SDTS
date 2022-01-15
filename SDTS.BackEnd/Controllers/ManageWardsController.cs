@@ -49,5 +49,14 @@ namespace SDTS.BackEnd.Controllers
             var ward = mock.getdetail(userid);
             return Ok(ward);
         }
+
+        [HttpPut]
+        [Route("addward")]
+        public IActionResult AddWard(int code)
+        {
+            var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            var result= mock.addward(int.Parse(guardianid),code);
+            return Ok(result);
+        }
     }
 }

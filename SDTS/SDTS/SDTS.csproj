@@ -60,13 +60,7 @@
     <EmbeddedResource Update="Views\TutorialPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="VolunteerViews\VolunteerFlyoutPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="VolunteerViews\VolunteerFlyoutPageDetail.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="VolunteerViews\VolunteerFlyoutPageFlyout.xaml">
+    <EmbeddedResource Update="WardsViews\ManageGuardianPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
@@ -78,6 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="WardsViews\" />
+    <Folder Include="VolunteerViews\" />
   </ItemGroup>
 </Project>

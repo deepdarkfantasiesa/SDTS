@@ -15,11 +15,13 @@ namespace SDTS
         private static string WardsController = "/api/managewards/";
         private static string AreaController = "/api/securearea/";
         private static string UserController = "/api/user/";
+        private static string GuardianController = "/api/manageguardians/";
 
         public static string SigninString = http+host+SignController+"signin";
         public static string SignupString = http + host + SignController + "signup";
         public static string ManageWardsString = http + host + WardsController + "getwards";
         public static string GetWardDetailString = http + host + WardsController + "getdetail";
+        public static string AddWardString = http + host + WardsController + "addward";
 
         public static string PutSecureAreaString = http + host + AreaController + "ctreatearea";
         public static string PostSecureAreaString = http + host + AreaController + "alterarea";
@@ -28,6 +30,8 @@ namespace SDTS
 
         public static string GetUserInfoString = http + host + UserController + "getuserinfo";
 
+        public static string GetInvitationCodeString = http + host + GuardianController + "getinvitationcode";
+        public static string GetGuardiansString = http + host + GuardianController + "getguardians";
 
         //public static string SigninString = "http://10.0.2.2:5000/api/sign/signin";
 

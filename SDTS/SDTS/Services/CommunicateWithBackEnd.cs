@@ -73,6 +73,26 @@ namespace SDTS.Services
             //return user;//返回对象待定
         }
 
+        public async Task<bool> AddWard(string code)
+        {
+            Uri uri = new Uri(string.Format(Constants.AddWardString + "?access_token=" + GlobalVariables.token + "&code=" + code, string.Empty));
+            bool result=false;
+            try
+            {
+                HttpResponseMessage message = await client.PutAsync(uri, null);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    result = JsonSerializer.Deserialize<bool>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return result;
+        }
+
         public async Task<User> GetWardDetail(int userid)
         {
             Uri uri = new Uri(string.Format(Constants.GetWardDetailString + "?access_token=" + GlobalVariables.token+"&userid="+userid, string.Empty));
@@ -93,8 +113,29 @@ namespace SDTS.Services
 
             return ward;
         }
+        public async Task<ObservableCollection<User>> RefreshGuardiansDataAsync()
+        {
+            ObservableCollection<User> guardians = new ObservableCollection<User>();
+            //token放在哪需要验证
+            Uri uri = new Uri(string.Format(Constants.GetGuardiansString + "?access_token=" + GlobalVariables.token, string.Empty));
 
-        public async Task<ObservableCollection<User>> RefreshDataAsync()
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    guardians = JsonSerializer.Deserialize<ObservableCollection<User>>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return guardians;
+        }
+
+        public async Task<ObservableCollection<User>> RefreshWardsDataAsync()
         {
             ObservableCollection<User> wards = new ObservableCollection<User>();
             //token放在哪需要验证
@@ -244,6 +285,30 @@ namespace SDTS.Services
             {
                 Debug.WriteLine(@"\tERROR {0}", ex.Message);
             }
+        }
+
+        public async Task<string> GetInvitationCode()
+        {
+            Uri uri = new Uri(string.Format(Constants.GetInvitationCodeString + "?access_token=" + GlobalVariables.token, string.Empty));
+            //User user = new User();
+
+            string content=null;
+
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    content = await message.Content.ReadAsStringAsync();
+                    //user = JsonSerializer.Deserialize<User>(content, serializerOptions);
+                    //GlobalVariables.user = user;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return content;
         }
     }
 }
