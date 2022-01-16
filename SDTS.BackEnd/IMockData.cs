@@ -23,5 +23,7 @@ namespace SDTS.BackEnd
         public int invite(string account, int code);
         public List<User> getguardians(string account);
         public bool addward(int guardianid, int code);
+        public bool AddConnectUser(string account, string connectid);
+        public bool RemoveConnectUser(string account, string connectid);
     }
 }

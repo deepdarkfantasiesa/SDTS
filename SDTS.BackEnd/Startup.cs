@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SDTS.BackEnd.Hubs;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -51,7 +52,9 @@ namespace SDTS.BackEnd
                            var accessToken = context.Request.Query["access_token"];
 
                            var path = context.HttpContext.Request.Path;
-                           if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api"))
+                           if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api")
+                           || path.StartsWithSegments("/hubs/data")
+                           )
                            //path.StartsWithSegments("/api/managewards"))
                            {
                                context.Token = accessToken;
@@ -85,6 +88,12 @@ namespace SDTS.BackEnd
                     policy.Requirements.Add(
                         new PermissionRequirement { Type = "监护人", LType = new List<string>() });
                 });
+
+                options.AddPolicy("datahub", policy =>
+                {
+                    policy.Requirements.Add(
+                        new PermissionRequirement { Type = "unknow", LType = new List<string>() { "监护人", "志愿者", "被监护人" } });
+                });
             });
             services.AddTransient<IAuthorizationHandler, PermissionHandler>();
 
@@ -95,6 +104,8 @@ namespace SDTS.BackEnd
                     .AllowAnyHeader()
                     .WithOrigins("http://localhost:5002");
             }));
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -116,6 +127,8 @@ namespace SDTS.BackEnd
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+
+                endpoints.MapHub<DataHub>("/hubs/data");
             });
         }
     }

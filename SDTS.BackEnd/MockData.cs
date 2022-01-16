@@ -22,9 +22,31 @@ namespace SDTS.BackEnd
 
         Dictionary<string, int> Inviter = new Dictionary<string, int>();
 
+        Dictionary<string, string> ConnectedUser = new Dictionary<string, string>();
+
         int i = 0;
 
         ObservableCollection<SecureArea> secureAreas = new ObservableCollection<SecureArea>();
+
+        public bool AddConnectUser(string account,string connectid)
+        {
+            if (ConnectedUser.Where(p => p.Key == account).Count()!=0)
+                return false;//已存在
+            ConnectedUser.Add(account, connectid);
+            if(ConnectedUser.Where(p => p.Key == account).FirstOrDefault().Value.Equals(connectid))
+                return true;//添加成功
+            else
+                return false;
+        }
+
+        public bool RemoveConnectUser(string account,string connectid)
+        {
+            ConnectedUser.Remove(account);
+            if (ConnectedUser.Where(p => p.Value == connectid).Count() == 0)
+                return true;
+            else
+                return false;
+        }
 
         public bool addward(int guardianid,int code)
         {

@@ -1,4 +1,5 @@
 ﻿using SDTS.GuardianViews;
+using SDTS.Services;
 using SDTS.ViewModels;
 using SDTS.Views;
 using SDTS.WardsViews;
@@ -10,6 +11,7 @@ namespace SDTS
 {
     public partial class AppShell : Xamarin.Forms.Shell
     {
+        HubServices hubServices = new HubServices();
         public AppShell()
         {
             InitializeComponent();
@@ -44,6 +46,11 @@ namespace SDTS
                 //managewards.FlyoutItemIsVisible = false;
                 manageguardian.FlyoutItemIsVisible = true;
             }
+
+            
+            hubServices.Init(Constants.host);
+            hubServices.ConnectCommand.Execute(null);
+            //hubServices.SendMessage();
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)
@@ -52,6 +59,7 @@ namespace SDTS
             //await Application.Current.MainPage.Navigation.PushAsync(new SignInPage());
             GlobalVariables.token = null;
             GlobalVariables.user = null;
+            await hubServices.DisConnectAsync();
             Application.Current.MainPage =new NavigationPage(new SignInPage());
         }
     }
