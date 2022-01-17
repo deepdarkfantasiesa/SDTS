@@ -93,6 +93,26 @@ namespace SDTS.Services
             return result;
         }
 
+        public async Task<bool> RemoveWard(string code,string wardid)
+        {
+            Uri uri = new Uri(string.Format(Constants.RemoveWardString + "?access_token=" + GlobalVariables.token + "&code=" + code+"&wardid="+wardid, string.Empty));
+            bool result = false;
+            try
+            {
+                HttpResponseMessage message = await client.PutAsync(uri, null);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    result = JsonSerializer.Deserialize<bool>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return result;
+        }
+
         public async Task<User> GetWardDetail(int userid)
         {
             Uri uri = new Uri(string.Format(Constants.GetWardDetailString + "?access_token=" + GlobalVariables.token+"&userid="+userid, string.Empty));

@@ -12,7 +12,7 @@ namespace SDTS.BackEnd
         //模拟用户表，将来三种角色可能要分成三个表
         ObservableCollection<User> users = new ObservableCollection<User>()
             {
-                new User{UserID = 0,Name="cqf",Information="1",Account="0",PassWord="0",Birthday=DateTime.Now,Gender="male",PhoneNumber="13112627289",GuardianID=new List<int>(),Type="监护人" },
+                new User{UserID = 0,Name="cqf",Information="0",Account="0",PassWord="0",Birthday=DateTime.Now,Gender="male",PhoneNumber="13112627289",GuardianID=new List<int>(),Type="监护人" },
                 new User{UserID = 1,Name="hjy",Information="1",Account="1",PassWord="1",Birthday=DateTime.Now,Gender="male",PhoneNumber="1",GuardianID=new List<int>(){ 0,5},Type="被监护人" },
                 new User{UserID = 2,Name="ccc",Information="2",Account="2",PassWord="2",Birthday=DateTime.Now,Gender="female",PhoneNumber="2",GuardianID=new List<int>(),Type="志愿者" },
                 new User{UserID = 3,Name="qqq",Information="3",Account="3",PassWord="3",Birthday=DateTime.Now,Gender="unknow",PhoneNumber="3",GuardianID=new List<int>(){ 0},Type="被监护人" },
@@ -27,6 +27,12 @@ namespace SDTS.BackEnd
         int i = 0;
 
         ObservableCollection<SecureArea> secureAreas = new ObservableCollection<SecureArea>();
+
+        public string ReflashGuardians(string guardianaccount)
+        {
+            var connectid = ConnectedUser.Where(p => p.Key == guardianaccount).FirstOrDefault().Value;
+            return connectid;
+        }
 
         public bool AddConnectUser(string account,string connectid)
         {
@@ -46,6 +52,39 @@ namespace SDTS.BackEnd
                 return true;
             else
                 return false;
+        }
+
+        public bool removeward(int guardianid, int code, string account)
+        {
+
+            var wardaccount = Inviter.Where(p => p.Value == code).FirstOrDefault().Key;
+            if (wardaccount == null|| wardaccount != account)
+            {
+                return false;//邀请码不正确
+            }
+
+
+            if (users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count() == 0)
+            {
+                return false;//不存在此监护人
+            }
+
+            users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Remove(guardianid);
+            var result = users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count();
+            if (result == 0)
+            {
+                Inviter.Remove(wardaccount);
+
+                var wardareas = getareas(users.Where(p => p.Account == wardaccount).FirstOrDefault().UserID).Where(p=>p.createrid==guardianid.ToString());
+                foreach (var area in wardareas)
+                {
+                    deletearea(area);
+                }
+
+
+                return true;//移除成功
+            }
+            return false;//未知错误
         }
 
         public bool addward(int guardianid,int code)
@@ -88,6 +127,8 @@ namespace SDTS.BackEnd
         public List<User> getguardians(string account)
         {
             var ward = users.Where(p => p.Account == account).FirstOrDefault();
+            if (ward.GuardianID == null)
+                ward.GuardianID = new List<int>();
             List<User> guars = new List<User>();
             foreach(var id in ward.GuardianID)
             {
@@ -153,9 +194,26 @@ namespace SDTS.BackEnd
             i++;
             //var wardd= wards.ToList().FindAll(p => p.GuardianID.Find(userid)==userid);
             //var wardd = users.ToList().FindAll(p=>p.GuardianID.Find(i=>i==userid)== userid);
-            var wardd = users.ToList().FindAll(p=>p.Type== "被监护人");
-            var wards = wardd.FindAll(p=>p.GuardianID.Find(i=>i==userid)==userid);
-            return wards;
+
+
+
+            //var wardd = users.ToList().FindAll(p=>p.Type== "被监护人");
+            //var wards = wardd.FindAll(p=>p.GuardianID.Find(i=>i==userid)==userid);//这里有问题
+
+
+            //return wards;
+
+
+            var wards = users.Where(p => p.Type.Equals("被监护人"));
+            List<User> userwards = new List<User>();
+            foreach (var ward in wards)
+            {
+                if(ward.GuardianID.Where(p=>p==userid).Count()!=0)
+                {
+                    userwards.Add(ward);
+                }
+            }
+            return userwards;
         }
 
         public User FindUser(string account,string password)

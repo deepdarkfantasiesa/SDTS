@@ -26,6 +26,7 @@ namespace SDTS
         public static string ManageWardsString = http + host + WardsController + "getwards";
         public static string GetWardDetailString = http + host + WardsController + "getdetail";
         public static string AddWardString = http + host + WardsController + "addward";
+        public static string RemoveWardString = http + host + WardsController + "removeward";
 
         public static string PutSecureAreaString = http + host + AreaController + "ctreatearea";
         public static string PostSecureAreaString = http + host + AreaController + "alterarea";

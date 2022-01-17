@@ -24,12 +24,20 @@ namespace SDTS.BackEnd.Hubs
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
 
-            var guardians = mock.getguardians(wardaccount);
+            var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
+
+            List<string> connectguardianids = new List<string>();
 
             foreach(var guardian in guardians)
             {
+                var connectguardianid = mock.ReflashGuardians(guardian.Account);
+                if (connectguardianid != null)
+                    connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
+            }
 
-                await Clients.All.SendAsync("GuardianReceive", message);
+            foreach(var connectguardianid in connectguardianids)
+            {
+                await Clients.Client(connectguardianid).SendAsync("GuardianReceive", message);//向已连接的监护人发送被监护人的数据
             }
         }
 

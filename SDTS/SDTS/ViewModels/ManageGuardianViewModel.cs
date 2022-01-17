@@ -21,7 +21,7 @@ namespace SDTS.ViewModels
 
         public ObservableCollection<User> Guardians { get; }
 
-        public Command AddGuardianCommand { get; }
+        public Command GenerateOpcodeCommand { get; }
 
         public Command LoadGuardiansCommand { get; }
 
@@ -29,18 +29,18 @@ namespace SDTS.ViewModels
         {
             Guardians = new ObservableCollection<User>();
 
-            AddGuardianCommand = new Command(OnAddGuardian);
+            GenerateOpcodeCommand = new Command(GenerateOpcode);
 
             LoadGuardiansCommand = new Command(async () => await ExecuteLoadGuardiansCommand());
         }
 
-        private async void OnAddGuardian(object obj)
+        private async void GenerateOpcode(object obj)
         {
             //await Shell.Current.GoToAsync(nameof(AddWardPage));
             CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
             var code =await cwb.GetInvitationCode();
 
-            var result= await Application.Current.MainPage.DisplayAlert("邀请码","请在待添加的监护人端输入以下代码：\n"+code,"完成","取消");
+            var result= await Application.Current.MainPage.DisplayAlert("操作码","请在待操作的监护人端输入以下代码：\n"+code,"完成","取消");
             if(result.Equals(true))
             {
                 OnAppearing();

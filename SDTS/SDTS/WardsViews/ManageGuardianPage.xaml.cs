@@ -1,4 +1,5 @@
-﻿using SDTS.ViewModels;
+﻿using SDTS.Services;
+using SDTS.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,10 @@ namespace SDTS.WardsViews
 
         protected override async void OnAppearing()
         {
+            //HubServices hubServices = DependencyService.Get<HubServices>();
+            //await hubServices.SendMessageToGuardian();
+
+
             base.OnAppearing();
             _viewModel.OnAppearing();
             var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();

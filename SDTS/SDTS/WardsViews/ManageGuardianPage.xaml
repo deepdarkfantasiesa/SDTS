@@ -6,7 +6,7 @@
              xmlns:model1="clr-namespace:Models;assembly=Models">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="添加监护人" Command="{Binding AddGuardianCommand}" />
+        <ToolbarItem Text="生成操作码" Command="{Binding GenerateOpcodeCommand}" />
     </ContentPage.ToolbarItems>
 
     <ContentPage.Content>

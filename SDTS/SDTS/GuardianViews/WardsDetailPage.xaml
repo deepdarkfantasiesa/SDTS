@@ -23,6 +23,9 @@
                 <Label Grid.Row="1" Grid.Column="1" Text="{Binding Information}" FontSize="Small"/>
             </Grid>
             <Button Text="ManageSecureArea" Command="{Binding ManageSecureArea}"/>
+
+            <Button Text="RemoveWard" Command="{Binding RemoveWard}"/>
+
             <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
                 
             </googleMaps:Map>

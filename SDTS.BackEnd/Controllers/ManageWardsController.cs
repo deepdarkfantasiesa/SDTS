@@ -59,5 +59,15 @@ namespace SDTS.BackEnd.Controllers
             var result= mock.addward(int.Parse(guardianid),code);
             return Ok(result);
         }
+
+        [HttpPut]
+        [Route("removeward")]
+        public IActionResult RemoveWard(int code,int wardid)
+        {
+            var wardaccount = mock.getdetail(wardid).Account;
+            var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            var result = mock.removeward(int.Parse(guardianid), code, wardaccount);
+            return Ok(result);
+        }
     }
 }

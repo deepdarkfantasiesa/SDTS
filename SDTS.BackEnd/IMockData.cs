@@ -25,5 +25,7 @@ namespace SDTS.BackEnd
         public bool addward(int guardianid, int code);
         public bool AddConnectUser(string account, string connectid);
         public bool RemoveConnectUser(string account, string connectid);
+        public string ReflashGuardians(string guardianaccount);
+        public bool removeward(int guardianid, int code,string account);
     }
 }

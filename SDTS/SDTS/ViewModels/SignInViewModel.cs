@@ -92,6 +92,11 @@ namespace SDTS.ViewModels
             if (GlobalVariables.token != null && GlobalVariables.user != null)
             {
                 //await Shell.Current.GoToAsync($"TestPage");
+
+                HubServices hubServices = DependencyService.Get<HubServices>();
+                hubServices.Init(Constants.host);
+                hubServices.ConnectCommand.Execute(null);
+
                 Application.Current.MainPage = new AppShell();
 
                 //判断用户类型，返回到指定的页面
@@ -113,6 +118,7 @@ namespace SDTS.ViewModels
             {
                 //弹窗提示登陆失败
             }
+
             //Debug.WriteLine(TokenString.token);
         });
     }

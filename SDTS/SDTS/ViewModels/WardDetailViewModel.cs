@@ -91,5 +91,16 @@ namespace SDTS.ViewModels
             await Application.Current.MainPage.Navigation.PushAsync(new ManageSecureArea(UserId, Name));
         });
 
+        public Command RemoveWard => new Command(async () => {
+            var code = await Application.Current.MainPage.DisplayPromptAsync("移除被监护人", $"请在框内输入操作码", "完成", "取消");
+            CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
+            var result = await cwb.RemoveWard(code, UserId);
+            if (result.Equals(true))
+            {
+                //OnAppearing();
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+        });
+
     }
 }
