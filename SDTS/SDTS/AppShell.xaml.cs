@@ -25,17 +25,22 @@ namespace SDTS
 
 
             Routing.RegisterRoute(nameof(PersonalInformationPage), typeof(PersonalInformationPage));
+
+            
             //Routing.RegisterRoute(nameof(WardsDetailPage), typeof(WardsDetailPage));
             //Routing.RegisterRoute(nameof(ManageWardsPage), typeof(ManageWardsPage));
             //Routing.RegisterRoute(nameof(AddWardPage), typeof(AddWardPage));
             //Routing.RegisterRoute(nameof(ManageGuardianPage), typeof(ManageGuardianPage));
 
-            if(GlobalVariables.user.Type.Equals("监护人"))
+            if (GlobalVariables.user.Type.Equals("监护人"))
             {
                 Routing.RegisterRoute(nameof(AddWardPage), typeof(AddWardPage));
 
                 Routing.RegisterRoute(nameof(WardsDetailPage), typeof(WardsDetailPage));
                 Routing.RegisterRoute(nameof(ManageWardsPage), typeof(ManageWardsPage));
+                Routing.RegisterRoute(nameof(GlobalViewPage), typeof(GlobalViewPage));
+
+                globalview.FlyoutItemIsVisible = true;
                 managewards.FlyoutItemIsVisible = true;
             }
             else if (GlobalVariables.user.Type.Equals("志愿者"))

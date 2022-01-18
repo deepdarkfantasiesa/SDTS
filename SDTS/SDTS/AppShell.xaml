@@ -105,6 +105,10 @@
         <ShellContent Route="PersongalInformationPage" ContentTemplate="{DataTemplate local:PersonalInformationPage}" />
     </FlyoutItem>
 
+    <FlyoutItem Title="全局视图" x:Name="globalview"  FlyoutItemIsVisible="False">
+        <ShellContent Route="GlobalViewPage" ContentTemplate="{DataTemplate local:GlobalViewPage}" />
+    </FlyoutItem>
+
     <FlyoutItem Title="监护人管理" x:Name="manageguardian"  FlyoutItemIsVisible="False">
         <ShellContent Route="ManageGuardianPage" ContentTemplate="{DataTemplate wardviews:ManageGuardianPage}" />
     </FlyoutItem>
@@ -112,6 +116,11 @@
     <FlyoutItem Title="被监护人管理" x:Name="managewards"  FlyoutItemIsVisible="False">
         <ShellContent Route="ManageWardsPage" ContentTemplate="{DataTemplate guardianviews:ManageWardsPage}" />
     </FlyoutItem>
+
+    <FlyoutItem Title="紧急信息" x:Name="emergencyinformation"  FlyoutItemIsVisible="False">
+        
+    </FlyoutItem>
+
     <MenuItem Text="退出" StyleClass="MenuItemLayoutStyle" Clicked="OnMenuItemClicked">
     </MenuItem>
 

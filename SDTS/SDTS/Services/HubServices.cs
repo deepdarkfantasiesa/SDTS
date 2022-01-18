@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Models;
 using SDTS.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace SDTS.Services
@@ -28,7 +31,8 @@ namespace SDTS.Services
                 OnPropertyChanged("isconnected");
             } 
         }
-        HubConnection hubConnection;
+        public HubConnection hubConnection;
+
         Random random;
         public Command ConnectCommand { get; set; }
 
@@ -89,6 +93,21 @@ namespace SDTS.Services
             }
         }
 
+
+        public bool IsFirstOnpenGlobalView = true;
+
+        //public void StartReceiveData()
+        //{
+        //    if (!isfirst)
+        //    {
+        //        hubConnection.On<string>("ReceiveData", (message) =>
+        //        {
+        //            Debug.WriteLine(message);
+        //        });
+        //        isfirst = true;
+        //    }
+        //}
+
         public async Task ConnectAsync()
         {
             if (IsConnected)
@@ -111,12 +130,7 @@ namespace SDTS.Services
             IsConnected = false;
         }
 
-        public async Task SendMessageToGuardian()
-        {
-            if (!IsConnected)
-                throw new InvalidOperationException("Not connected");
-            await hubConnection.InvokeAsync("SendMessageToGuardian", "123");
-        }
+        
 
         System.Timers.Timer timer = new System.Timers.Timer();
         protected virtual void OnPropertyChanged(string propertyName)
@@ -144,7 +158,27 @@ namespace SDTS.Services
 
         public async void SendData(Object source, System.Timers.ElapsedEventArgs e)
         {
-            await SendMessageToGuardian();
+            //await SendMessageToGuardian();
+            await SendDataToGuardian();
+        }
+
+        public async Task SendMessageToGuardian()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("Not connected");
+            await hubConnection.InvokeAsync("SendMessageToGuardian", "123");
+        }
+
+        public async Task SendDataToGuardian()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("Not connected");
+
+            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Location location = await Geolocation.GetLocationAsync(request, cts.Token);
+
+            await hubConnection.InvokeAsync("SendDataToGuardian", new SensorData() { user=GlobalVariables.user,Latitude=location.Latitude,Longitude=location.Longitude});
         }
 
     }
