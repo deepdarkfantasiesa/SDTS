@@ -14,8 +14,14 @@ namespace Models
         public double AccDataY { get; set; }
         public double AccDataZ { get; set; }
 
-        public List<Tuple<double,double,double>> AccData { get; set; }
+        public List<Tuple<double,double,double>> dataAcc { get; set; }
+        public List<double> dataBar { get; set; }
+        public List<Tuple<double, double, double>> dataGyr { get; set; }
+        public List<Tuple<double, double, double>> dataMag { get; set; }
+        public List<Tuple<double, double, double>> dataOri { get; set; }
 
         public User user { get; set; }
+
+        public DateTime dateTime { get; set; }
     }
 }

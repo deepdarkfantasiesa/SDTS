@@ -153,7 +153,7 @@ namespace SDTS.Services
                         timerGps.Enabled = true;
 
                         //其他传感器一秒发一次
-                        timerSensors.Interval = 1000;
+                        timerSensors.Interval = 500;
                         timerSensors.Elapsed += SendSensorsData;
                         timerSensors.AutoReset = true;
                         timerSensors.Enabled = true;
@@ -164,7 +164,7 @@ namespace SDTS.Services
 
                         timerSensors.Enabled = false;
 
-                        readAccelerometer.ToggleAccelerometer();
+                        readSensors.ToggleAccelerometer();
                     }
                 }
             }
@@ -172,7 +172,7 @@ namespace SDTS.Services
             
         }
 
-        ReadAccelerometerData readAccelerometer = new ReadAccelerometerData();
+        ReadSensorsrData readSensors = new ReadSensorsrData();
         public async void SendSensorsData(Object source, System.Timers.ElapsedEventArgs e)
         {
             await SendSensorsDataToGuardian();
@@ -185,7 +185,7 @@ namespace SDTS.Services
             if (!Accelerometer.IsMonitoring)
             {
                 //打开除了gps以外的传感器
-                readAccelerometer.ToggleAccelerometer();
+                readSensors.ToggleAccelerometer();
 
 
             }
@@ -194,9 +194,17 @@ namespace SDTS.Services
             {
                 //把传感器数据全部读出来打包好发给后端
                 user = GlobalVariables.user,
-                AccData=readAccelerometer.data
+                //dataAcc = readSensors.dataAcc,
+                dataBar = readSensors.dataBar,
+                dataMag = readSensors.dataMag,
+                dataGyr = readSensors.dataGyr,
+                dataOri = readSensors.dataOri,
+                dateTime = DateTime.Now,
+
+                dataAcc = readSensors.dataAcc
             });
-            readAccelerometer.data.Clear();
+            //readSensors.dataAcc.Clear();
+            readSensors.ClearData();
         }
 
 

@@ -38,8 +38,18 @@ namespace SDTS.BackEnd.Hubs
             //    await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
             //}
 
-            Debug.WriteLine($"{data.AccData.Count} X:{data.AccData[0].Item1} Y:{data.AccData[0].Item2} Z:{data.AccData[0].Item3}");
+            //Debug.WriteLine($"Acc {data.dataAcc.Count} X:{data.dataAcc[0].Item1} Y:{data.dataAcc[0].Item2} Z:{data.dataAcc[0].Item3}");
+            //Debug.WriteLine($"Bar {data.dataBar.Count} X:{data.dataBar[0]}");
+            //Debug.WriteLine($"Gyr {data.dataGyr.Count} X:{data.dataGyr[0].Item1} Y:{data.dataGyr[0].Item2} Z:{data.dataGyr[0].Item3}");
+            //Debug.WriteLine($"Mag {data.dataMag.Count} X:{data.dataMag[0].Item1} Y:{data.dataMag[0].Item2} Z:{data.dataMag[0].Item3}");
+            //Debug.WriteLine($"Ori {data.dataOri.Count} X:{data.dataOri[0].Item1} Y:{data.dataOri[0].Item2} Z:{data.dataOri[0].Item3}");
 
+            //Debug.WriteLine($"Acc {data.dataAcc.Count}");
+            //Debug.WriteLine($"Bar {data.dataBar.Count}");
+            //Debug.WriteLine($"Gyr {data.dataGyr.Count}");
+            //Debug.WriteLine($"Mag {data.dataMag.Count}");
+            //Debug.WriteLine($"Ori {data.dataOri.Count}");
+            //Debug.WriteLine($"Time {data.dateTime}");
         }
 
         public async Task SendDataToGuardian(SensorData data)
@@ -62,7 +72,7 @@ namespace SDTS.BackEnd.Hubs
                 await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
             }
 
-            
+            //Debug.WriteLine($"Latitude: {data.Latitude} Longitude:{data.Longitude}");
         }
 
         public async Task SendMessageToGuardian(string message)
