@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Models;
+using SDTS.Sensors;
 using SDTS.Services;
 using System;
 using System.Collections.Generic;
@@ -132,23 +133,38 @@ namespace SDTS.Services
 
         
 
-        System.Timers.Timer timer = new System.Timers.Timer();
+        //System.Timers.Timer timer = new System.Timers.Timer();
+        
+
         protected virtual void OnPropertyChanged(string propertyName)
         {
             if(GlobalVariables.user.Type.Equals("被监护人"))
             {
                 if (propertyName.Equals("isconnected"))
                 {
+                    System.Timers.Timer timerGps = new System.Timers.Timer();
+                    System.Timers.Timer timerSensors = new System.Timers.Timer();
+
                     if (IsConnected.Equals(true))
-                    {
-                        timer.Interval = 500;
-                        timer.Elapsed += SendData;
-                        timer.AutoReset = true;
-                        timer.Enabled = true;
+                    {   //gps一秒发两次
+                        timerGps.Interval = 500;
+                        timerGps.Elapsed += SendGPSData;
+                        timerGps.AutoReset = true;
+                        timerGps.Enabled = true;
+
+                        //其他传感器一秒发一次
+                        timerSensors.Interval = 1000;
+                        timerSensors.Elapsed += SendSensorsData;
+                        timerSensors.AutoReset = true;
+                        timerSensors.Enabled = true;
                     }
                     else if (IsConnected.Equals(false))
                     {
-                        timer.Enabled = false;
+                        timerGps.Enabled = false;
+
+                        timerSensors.Enabled = false;
+
+                        readAccelerometer.ToggleAccelerometer();
                     }
                 }
             }
@@ -156,11 +172,60 @@ namespace SDTS.Services
             
         }
 
-        public async void SendData(Object source, System.Timers.ElapsedEventArgs e)
+        ReadAccelerometerData readAccelerometer = new ReadAccelerometerData();
+        public async void SendSensorsData(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            await SendSensorsDataToGuardian();
+        }
+        public async Task SendSensorsDataToGuardian()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("Not connected");
+
+            if (!Accelerometer.IsMonitoring)
+            {
+                //打开除了gps以外的传感器
+                readAccelerometer.ToggleAccelerometer();
+
+
+            }
+
+            await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+            {
+                //把传感器数据全部读出来打包好发给后端
+                user = GlobalVariables.user,
+                AccData=readAccelerometer.data
+            });
+            readAccelerometer.data.Clear();
+        }
+
+
+        public async void SendGPSData(Object source, System.Timers.ElapsedEventArgs e)
         {
             //await SendMessageToGuardian();
-            await SendDataToGuardian();
+            await SendGPSDataToGuardian();
         }
+        public async Task SendGPSDataToGuardian()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("Not connected");
+
+            //if(!Accelerometer.IsMonitoring)
+            //    readAccelerometer.ToggleAccelerometer();
+
+            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Location location = await Geolocation.GetLocationAsync(request, cts.Token);
+
+            await hubConnection.InvokeAsync("SendDataToGuardian", new SensorData()
+            {
+                user = GlobalVariables.user,
+                Latitude = location.Latitude,
+                Longitude = location.Longitude
+            });
+        }
+
+
 
         public async Task SendMessageToGuardian()
         {
@@ -169,17 +234,8 @@ namespace SDTS.Services
             await hubConnection.InvokeAsync("SendMessageToGuardian", "123");
         }
 
-        public async Task SendDataToGuardian()
-        {
-            if (!IsConnected)
-                throw new InvalidOperationException("Not connected");
-
-            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Location location = await Geolocation.GetLocationAsync(request, cts.Token);
-
-            await hubConnection.InvokeAsync("SendDataToGuardian", new SensorData() { user=GlobalVariables.user,Latitude=location.Latitude,Longitude=location.Longitude});
-        }
+        
+        
 
     }
 }

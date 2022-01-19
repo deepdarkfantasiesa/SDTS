@@ -18,6 +18,29 @@ namespace SDTS.BackEnd.Hubs
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
         }
+        public async Task SendSensorsDataToBackEnd(SensorData data)
+        {
+            //var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+
+            //var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
+
+            //List<string> connectguardianids = new List<string>();
+
+            //foreach (var guardian in guardians)
+            //{
+            //    var connectguardianid = mock.ReflashGuardians(guardian.Account);
+            //    if (connectguardianid != null)
+            //        connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
+            //}
+
+            //foreach (var connectguardianid in connectguardianids)
+            //{
+            //    await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
+            //}
+
+            Debug.WriteLine($"{data.AccData.Count} X:{data.AccData[0].Item1} Y:{data.AccData[0].Item2} Z:{data.AccData[0].Item3}");
+
+        }
 
         public async Task SendDataToGuardian(SensorData data)
         {
@@ -38,6 +61,8 @@ namespace SDTS.BackEnd.Hubs
             {
                 await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
             }
+
+            
         }
 
         public async Task SendMessageToGuardian(string message)
