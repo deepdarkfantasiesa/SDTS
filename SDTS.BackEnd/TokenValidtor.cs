@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -30,6 +31,7 @@ namespace SDTS.BackEnd
             string key = "f47b558d-7654-458c-99f2-13b190ef0199";
             SecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
             ClaimsPrincipal claimsPrincipal = null;
+            validatedToken = null;
 
             var validateParameter = new TokenValidationParameters()
             {
@@ -41,20 +43,28 @@ namespace SDTS.BackEnd
                 ValidAudience = "api",
                 IssuerSigningKey = securityKey
             };
-            //try
-            //{
-            //校验并解析token
-            claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(securityToken, validateParameter, out validatedToken);//validatedToken:解密后的对象
-            var jwtPayload = ((JwtSecurityToken)validatedToken).Payload.SerializeToJson();
-
-            //var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(securityToken);
-            //}
-            //catch(Exception ex)
-            //{
-
-            //}
+            try
+            {
+                //校验并解析token
+                claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(securityToken, validateParameter, out validatedToken);//validatedToken:解密后的对象
+                var jwtPayload = ((JwtSecurityToken)validatedToken).Payload.SerializeToJson();
+                return claimsPrincipal;
+                //var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(securityToken);
+            }
+            catch (SecurityTokenExpiredException stee)
+            {
+                //表示过期
+                Debug.WriteLine(stee);
+                return claimsPrincipal;
+            }
+            catch (SecurityTokenException ste)
+            {
+                //表示token错误
+                Debug.WriteLine(ste);
+                return claimsPrincipal;
+            }
             //validatedToken = null;
-            return claimsPrincipal;
+            //return claimsPrincipal;
             //var identity = new ClaimsIdentity(JwtBearerDefaults.AuthenticationScheme);
             //identity.AddClaim(new Claim("Age", "18"));
             //var principal = new ClaimsPrincipal(identity);

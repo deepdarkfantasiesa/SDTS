@@ -17,11 +17,11 @@ namespace SDTS.Sensors
 
         public ReadSensorsrData()
         {
-            Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
-            Barometer.ReadingChanged += Barometer_ReadingChanged;
-            Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
-            Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
-            OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;
+            Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;//加速度计
+            Barometer.ReadingChanged += Barometer_ReadingChanged;//气压计
+            Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;//陀螺仪
+            Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;//磁力计
+            OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;//方向传感器
 
         }
 

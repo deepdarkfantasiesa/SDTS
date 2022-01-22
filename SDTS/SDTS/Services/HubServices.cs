@@ -87,7 +87,7 @@ namespace SDTS.Services
             }
             else if(GlobalVariables.user.Type.Equals("被监护人"))
             {
-                hubConnection.On<string>("", (message) =>
+                hubConnection.On<string>("wardreceive", (message) =>
                 {
                     Debug.WriteLine(message);
                 });
@@ -117,7 +117,7 @@ namespace SDTS.Services
             await hubConnection.StartAsync();
             IssConnected = true;
             IsConnected = true;
-            await hubConnection.InvokeAsync("ConnectToHub");
+            //await hubConnection.InvokeAsync("ConnectToHub");
         }
 
         public async Task DisConnectAsync()
@@ -125,7 +125,7 @@ namespace SDTS.Services
             if (!IsConnected)
                 return;
 
-            await hubConnection.InvokeAsync("DisConnectToHub");
+            //await hubConnection.InvokeAsync("DisConnectToHub");
             await hubConnection.StopAsync();
             IssConnected = false;
             IsConnected = false;

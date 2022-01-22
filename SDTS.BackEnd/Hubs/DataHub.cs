@@ -50,6 +50,9 @@ namespace SDTS.BackEnd.Hubs
             //Debug.WriteLine($"Mag {data.dataMag.Count}");
             //Debug.WriteLine($"Ori {data.dataOri.Count}");
             //Debug.WriteLine($"Time {data.dateTime}");
+
+            //await Clients.All.SendAsync("wardreceive", data);
+            Debug.WriteLine($"1");
         }
 
         public async Task SendDataToGuardian(SensorData data)
@@ -72,7 +75,9 @@ namespace SDTS.BackEnd.Hubs
                 await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
             }
 
+            //await Clients.All.SendAsync("wardreceive", data);
             //Debug.WriteLine($"Latitude: {data.Latitude} Longitude:{data.Longitude}");
+            Debug.WriteLine($"2");
         }
 
         public async Task SendMessageToGuardian(string message)
@@ -119,5 +124,45 @@ namespace SDTS.BackEnd.Hubs
             else
                 await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
         }
+
+        public override async Task OnConnectedAsync()
+        {
+            //await Groups.AddToGroupAsync(Context.ConnectionId, "SignalR Users");
+            await base.OnConnectedAsync();
+
+            var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+
+            var connectid = Context.ConnectionId;
+
+            if (mock.AddConnectUser(connectaccount, connectid))
+                await Clients.Client(connectid).SendAsync("Entered", "connect success!");
+            else
+                await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
+
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+
+            var connectid = Context.ConnectionId;
+
+            if (mock.RemoveConnectUser(connectaccount, connectid))
+                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
+            else
+                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
+
+            Debug.WriteLine(DateTime.Now);
+            await ThrowException();
+            //await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
+            await base.OnDisconnectedAsync(exception);
+
+        }
+
+        public Task ThrowException()
+        {
+            throw new HubException("This error will be sent to the client!");
+        }
+
     }
 }
