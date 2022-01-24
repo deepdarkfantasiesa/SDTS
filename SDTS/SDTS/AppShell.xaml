@@ -118,7 +118,7 @@
     </FlyoutItem>
 
     <FlyoutItem Title="紧急信息" x:Name="emergencyinformation"  FlyoutItemIsVisible="False">
-        
+        <ShellContent Route="EmergencyPage" ContentTemplate="{DataTemplate local:EmergencyPage}" />
     </FlyoutItem>
 
     <MenuItem Text="退出" StyleClass="MenuItemLayoutStyle" Clicked="OnMenuItemClicked">

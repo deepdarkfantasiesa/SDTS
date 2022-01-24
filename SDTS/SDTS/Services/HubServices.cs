@@ -92,6 +92,13 @@ namespace SDTS.Services
                     Debug.WriteLine(message);
                 });
             }
+            //else if (GlobalVariables.user.Type.Equals("被监护人") || GlobalVariables.user.Type.Equals("志愿者"))
+            //{
+            //    hubConnection.On<string>("loadhelpers", (message) =>
+            //    {
+            //        Debug.WriteLine(message);
+            //    });
+            //}
         }
 
 

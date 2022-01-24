@@ -38,14 +38,17 @@ namespace SDTS
 
                 Routing.RegisterRoute(nameof(WardsDetailPage), typeof(WardsDetailPage));
                 Routing.RegisterRoute(nameof(ManageWardsPage), typeof(ManageWardsPage));
-                Routing.RegisterRoute(nameof(GlobalViewPage), typeof(GlobalViewPage));
-
+                Routing.RegisterRoute(nameof(GlobalViewPage), typeof(GlobalViewPage)); 
+                Routing.RegisterRoute(nameof(EmergencyPage), typeof(EmergencyPage));
                 globalview.FlyoutItemIsVisible = true;
                 managewards.FlyoutItemIsVisible = true;
+                emergencyinformation.FlyoutItemIsVisible = true;
             }
             else if (GlobalVariables.user.Type.Equals("志愿者"))
             {
                 //managewards.FlyoutItemIsVisible = false;
+                Routing.RegisterRoute(nameof(EmergencyPage), typeof(EmergencyPage));
+                emergencyinformation.FlyoutItemIsVisible = true;
             }
             else if(GlobalVariables.user.Type.Equals("被监护人"))
             {

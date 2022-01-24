@@ -10,5 +10,7 @@ namespace SDTS
         public static string token;
 
         public static User user;
+
+        public static List<User> helpers;
     }
 }
