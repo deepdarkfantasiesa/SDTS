@@ -148,12 +148,18 @@ namespace SDTS.BackEnd.Hubs
             var connectid = Context.ConnectionId;
 
             if (mock.RemoveConnectUser(connectaccount, connectid))
-                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
-            else
-                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
+            {
+                //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
 
-            Debug.WriteLine(DateTime.Now);
-            await ThrowException();
+            } 
+            else
+            {
+                //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
+            }
+
+
+            //Debug.WriteLine(DateTime.Now);
+            //await ThrowException();
             //await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnDisconnectedAsync(exception);
 

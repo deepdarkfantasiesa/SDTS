@@ -146,7 +146,7 @@ namespace SDTS.Services
                     System.Timers.Timer timerSensors = new System.Timers.Timer();
 
                     if (IsConnected.Equals(true))
-                    {   //gps一秒发两次
+                    {   //gps一秒发两次,被监护人端退出登录时会报错，初步判断是定时器在传感器关闭后依然在跟后端通讯
                         timerGps.Interval = 500;
                         timerGps.Elapsed += SendGPSData;
                         timerGps.AutoReset = true;
@@ -160,9 +160,14 @@ namespace SDTS.Services
                     }
                     else if (IsConnected.Equals(false))
                     {
+                        
+
                         timerGps.Enabled = false;
 
                         timerSensors.Enabled = false;
+
+                        timerGps.Elapsed -= SendGPSData;
+                        timerSensors.Elapsed -= SendSensorsData;
 
                         readSensors.ToggleAccelerometer();
                     }

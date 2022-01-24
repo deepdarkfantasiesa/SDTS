@@ -67,11 +67,19 @@ namespace SDTS.Sensors
             {
                 if (Accelerometer.IsMonitoring)
                 {
+                    Accelerometer.ReadingChanged -= Accelerometer_ReadingChanged;//加速度计
+                    Barometer.ReadingChanged -= Barometer_ReadingChanged;//气压计
+                    Gyroscope.ReadingChanged -= Gyroscope_ReadingChanged;//陀螺仪
+                    Magnetometer.ReadingChanged -= Magnetometer_ReadingChanged;//磁力计
+                    OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;//方向传感器
+
                     Accelerometer.Stop();
                     Barometer.Stop();
                     Gyroscope.Stop();
                     Magnetometer.Stop();
                     OrientationSensor.Stop();
+
+                    
                 }
                 else
                 {
