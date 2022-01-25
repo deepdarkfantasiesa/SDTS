@@ -33,5 +33,8 @@ namespace SDTS.BackEnd
         public Helpers FindEmergencyHelpers(string account);
         public int EmergencyHelpersCount();
         public List<Helpers> AllEmergencyHelpers();
+        public bool AddConnectUserData(string connectid, SensorData data);
+        public bool AlterConnectUserData(string connectid, SensorData data);
+        public bool RemoveConnectUserData(string connectid);
     }
 }

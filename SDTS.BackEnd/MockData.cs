@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace SDTS.BackEnd
         Dictionary<string, int> Inviter = new Dictionary<string, int>();
 
         Dictionary<string, string> ConnectedUser = new Dictionary<string, string>();
+        Dictionary<string,SensorData> ConnectedUserLocation = new Dictionary<string,SensorData>();//存储连接用户的数据
 
 
         public List<Helpers> AllEmergencyHelpers()
@@ -89,12 +91,46 @@ namespace SDTS.BackEnd
             return connectid;
         }
 
+        //把接入用户的数据存在此处
+        public bool AddConnectUserData(string connectid, SensorData data)
+        {
+            if (ConnectedUserLocation.Where(p => p.Key == connectid).Count() != 0)
+                return false;
+            ConnectedUserLocation.Add(connectid,data);
+            if (ConnectedUserLocation.Where(p => p.Key == connectid).Count() != 0)
+                return true;
+            else
+                return false;
+        }
+
+        public bool AlterConnectUserData(string connectid, SensorData data)
+        {
+            if(ConnectedUserLocation.Where(p => p.Key == connectid).Count() != 0)
+            {
+                ConnectedUserLocation[connectid] = data;
+                //Debug.WriteLine(ConnectedUserLocation[connectid].dateTime);
+            }
+            else
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool RemoveConnectUserData(string connectid)
+        {
+            if (ConnectedUserLocation.Remove(ConnectedUserLocation.Where(p => p.Key == connectid).FirstOrDefault().Key))
+                return true;
+            else
+                return false;
+        }
+
         public bool AddConnectUser(string account,string connectid)
         {
             if (ConnectedUser.Where(p => p.Key == account).Count()!=0)
                 return false;//已存在
             ConnectedUser.Add(account, connectid);
-            if(ConnectedUser.Where(p => p.Key == account).FirstOrDefault().Value.Equals(connectid))
+            if (ConnectedUser.Where(p => p.Key == account).FirstOrDefault().Value.Equals(connectid))
                 return true;//添加成功
             else
                 return false;

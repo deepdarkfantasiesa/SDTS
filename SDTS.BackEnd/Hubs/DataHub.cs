@@ -48,7 +48,7 @@ namespace SDTS.BackEnd.Hubs
                     }
                 }
             }
-            
+            mock.AlterConnectUserData(Context.ConnectionId, data);
             //Debug.WriteLine(data.user.Name);
             //Debug.WriteLine(data.dataAcc.Count);
             //Debug.WriteLine(data.dataBar.Count);
@@ -61,6 +61,22 @@ namespace SDTS.BackEnd.Hubs
         }
 
         //推送求救信息给监护人
+        public async Task PublishEmergencyInformationTimer(SensorData data)
+        {
+            var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            
+            if (mock.FindEmergencyHelpers(wardaccount) == null)
+            {
+                mock.AddEmergencyHelpers(wardaccount, data.Latitude, data.Longitude, Context.ConnectionId, "滑倒");
+            }
+            else
+            {
+                return;
+            }
+
+
+        }
+
         public async Task PublishEmergencyInformationToGuardians(double Latitude,double Longitude)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
@@ -177,7 +193,7 @@ namespace SDTS.BackEnd.Hubs
 
             var connectid = Context.ConnectionId;
 
-            if (mock.AddConnectUser(connectaccount, connectid))
+            if (mock.AddConnectUser(connectaccount, connectid) && mock.AddConnectUserData(connectid, null))
                 await Clients.Client(connectid).SendAsync("Entered", "connect success!");
             else
                 await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
@@ -190,7 +206,7 @@ namespace SDTS.BackEnd.Hubs
 
             var connectid = Context.ConnectionId;
 
-            if (mock.RemoveConnectUser(connectaccount, connectid))
+            if (mock.RemoveConnectUser(connectaccount, connectid)&&mock.RemoveConnectUserData(connectid))
             {
                 //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
 
