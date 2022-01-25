@@ -1,6 +1,7 @@
 ﻿using Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -27,5 +28,10 @@ namespace SDTS.BackEnd
         public bool RemoveConnectUser(string account, string connectid);
         public string ReflashGuardians(string guardianaccount);
         public bool removeward(int guardianid, int code,string account);
+        public bool AddEmergencyHelpers(string account, double Latitude, double Longitude,string ConnectionId,string Problem);
+        public bool RemoveEmergencyHelpers(string account);
+        public Helpers FindEmergencyHelpers(string account);
+        public int EmergencyHelpersCount();
+        public List<Helpers> AllEmergencyHelpers();
     }
 }

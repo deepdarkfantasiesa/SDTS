@@ -12,7 +12,7 @@ namespace SDTS.Sensors
     public class ReadSensorsrData
     {
         // Set speed delay for monitoring changes.
-        SensorSpeed speed = SensorSpeed.Fastest;
+        SensorSpeed speed = SensorSpeed.Default;
         HubServices hubServices;
 
         public ReadSensorsrData()

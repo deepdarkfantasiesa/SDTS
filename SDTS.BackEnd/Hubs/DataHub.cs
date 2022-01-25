@@ -20,44 +20,58 @@ namespace SDTS.BackEnd.Hubs
         }
         public async Task SendSensorsDataToBackEnd(SensorData data)
         {
-            //var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
 
-            //var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
+            //推送求救信息给志愿者
+            if (mock.EmergencyHelpersCount()!=0&&type.Equals("志愿者"))
+            {
+                var helpers = mock.AllEmergencyHelpers();//返回还没有发布给志愿者求助信息的被监护人
+                foreach(var helper in helpers)
+                {
+                    //若此时的非被监护人在求救者（存储在EmergencyHelpers）的方圆五百米之内，则向此非被监护人发布求救信息,注意：该后端已经向此被求助者的监护人发布求助信息（在PublishEmergencyInformationToGuardians中）
+                    if (Math.Abs(helper.Latitude - data.Latitude)<=0.005&& Math.Abs(helper.Longitude - data.Longitude) <= 0.005)
+                    {
+                        await Clients.Client(Context.ConnectionId).SendAsync("loadhelpers", helper);
+                    }
 
-            //List<string> connectguardianids = new List<string>();
 
-            //foreach (var guardian in guardians)
-            //{
-            //    var connectguardianid = mock.ReflashGuardians(guardian.Account);
-            //    if (connectguardianid != null)
-            //        connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
-            //}
+                }
+            }
 
-            //foreach (var connectguardianid in connectguardianids)
-            //{
-            //    await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
-            //}
-
-            //Debug.WriteLine($"Acc {data.dataAcc.Count} X:{data.dataAcc[0].Item1} Y:{data.dataAcc[0].Item2} Z:{data.dataAcc[0].Item3}");
-            //Debug.WriteLine($"Bar {data.dataBar.Count} X:{data.dataBar[0]}");
-            //Debug.WriteLine($"Gyr {data.dataGyr.Count} X:{data.dataGyr[0].Item1} Y:{data.dataGyr[0].Item2} Z:{data.dataGyr[0].Item3}");
-            //Debug.WriteLine($"Mag {data.dataMag.Count} X:{data.dataMag[0].Item1} Y:{data.dataMag[0].Item2} Z:{data.dataMag[0].Item3}");
-            //Debug.WriteLine($"Ori {data.dataOri.Count} X:{data.dataOri[0].Item1} Y:{data.dataOri[0].Item2} Z:{data.dataOri[0].Item3}");
-
-            //Debug.WriteLine($"Acc {data.dataAcc.Count}");
-            //Debug.WriteLine($"Bar {data.dataBar.Count}");
-            //Debug.WriteLine($"Gyr {data.dataGyr.Count}");
-            //Debug.WriteLine($"Mag {data.dataMag.Count}");
-            //Debug.WriteLine($"Ori {data.dataOri.Count}");
-            //Debug.WriteLine($"Time {data.dateTime}");
-
-            //await Clients.All.SendAsync("wardreceive", data);
-            Debug.WriteLine($"1");
+            if(type.Equals("被监护人"))
+            {
+                foreach (var acc in data.dataAcc)
+                {
+                    if (acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
+                    {
+                        await PublishEmergencyInformationToGuardians(data.Latitude, data.Longitude);
+                    }
+                }
+            }
+            
+            //Debug.WriteLine(data.user.Name);
+            //Debug.WriteLine(data.dataAcc.Count);
+            //Debug.WriteLine(data.dataBar.Count);
+            //Debug.WriteLine(data.dataGyr.Count);
+            //Debug.WriteLine(data.dataMag.Count);
+            //Debug.WriteLine(data.dataOri.Count);
+            //Debug.WriteLine(data.dateTime);
+            //Debug.WriteLine(data.Latitude);
+            //Debug.WriteLine(data.Longitude);
         }
 
-        public async Task SendDataToGuardian(SensorData data)
+        //推送求救信息给监护人
+        public async Task PublishEmergencyInformationToGuardians(double Latitude,double Longitude)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            if(mock.FindEmergencyHelpers(wardaccount)==null)
+            {
+                mock.AddEmergencyHelpers(wardaccount, Latitude, Longitude,Context.ConnectionId,"滑倒");
+            }
+            else
+            {
+                return;
+            }
 
             var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
 
@@ -72,12 +86,41 @@ namespace SDTS.BackEnd.Hubs
 
             foreach (var connectguardianid in connectguardianids)
             {
+                var helper = mock.FindEmergencyHelpers(wardaccount);
+                await Clients.Client(connectguardianid).SendAsync("loadhelpers", helper);//向已连接的监护人发送被监护人的求救信息
+            }
+
+            
+        }
+
+
+
+        public async Task SendDataToGuardian(SensorData data)
+        {
+            var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+
+            var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人列表
+
+            List<string> connectguardianids = new List<string>();
+
+            foreach (var guardian in guardians)
+            {
+                var connectguardianid = mock.ReflashGuardians(guardian.Account);//获取已连接的监护人connectionid
+                if (connectguardianid != null)
+                    connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
+            }
+
+            foreach (var connectguardianid in connectguardianids)
+            {
                 await Clients.Client(connectguardianid).SendAsync("ReceiveData", data);//向已连接的监护人发送被监护人的数据
+
+                
+
             }
 
             //await Clients.All.SendAsync("wardreceive", data);
             //Debug.WriteLine($"Latitude: {data.Latitude} Longitude:{data.Longitude}");
-            Debug.WriteLine($"2");
+            //Debug.WriteLine($"2");
         }
 
         public async Task SendMessageToGuardian(string message)

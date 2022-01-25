@@ -12,18 +12,27 @@
     </ContentPage.BindingContext>
 
     <ContentPage.Content>
-        <StackLayout>
+        
             <ScrollView>
                 <StackLayout Spacing="20" Padding="15">
                     <Grid>
-                        <Label Grid.Row="0" Grid.Column="0" Text="Name:" FontSize="Medium" />
+                        <!--<Label Grid.Row="0" Grid.Column="0" Text="Name:" FontSize="Medium" />
                         <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontSize="Small"/>
                         <Label Grid.Row="2" Grid.Column="0" Text="Gender:" FontSize="Medium" />
                         <Label Grid.Row="2" Grid.Column="1" Text="{Binding Gender}" FontSize="Small"/>
                         <Label Grid.Row="3" Grid.Column="0" Text="Age:" FontSize="Medium" />
                         <Label Grid.Row="3" Grid.Column="1" Text="{Binding Age}" FontSize="Small"/>
                         <Label Grid.Row="1" Grid.Column="0" Text="Information:" FontSize="Medium" />
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Information}" FontSize="Small"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Information}" FontSize="Small"/>-->
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="Name:" FontSize="Medium" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding helper.Name}" FontSize="Small"/>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Gender:" FontSize="Medium" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding helper.Gender}" FontSize="Small"/>
+                        <Label Grid.Row="3" Grid.Column="0" Text="Age:" FontSize="Medium" />
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding helper.Birthday}" FontSize="Small"/>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Information:" FontSize="Medium" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding helper.Information}" FontSize="Small"/>
                     </Grid>
 
                     <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
@@ -35,6 +44,6 @@
                 </StackLayout>
 
             </ScrollView>
-        </StackLayout>
+        
     </ContentPage.Content>
 </ContentPage>

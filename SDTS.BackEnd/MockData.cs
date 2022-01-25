@@ -20,9 +20,64 @@ namespace SDTS.BackEnd
                 new User{UserID = 5,Name="cyq",Information="1234",Account="1234",PassWord="1234",Birthday=DateTime.Now,Gender="female",PhoneNumber="180003080888",GuardianID=new List<int>(),Type="监护人" }
             };
 
+        ObservableCollection<Helpers> EmergencyHelpers = new ObservableCollection<Helpers>();
+
         Dictionary<string, int> Inviter = new Dictionary<string, int>();
 
         Dictionary<string, string> ConnectedUser = new Dictionary<string, string>();
+
+
+        public List<Helpers> AllEmergencyHelpers()
+        {
+            return EmergencyHelpers.ToList().FindAll(p=>p.Published==false);
+        }
+
+        public int EmergencyHelpersCount()
+        {
+            return EmergencyHelpers.Count;
+        }
+
+        public bool AddEmergencyHelpers(string account,double Latitude, double Longitude, string ConnectionId, string Problem)
+        {
+            if(EmergencyHelpers.Where(p=>p.Account==account).Count()==0)
+            {
+                var user = users.Where(p => p.Account == account).FirstOrDefault();
+                EmergencyHelpers.Add(new Helpers() 
+                {
+                    Account=user.Account,
+                    Name=user.Name,
+                    UserID=user.UserID,
+                    Information=user.Information,
+                    Gender=user.Gender,
+                    Birthday=user.Birthday,
+                    PhoneNumber=user.PhoneNumber,
+                    GuardianID=user.GuardianID,
+                    EmergencyContacts=user.EmergencyContacts,
+                    Latitude=Latitude,
+                    Longitude=Longitude,
+                    ConnectionId=ConnectionId,
+                    dateTime=DateTime.Now,
+                    Published=false,
+                    Problem=Problem
+                });
+                return true;
+            }
+            return false;//已经存在于救援列表中
+        }
+
+        public bool RemoveEmergencyHelpers(string account)
+        {
+            if(EmergencyHelpers.Remove(EmergencyHelpers.Where(p=>p.Account==account).FirstOrDefault()))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Helpers FindEmergencyHelpers(string account)
+        {
+            return EmergencyHelpers.Where(p => p.Account == account).FirstOrDefault();
+        }
 
         int i = 0;
 

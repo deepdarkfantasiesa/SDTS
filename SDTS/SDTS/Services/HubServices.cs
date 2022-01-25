@@ -92,13 +92,21 @@ namespace SDTS.Services
                     Debug.WriteLine(message);
                 });
             }
-            //else if (GlobalVariables.user.Type.Equals("被监护人") || GlobalVariables.user.Type.Equals("志愿者"))
-            //{
-            //    hubConnection.On<string>("loadhelpers", (message) =>
-            //    {
-            //        Debug.WriteLine(message);
-            //    });
-            //}
+            if(GlobalVariables.user.Type.Equals("监护人") || GlobalVariables.user.Type.Equals("志愿者"))
+            {
+                hubConnection.On<Helpers>("loadhelpers", (user) =>
+                {
+                    if (GlobalVariables.helpers == null)
+                        GlobalVariables.helpers = new List<User>();
+                    if (GlobalVariables.helpers.Find(p=>p.UserID==user.UserID)==null)
+                    {
+                        GlobalVariables.helpers.Add(user);
+                        Debug.WriteLine(user.Problem);
+                    }
+
+
+                });
+            }
         }
 
 
@@ -145,43 +153,61 @@ namespace SDTS.Services
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
-            if(GlobalVariables.user.Type.Equals("被监护人"))
+            //if (GlobalVariables.user.Type.Equals("被监护人"))
+            //{
+            //    if (propertyName.Equals("isconnected"))
+            //    {
+            //        System.Timers.Timer timerGps = new System.Timers.Timer();
+            //        System.Timers.Timer timerSensors = new System.Timers.Timer();
+
+            //        if (IsConnected.Equals(true))
+            //        {   //gps一秒发两次,被监护人端退出登录时会报错，初步判断是定时器在传感器关闭后依然在跟后端通讯
+            //            timerGps.Interval = 500;
+            //            timerGps.Elapsed += SendGPSData;
+            //            timerGps.AutoReset = true;
+            //            timerGps.Enabled = true;
+
+            //            //其他传感器一秒发一次
+            //            timerSensors.Interval = 500;
+            //            timerSensors.Elapsed += SendSensorsData;
+            //            timerSensors.AutoReset = true;
+            //            timerSensors.Enabled = true;
+            //        }
+            //        else if (IsConnected.Equals(false))
+            //        {
+
+
+            //            timerGps.Enabled = false;
+
+            //            timerSensors.Enabled = false;
+
+            //            timerGps.Elapsed -= SendGPSData;
+            //            timerSensors.Elapsed -= SendSensorsData;
+
+            //            readSensors.ToggleAccelerometer();
+            //        }
+            //    }
+            //}
+
+
+            if (propertyName.Equals("isconnected"))
             {
-                if (propertyName.Equals("isconnected"))
+                System.Timers.Timer SensorsTimer = new System.Timers.Timer();
+                if (IsConnected.Equals(true))
+                {   
+
+                    SensorsTimer.Interval = 1000;
+                    SensorsTimer.Elapsed += SendSensorsData;
+                    SensorsTimer.AutoReset = true;
+                    SensorsTimer.Enabled = true;
+                }
+                else if (IsConnected.Equals(false))
                 {
-                    System.Timers.Timer timerGps = new System.Timers.Timer();
-                    System.Timers.Timer timerSensors = new System.Timers.Timer();
-
-                    if (IsConnected.Equals(true))
-                    {   //gps一秒发两次,被监护人端退出登录时会报错，初步判断是定时器在传感器关闭后依然在跟后端通讯
-                        timerGps.Interval = 500;
-                        timerGps.Elapsed += SendGPSData;
-                        timerGps.AutoReset = true;
-                        timerGps.Enabled = true;
-
-                        //其他传感器一秒发一次
-                        timerSensors.Interval = 500;
-                        timerSensors.Elapsed += SendSensorsData;
-                        timerSensors.AutoReset = true;
-                        timerSensors.Enabled = true;
-                    }
-                    else if (IsConnected.Equals(false))
-                    {
-                        
-
-                        timerGps.Enabled = false;
-
-                        timerSensors.Enabled = false;
-
-                        timerGps.Elapsed -= SendGPSData;
-                        timerSensors.Elapsed -= SendSensorsData;
-
-                        readSensors.ToggleAccelerometer();
-                    }
+                    SensorsTimer.Enabled = false;
+                    SensorsTimer.Elapsed -= SendSensorsData;
+                    readSensors.ToggleAccelerometer();
                 }
             }
-            
-            
         }
 
         ReadSensorsrData readSensors = new ReadSensorsrData();
@@ -196,26 +222,26 @@ namespace SDTS.Services
 
             if (!Accelerometer.IsMonitoring)
             {
-                //打开除了gps以外的传感器
                 readSensors.ToggleAccelerometer();
-
-
             }
+
+            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Location location = await Geolocation.GetLocationAsync(request, cts.Token);
 
             await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
             {
                 //把传感器数据全部读出来打包好发给后端
                 user = GlobalVariables.user,
-                //dataAcc = readSensors.dataAcc,
                 dataBar = readSensors.dataBar,
                 dataMag = readSensors.dataMag,
                 dataGyr = readSensors.dataGyr,
                 dataOri = readSensors.dataOri,
                 dateTime = DateTime.Now,
-
-                dataAcc = readSensors.dataAcc
+                dataAcc = readSensors.dataAcc,
+                Latitude = location.Latitude,
+                Longitude = location.Longitude
             });
-            //readSensors.dataAcc.Clear();
             readSensors.ClearData();
         }
 
@@ -223,9 +249,9 @@ namespace SDTS.Services
         public async void SendGPSData(Object source, System.Timers.ElapsedEventArgs e)
         {
             //await SendMessageToGuardian();
-            await SendGPSDataToGuardian();
+            await SendGPSDataToBackEnd();
         }
-        public async Task SendGPSDataToGuardian()
+        public async Task SendGPSDataToBackEnd()
         {
             if (!IsConnected)
                 throw new InvalidOperationException("Not connected");
