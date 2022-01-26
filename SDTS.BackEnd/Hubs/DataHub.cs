@@ -13,30 +13,17 @@ namespace SDTS.BackEnd.Hubs
     public class DataHub:Hub
     {
         IMockData mock;
-        public DataHub(IMockData data)
+        IEmergencyTimers timers;
+        public DataHub(IMockData data,IEmergencyTimers emergency)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+
+            timers = emergency;
         }
         public async Task SendSensorsDataToBackEnd(SensorData data)
         {
             var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
-
-            //推送求救信息给志愿者
-            if (mock.EmergencyHelpersCount()!=0&&type.Equals("志愿者"))
-            {
-                var helpers = mock.AllEmergencyHelpers();//返回还没有发布给志愿者求助信息的被监护人
-                foreach(var helper in helpers)
-                {
-                    //若此时的非被监护人在求救者（存储在EmergencyHelpers）的方圆五百米之内，则向此非被监护人发布求救信息,注意：该后端已经向此被求助者的监护人发布求助信息（在PublishEmergencyInformationToGuardians中）
-                    if (Math.Abs(helper.Latitude - data.Latitude)<=0.005&& Math.Abs(helper.Longitude - data.Longitude) <= 0.005)
-                    {
-                        await Clients.Client(Context.ConnectionId).SendAsync("loadhelpers", helper);
-                    }
-
-
-                }
-            }
 
             if(type.Equals("被监护人"))
             {
@@ -44,11 +31,13 @@ namespace SDTS.BackEnd.Hubs
                 {
                     if (acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
                     {
-                        await PublishEmergencyInformationToGuardians(data.Latitude, data.Longitude);
+                        await PublishEmergencyInformationTimer(data);
                     }
                 }
+                await SendDataToGuardian(data);
             }
             mock.AlterConnectUserData(Context.ConnectionId, data);
+
             //Debug.WriteLine(data.user.Name);
             //Debug.WriteLine(data.dataAcc.Count);
             //Debug.WriteLine(data.dataBar.Count);
@@ -68,13 +57,12 @@ namespace SDTS.BackEnd.Hubs
             if (mock.FindEmergencyHelpers(wardaccount) == null)
             {
                 mock.AddEmergencyHelpers(wardaccount, data.Latitude, data.Longitude, Context.ConnectionId, "滑倒");
+                timers.Init();
             }
             else
             {
                 return;
             }
-
-
         }
 
         public async Task PublishEmergencyInformationToGuardians(double Latitude,double Longitude)

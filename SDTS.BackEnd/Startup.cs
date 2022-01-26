@@ -33,7 +33,8 @@ namespace SDTS.BackEnd
             services.AddControllers();
 
             services.AddSingleton<IMockData,MockData>();
-            
+            services.AddSingleton<IEmergencyTimers, EmergencyTimers>();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                .AddJwtBearer(o =>
                {

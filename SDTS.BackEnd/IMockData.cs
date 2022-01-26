@@ -36,5 +36,6 @@ namespace SDTS.BackEnd
         public bool AddConnectUserData(string connectid, SensorData data);
         public bool AlterConnectUserData(string connectid, SensorData data);
         public bool RemoveConnectUserData(string connectid);
+        public List<KeyValuePair<string, SensorData>> FindConnectUserWithType(string type);
     }
 }

@@ -44,23 +44,24 @@ namespace SDTS.BackEnd
             if(EmergencyHelpers.Where(p=>p.Account==account).Count()==0)
             {
                 var user = users.Where(p => p.Account == account).FirstOrDefault();
-                EmergencyHelpers.Add(new Helpers() 
+                EmergencyHelpers.Add(new Helpers()
                 {
-                    Account=user.Account,
-                    Name=user.Name,
-                    UserID=user.UserID,
-                    Information=user.Information,
-                    Gender=user.Gender,
-                    Birthday=user.Birthday,
-                    PhoneNumber=user.PhoneNumber,
-                    GuardianID=user.GuardianID,
-                    EmergencyContacts=user.EmergencyContacts,
-                    Latitude=Latitude,
-                    Longitude=Longitude,
-                    ConnectionId=ConnectionId,
-                    dateTime=DateTime.Now,
-                    Published=false,
-                    Problem=Problem
+                    Account = user.Account,
+                    Name = user.Name,
+                    UserID = user.UserID,
+                    Information = user.Information,
+                    Gender = user.Gender,
+                    Birthday = user.Birthday,
+                    PhoneNumber = user.PhoneNumber,
+                    GuardianID = user.GuardianID,
+                    EmergencyContacts = user.EmergencyContacts,
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    ConnectionId = ConnectionId,
+                    dateTime = DateTime.Now,
+                    Published = false,
+                    Problem = Problem,
+                    isPublished = new List<string>()
                 });
                 return true;
             }
@@ -115,6 +116,14 @@ namespace SDTS.BackEnd
                 return false;
             }
             return true;
+        }
+
+        public List<KeyValuePair<string,SensorData>> FindConnectUserWithType(string type)
+        {
+            //因为刚登陆时ConnectedUserLocation的value为null，所以这里需要多一步判断，即p.Value!=null
+            var connecteduser = ConnectedUserLocation.Where(p => p.Value!=null && p.Value.user.Type == type).ToList();
+
+            return connecteduser;
         }
 
         public bool RemoveConnectUserData(string connectid)

@@ -102,6 +102,11 @@ namespace SDTS.Services
                     {
                         GlobalVariables.helpers.Add(user);
                         Debug.WriteLine(user.Problem);
+                        Debug.WriteLine(user.Name);
+                    }
+                    else
+                    {
+                        Debug.WriteLine(user.UserID);
                     }
 
 
