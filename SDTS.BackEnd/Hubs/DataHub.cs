@@ -35,6 +35,7 @@ namespace SDTS.BackEnd.Hubs
                     }
                 }
                 await SendDataToGuardian(data);
+                //Debug.WriteLine(data.Latitude+"\n"+data.Longitude);
             }
             mock.AlterConnectUserData(Context.ConnectionId, data);
 

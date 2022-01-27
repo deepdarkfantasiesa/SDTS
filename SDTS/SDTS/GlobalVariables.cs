@@ -11,6 +11,6 @@ namespace SDTS
 
         public static User user;
 
-        public static List<User> helpers;
+        public static List<Helpers> helpers;
     }
 }

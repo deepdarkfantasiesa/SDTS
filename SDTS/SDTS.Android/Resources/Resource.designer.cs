@@ -15689,7 +15689,10 @@ namespace SDTS.Droid
 			public const int tooltip_frame_light = 2131165350;
 			
 			// aapt resource value: 0x7F0700A7
-			public const int xamarin_logo = 2131165351;
+			public const int xamagonBlue = 2131165351;
+			
+			// aapt resource value: 0x7F0700A8
+			public const int xamarin_logo = 2131165352;
 			
 			static Drawable()
 			{

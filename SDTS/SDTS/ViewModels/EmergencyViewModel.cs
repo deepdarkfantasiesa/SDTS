@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
-using Xamarin.Forms.GoogleMaps;
 using Microsoft.AspNetCore.SignalR.Client;
 using Xamarin.Essentials;
-using Xamarin.Forms.GoogleMaps.Bindings;
+using Xamarin.Forms.GoogleMaps;
+//using Xamarin.Forms.Maps;
 
 namespace SDTS.ViewModels
 {
@@ -28,12 +28,6 @@ namespace SDTS.ViewModels
         public Pin Pin//仅仅用于页面数据绑定，不用于Pin的移动
         {
             get => _pin;
-            //get
-            //{
-            //    helper = (User)_pin.Tag;
-            //    return _pin;
-
-            //}
             set => SetProperty(ref _pin, value);
         }
         public ObservableCollection<Pin> Pins
@@ -64,11 +58,6 @@ namespace SDTS.ViewModels
             {
                 return userId;
             }
-            //set
-            //{
-            //    userId = value;
-            //    LoadWardId(value);
-            //}
             set => SetProperty(ref userId, value);
         }
 
@@ -80,7 +69,7 @@ namespace SDTS.ViewModels
 
         public string Age
         {
-            get => age;
+            get { return age; }
             set => SetProperty(ref age, value);
         }
 
@@ -89,9 +78,12 @@ namespace SDTS.ViewModels
         {
             LoadHelpersCommand = new Command(async () => await ExecuteLoadWardsCommand());
 
+
+            Pins = new ObservableCollection<Pin>();
+
         }
 
-        public Dictionary<string, int> PinsIndex = new Dictionary<string, int>();
+      
 
         readonly Tuple<string, Color>[] _colors =
         {
@@ -100,26 +92,26 @@ namespace SDTS.ViewModels
             new Tuple<string, Color>("Aqua", Color.Aqua)
         };
 
-        public MoveToRegionRequest Request { get; } = new MoveToRegionRequest();
+        
         async Task ExecuteLoadWardsCommand()
         {
             IsBusy = true;
 
             try
             {
+                
+
                 Pins.Clear();
-                PinsIndex.Clear();
 
 
-                //CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
 
-                //var wards = await getwards.RefreshWardsDataAsync();
-
-                if(GlobalVariables.helpers==null)
+                if (GlobalVariables.helpers==null)
                 {
                     return;
                 }
                 var wards = GlobalVariables.helpers;
+
+                
 
                 Pin Pin;
                 foreach (var ward in wards)
@@ -127,12 +119,14 @@ namespace SDTS.ViewModels
                     Pin = new Pin
                     {
                         Label = ward.Name,
-                        Tag = ward
+                        Tag = ward,
+                        Position = new Position(ward.Latitude, ward.Longitude)
                     };
+                    Pin.Clicked += PinClickedAsync;
                     Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
                     Pins?.Add(Pin);
-                    PinsIndex.Add(ward.Account, Pins.Count - 1);
-
+                    var helper = (Helpers)Pin.Tag;
+                    Debug.WriteLine(helper.Name + "\n" + helper.Information + "\n" + helper.Birthday + "\n" + helper.Gender);
                 }
             }
             catch (Exception ex)
@@ -142,37 +136,55 @@ namespace SDTS.ViewModels
             finally
             {
                 IsBusy = false;
-                HubServices hubServices = DependencyService.Get<HubServices>();
-                if (hubServices.IsFirstOnpenGlobalView)
-                {
-                    hubServices.hubConnection.On<SensorData>("ReceiveEmergencyData", (data) =>
-                    {
-                        int index;
-                        if (PinsIndex.TryGetValue(data.user.Account, out index))
-                        {
-                            Position newlocation = new Position(data.Latitude, data.Longitude);
-                            MainThread.BeginInvokeOnMainThread(() =>
-                            {
-                                Pins[index].Position = newlocation;
-                                //Debug.WriteLine("\nLatitude:" + Pins[index].Position.Latitude+ "\nLongitude:" + Pins[index].Position .Longitude);
-                            });
+                //HubServices hubServices = DependencyService.Get<HubServices>();
+                //if (hubServices.IsFirstOnpenGlobalView)
+                //{
+                //    hubServices.hubConnection.On<SensorData>("ReceiveEmergencyData", (data) =>
+                //    {
+                //        int index;
+                //        if (PinsIndex.TryGetValue(data.user.Account, out index))
+                //        {
+                //            Position newlocation = new Position(data.Latitude, data.Longitude);
+                //            MainThread.BeginInvokeOnMainThread(() =>
+                //            {
+                //                Pins[index].Position = newlocation;
+                //                //Debug.WriteLine("\nLatitude:" + Pins[index].Position.Latitude+ "\nLongitude:" + Pins[index].Position .Longitude);
+                //            });
 
-                            Request.MoveToRegion(
-                                MapSpan.FromCenterAndRadius(new Position(newlocation.Latitude,newlocation.Longitude),
-                                Distance.FromKilometers(0)),
-                true);
-                        }
-                        else
-                        {
-                            Debug.WriteLine("没有找到对应用户的索引");
-                        }
+                //            Request.MoveToRegion(
+                //                MapSpan.FromCenterAndRadius(new Position(newlocation.Latitude,newlocation.Longitude),
+                //                Distance.FromKilometers(0)),
+                //true);
+                //        }
+                //        else
+                //        {
+                //            Debug.WriteLine("没有找到对应用户的索引");
+                //        }
 
-                    });
+                //    });
 
-                    hubServices.IsFirstOnpenGlobalView = false;
-                }
+                //    hubServices.IsFirstOnpenGlobalView = false;
+                //}
 
             }
+        }
+        async void OnMarkerClickedAsync(object sender, PinClickedEventArgs e)
+        {
+            Name = helper.Name;
+            Information = helper.Information;
+            Gender = helper.Gender;
+            Age = (DateTime.Now - helper.Birthday).ToString();
+            await Application.Current.MainPage.DisplayAlert("Pin Clicked", $"{Name}\n{Information}\n{Gender}\n{Age}", "Ok");
+
+        }
+        async void PinClickedAsync(object sender, EventArgs e)
+        {
+            var helper = (Helpers)((Pin)sender).Tag;
+            Name = helper.Name;
+            Information = helper.Information;
+            Gender = helper.Gender;
+            Age = (DateTime.Now.Year- helper.Birthday.Year).ToString();
+            //await Application.Current.MainPage.DisplayAlert("Pin Clicked", $"{Name}\n{Information}\n{Gender}\n{Age}", "Ok");
         }
 
         //向服务器请求被选中的被监护人的详细信息

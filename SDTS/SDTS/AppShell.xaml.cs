@@ -1,4 +1,6 @@
-﻿using SDTS.GuardianViews;
+﻿using SDTS.ENotification;
+using SDTS.GuardianViews;
+
 using SDTS.Services;
 using SDTS.ViewModels;
 using SDTS.Views;
@@ -13,6 +15,7 @@ namespace SDTS
     public partial class AppShell : Xamarin.Forms.Shell
     {
         //HubServices hubServices = DependencyService.Get<HubServices>();
+        INotificationManager notificationManager;
 
         public AppShell()
         {
@@ -56,7 +59,17 @@ namespace SDTS
                 //managewards.FlyoutItemIsVisible = false;
                 manageguardian.FlyoutItemIsVisible = true;
             }
-            
+
+
+            notificationManager = DependencyService.Get<INotificationManager>();
+            notificationManager.NotificationReceived += async (sender, eventArgs) =>
+            {//监听接收通知
+                var evtData = (NotificationEventArgs)eventArgs;
+                //ShowNotification(evtData.Title, evtData.Message);
+                //跳转到救援页面
+                await Shell.Current.GoToAsync("//EmergencyPage");
+            };
+
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)

@@ -66,10 +66,10 @@ namespace SDTS.BackEnd
                     helper.isPublished.Add(connectionid);
                 }
 
-                foreach(var ispublished in helper.isPublished)
-                {
-                    Debug.WriteLine(ispublished);
-                }
+                //foreach(var ispublished in helper.isPublished)
+                //{
+                //    Debug.WriteLine(ispublished);
+                //}
             }
         }
 

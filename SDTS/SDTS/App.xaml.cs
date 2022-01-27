@@ -1,4 +1,5 @@
-﻿using SDTS.Services;
+﻿using SDTS.ENotification;
+using SDTS.Services;
 using SDTS.Views;
 using System;
 using Xamarin.Forms;
@@ -15,6 +16,7 @@ namespace SDTS
 
             DependencyService.Register<MockDataStore>();
             //MainPage = new AppShell();
+            DependencyService.Get<INotificationManager>().Initialize();
 
             MainPage =new NavigationPage(new SignInPage());
         }

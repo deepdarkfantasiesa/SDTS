@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Models;
+using SDTS.ENotification;
+
 using SDTS.Sensors;
 using SDTS.Services;
 using System;
@@ -97,12 +99,20 @@ namespace SDTS.Services
                 hubConnection.On<Helpers>("loadhelpers", (user) =>
                 {
                     if (GlobalVariables.helpers == null)
-                        GlobalVariables.helpers = new List<User>();
+                        GlobalVariables.helpers = new List<Helpers>();
                     if (GlobalVariables.helpers.Find(p=>p.UserID==user.UserID)==null)
                     {
                         GlobalVariables.helpers.Add(user);
                         Debug.WriteLine(user.Problem);
                         Debug.WriteLine(user.Name);
+
+                        //发送通知
+                        INotificationManager notificationManager;
+                        notificationManager = DependencyService.Get<INotificationManager>();
+                        string title = $"有人需要救助";
+                        string message = user.Name+$"需要救助";
+                        notificationManager.SendNotification(title, message);
+
                     }
                     else
                     {
