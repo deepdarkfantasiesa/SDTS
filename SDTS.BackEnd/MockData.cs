@@ -82,6 +82,56 @@ namespace SDTS.BackEnd
             return EmergencyHelpers.Where(p => p.Account == account).FirstOrDefault();
         }
 
+        public bool CreateRescuerGroup(string groupname,string helperaccount)
+        {
+            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup = groupname;
+            if (EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup.Equals(groupname))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool AddRescuer(string rescueraccount, string helperaccount)
+        {
+            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);
+            if(EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Exists(p=>p==rescueraccount))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public string AddRescuerInGroup(string rescueraccount, string helperaccount)
+        {//这里可能要锁行
+            var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();//查询求救事件
+            if (helper == null)//不存在则返回空
+            {
+                return null;
+            }
+            if(helper.RescuerGroup==null)//若还没有救援小组，则新建救援小组
+            {
+                EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup = helperaccount + DateTime.Now;
+                EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers = new List<string>();
+            }
+            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);//插入救援人员
+            if(EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Exists(p=>p==rescueraccount))
+            {//若插入成功则返回救援小组名
+                return EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup;
+            }
+            return null;
+        }
+
+        public string FindRescuerGroup(string helperaccount)
+        {
+            var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
+            if (helper != null && helper.RescuerGroup != null && helper.Rescuers.Count != 0)
+            {
+                return helper.RescuerGroup;
+            }
+            return null;
+        }
+
         int i = 0;
 
         ObservableCollection<SecureArea> secureAreas = new ObservableCollection<SecureArea>();
@@ -90,6 +140,11 @@ namespace SDTS.BackEnd
         {
             var connectid = ConnectedUser.Where(p => p.Key == guardianaccount).FirstOrDefault().Value;
             return connectid;
+        }
+
+        public string FindConnectedUser(string account)
+        {
+            return ConnectedUser.Where(p => p.Key == account).FirstOrDefault().Value;
         }
 
         //把接入用户的数据存在此处

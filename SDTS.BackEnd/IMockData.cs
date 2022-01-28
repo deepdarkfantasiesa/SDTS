@@ -37,5 +37,13 @@ namespace SDTS.BackEnd
         public bool AlterConnectUserData(string connectid, SensorData data);
         public bool RemoveConnectUserData(string connectid);
         public List<KeyValuePair<string, SensorData>> FindConnectUserWithType(string type);
+
+        public string FindConnectedUser(string account);
+
+        public bool CreateRescuerGroup(string groupname, string helperaccount);
+
+        public bool AddRescuer(string rescueraccount, string helperaccount);
+        public string AddRescuerInGroup(string rescueraccount, string helperaccount);
+        public string FindRescuerGroup(string helperaccount);
     }
 }

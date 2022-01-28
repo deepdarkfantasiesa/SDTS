@@ -31,6 +31,11 @@ namespace SDTS.Views
             MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(22.325494, 114.167338), Distance.FromKilometers(0));
             map.MoveToRegion(mapSpan);
 
+            RescueButton.IsEnabled = false;
+            GiveUpButton.IsEnabled = false;
+
+            _viewModel.RescueButton = RescueButton;
+            _viewModel.GiveUpButton = GiveUpButton;
 
         }
 

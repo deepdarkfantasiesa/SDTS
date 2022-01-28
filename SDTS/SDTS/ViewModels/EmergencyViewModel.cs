@@ -22,7 +22,7 @@ namespace SDTS.ViewModels
         private string gender;
         private string age;
 
-        public User helper;
+        //public User helper;
 
         private Pin _pin;
         public Pin Pin//仅仅用于页面数据绑定，不用于Pin的移动
@@ -36,7 +36,8 @@ namespace SDTS.ViewModels
             set;
         }
 
-        
+        public Button RescueButton { get; set; }
+        public Button GiveUpButton { get; set; }
 
         public int Id { get; set; }
 
@@ -74,6 +75,9 @@ namespace SDTS.ViewModels
         }
 
         public Command LoadHelpersCommand { get; }
+
+     
+
         public EmergencyViewModel()
         {
             LoadHelpersCommand = new Command(async () => await ExecuteLoadWardsCommand());
@@ -81,9 +85,10 @@ namespace SDTS.ViewModels
 
             Pins = new ObservableCollection<Pin>();
 
+
         }
 
-      
+        
 
         readonly Tuple<string, Color>[] _colors =
         {
@@ -168,23 +173,84 @@ namespace SDTS.ViewModels
 
             }
         }
-        async void OnMarkerClickedAsync(object sender, PinClickedEventArgs e)
-        {
-            Name = helper.Name;
-            Information = helper.Information;
-            Gender = helper.Gender;
-            Age = (DateTime.Now - helper.Birthday).ToString();
-            await Application.Current.MainPage.DisplayAlert("Pin Clicked", $"{Name}\n{Information}\n{Gender}\n{Age}", "Ok");
 
-        }
+        Helpers helper;
+
+        public Command StartRescue => new Command(async () => {
+            var result = await Application.Current.MainPage.DisplayAlert("警告", "您确定要开始救助此人吗", "确定", "取消");
+            if (result.Equals(true))
+            {
+                HubServices hubServices = DependencyService.Get<HubServices>();
+
+                await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
+
+                hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
+                {
+                    foreach(var pin in Pins)
+                    {
+                        if(((Helpers)pin.Tag).Account==data.user.Account)
+                        {
+                            Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
+                        }
+                    }
+                });
+
+                
+            }
+        });
+
+        public Command GiveUpRescue => new Command(async () => {
+            var result = await Application.Current.MainPage.DisplayAlert("警告", "您确定要放弃救助此人吗", "确定", "取消");
+            if(result.Equals(true))
+            {
+                foreach(var pin in Pins)
+                {
+                    if(((Helpers)pin.Tag).Account.Equals(helper.Account))
+                    {
+                        Pins.Remove(pin);
+                        GlobalVariables.helpers.Remove(helper);
+                        ResetView();
+                        return;
+                    }
+                }
+            }
+
+        });
+
+        public Command MapClicked => new Command(async () => {
+            ResetView();
+        });
         async void PinClickedAsync(object sender, EventArgs e)
         {
-            var helper = (Helpers)((Pin)sender).Tag;
+            helper = (Helpers)((Pin)sender).Tag;
             Name = helper.Name;
             Information = helper.Information;
             Gender = helper.Gender;
             Age = (DateTime.Now.Year- helper.Birthday.Year).ToString();
-            //await Application.Current.MainPage.DisplayAlert("Pin Clicked", $"{Name}\n{Information}\n{Gender}\n{Age}", "Ok");
+            try
+            {
+                RescueButton.Text = "开始救援";
+                GiveUpButton.IsEnabled = true;
+                RescueButton.IsEnabled = true;
+                RescueButton.BackgroundColor = Color.Green;
+                GiveUpButton.BackgroundColor = Color.Red;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private void ResetView()
+        {
+            RescueButton.Text = "请选择目标";
+            helper = new Helpers();
+            Name = "";
+            Information = "";
+            Gender = "";
+            Age = "";
+            RescueButton.IsEnabled = false;
+            GiveUpButton.IsEnabled = false;
         }
 
         //向服务器请求被选中的被监护人的详细信息

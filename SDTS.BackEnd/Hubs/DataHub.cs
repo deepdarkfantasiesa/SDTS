@@ -66,6 +66,15 @@ namespace SDTS.BackEnd.Hubs
             }
         }
 
+        public async Task JoinRescueGroup(User Rescuer,Helpers helper)
+        {
+            var groupname = mock.AddRescuerInGroup(Rescuer.Account, helper.Account);
+            var rescuerconid = mock.FindConnectedUser(Rescuer.Account);
+            await Groups.AddToGroupAsync(rescuerconid, groupname);
+
+            
+        }
+
         public async Task PublishEmergencyInformationToGuardians(double Latitude,double Longitude)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
@@ -121,6 +130,12 @@ namespace SDTS.BackEnd.Hubs
 
                 
 
+            }
+
+            var groupname = mock.FindRescuerGroup(wardaccount);
+            if(groupname!=null)
+            {
+                await Clients.Group(groupname).SendAsync("ReceiveRescuerData",data);
             }
 
             //await Clients.All.SendAsync("wardreceive", data);
