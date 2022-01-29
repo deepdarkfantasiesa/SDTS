@@ -39,6 +39,20 @@ namespace SDTS.BackEnd
             return EmergencyHelpers.Count;
         }
 
+        public bool RemoveRescuer(string helperaccount, string rescueraccount)
+        {
+            var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
+            if (helper != null && helper.RescuerGroup != null && helper.Rescuers.Count != 0)
+            {
+                EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Remove(rescueraccount);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public bool AddEmergencyHelpers(string account,double Latitude, double Longitude, string ConnectionId, string Problem)
         {
             if(EmergencyHelpers.Where(p=>p.Account==account).Count()==0)
@@ -66,6 +80,16 @@ namespace SDTS.BackEnd
                 return true;
             }
             return false;//已经存在于救援列表中
+        }
+
+        public List<string> FindAllRescuer(string helperaccount)
+        {
+            var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
+            if (helper != null && helper.RescuerGroup != null && helper.Rescuers.Count != 0)
+            {
+                return helper.Rescuers;
+            }
+            return null;
         }
 
         public bool RemoveEmergencyHelpers(string account)
@@ -103,7 +127,7 @@ namespace SDTS.BackEnd
         }
 
         public string AddRescuerInGroup(string rescueraccount, string helperaccount)
-        {//这里可能要锁行
+        {//这里可能要锁表里的行
             var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();//查询求救事件
             if (helper == null)//不存在则返回空
             {
@@ -114,7 +138,7 @@ namespace SDTS.BackEnd
                 EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup = helperaccount + DateTime.Now;
                 EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers = new List<string>();
             }
-            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);//插入救援人员
+            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);//插入救援人员账号
             if(EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Exists(p=>p==rescueraccount))
             {//若插入成功则返回救援小组名
                 return EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup;
@@ -130,6 +154,27 @@ namespace SDTS.BackEnd
                 return helper.RescuerGroup;
             }
             return null;
+        }
+
+        public string UserInRescuerGroup(string account)
+        {
+            var helpers = EmergencyHelpers;
+
+            if(helpers.Count!=0)
+            {
+                var rescuinggroup = EmergencyHelpers.Where(p => p.Rescuers != null).ToList();
+                if(rescuinggroup.Count()!=0)
+                {
+                    var isExists = rescuinggroup.All(p => p.Rescuers.Exists(i => i == account));
+                    if(isExists==true)
+                    {
+                        return rescuinggroup.Where(p => p.Rescuers.Exists(i => i == account)).FirstOrDefault().RescuerGroup;
+                    }
+                }
+            }
+            return null;
+
+            //return EmergencyHelpers.Where(p => p.Rescuers.Exists(i=>i==account)).FirstOrDefault().RescuerGroup;
         }
 
         int i = 0;
@@ -171,6 +216,11 @@ namespace SDTS.BackEnd
                 return false;
             }
             return true;
+        }
+
+        public SensorData FindConnectUserData(string connectionid)
+        {
+            return ConnectedUserLocation.Where(p => p.Key == connectionid).FirstOrDefault().Value;
         }
 
         public List<KeyValuePair<string,SensorData>> FindConnectUserWithType(string type)

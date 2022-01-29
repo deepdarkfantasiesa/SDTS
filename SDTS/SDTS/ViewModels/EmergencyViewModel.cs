@@ -10,6 +10,7 @@ using Xamarin.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Xamarin.Essentials;
 using Xamarin.Forms.GoogleMaps;
+using SDTS.Views;
 //using Xamarin.Forms.Maps;
 
 namespace SDTS.ViewModels
@@ -180,22 +181,22 @@ namespace SDTS.ViewModels
             var result = await Application.Current.MainPage.DisplayAlert("警告", "您确定要开始救助此人吗", "确定", "取消");
             if (result.Equals(true))
             {
-                HubServices hubServices = DependencyService.Get<HubServices>();
+                //HubServices hubServices = DependencyService.Get<HubServices>();
 
-                await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
+                //await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
 
-                hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
-                {
-                    foreach(var pin in Pins)
-                    {
-                        if(((Helpers)pin.Tag).Account==data.user.Account)
-                        {
-                            Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
-                        }
-                    }
-                });
+                //hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
+                //{
+                //    foreach(var pin in Pins)
+                //    {
+                //        if(((Helpers)pin.Tag).Account==data.user.Account)
+                //        {
+                //            Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
+                //        }
+                //    }
+                //});
 
-                
+                await Application.Current.MainPage.Navigation.PushAsync(new RescuePage(helper));
             }
         });
 

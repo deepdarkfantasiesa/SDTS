@@ -45,5 +45,10 @@ namespace SDTS.BackEnd
         public bool AddRescuer(string rescueraccount, string helperaccount);
         public string AddRescuerInGroup(string rescueraccount, string helperaccount);
         public string FindRescuerGroup(string helperaccount);
+        public string UserInRescuerGroup(string account);
+        public List<string> FindAllRescuer(string helperaccount);
+        public bool RemoveRescuer(string helperaccount, string rescueraccount);
+
+        public SensorData FindConnectUserData(string connectionid);
     }
 }

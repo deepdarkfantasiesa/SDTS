@@ -2,6 +2,7 @@
 using SDTS.Services;
 using SDTS.Views;
 using System;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -21,8 +22,26 @@ namespace SDTS
             MainPage =new NavigationPage(new SignInPage());
         }
 
-        protected override void OnStart()
+
+
+        protected async override void OnStart()
         {
+            base.OnStart();
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status == PermissionStatus.Granted)
+            {
+                return;
+            }
+
+            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            var sensorsstatus = await Permissions.CheckStatusAsync<Permissions.Sensors>();
+            if (sensorsstatus == PermissionStatus.Granted)
+            {
+                return;
+            }
+
+            await Permissions.RequestAsync<Permissions.Sensors>();
         }
 
         protected override void OnSleep()

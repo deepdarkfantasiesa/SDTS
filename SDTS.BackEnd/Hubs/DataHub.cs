@@ -25,6 +25,9 @@ namespace SDTS.BackEnd.Hubs
         {
             var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
 
+            //data.Latitude = data.Latitude + 1;
+            //data.Longitude = data.Longitude + 2;
+
             if(type.Equals("被监护人"))
             {
                 foreach (var acc in data.dataAcc)
@@ -37,7 +40,24 @@ namespace SDTS.BackEnd.Hubs
                 await SendDataToGuardian(data);
                 //Debug.WriteLine(data.Latitude+"\n"+data.Longitude);
             }
+
+            if (type.Equals("志愿者")|| type.Equals("监护人"))
+            {
+                var groupname = mock.UserInRescuerGroup(data.user.Account);
+                if (groupname!=null)
+                {
+                    await Clients.Group(groupname).SendAsync("ReceiveRescuerData",data);
+                }
+            }
+
+
+
             mock.AlterConnectUserData(Context.ConnectionId, data);
+
+
+
+
+
 
             //Debug.WriteLine(data.user.Name);
             //Debug.WriteLine(data.dataAcc.Count);
@@ -74,6 +94,66 @@ namespace SDTS.BackEnd.Hubs
 
             
         }
+
+        public async Task VolunteerFinishRescue(User Rescuer, Helpers helper)
+        {
+            var rescuerdata = mock.FindConnectUserData(Context.ConnectionId);
+            var helperdata = mock.FindConnectUserData(helper.ConnectionId);
+
+            var lat = Math.Abs(rescuerdata.Latitude - helperdata.Latitude);
+            var lon = Math.Abs(rescuerdata.Longitude - helperdata.Longitude);
+
+            double bar=0;
+            if(rescuerdata.dataBar.Count!=0&& helperdata.dataBar.Count!=0)
+            {
+                bar = Math.Abs(rescuerdata.dataBar.Average() - helperdata.dataBar.Average());
+            }
+            
+
+            if (lat > 0.003||lon > 0.003)
+            {
+                if(bar!=0)
+                {
+                    await Clients.Caller.SendAsync("FinishRescueResult", false, new SensorData() { Latitude = lat, Longitude = lon, dataBar = new List<double>() { bar } });
+                }
+                else if (bar == 0)
+                {
+                    await Clients.Caller.SendAsync("FinishRescueResult", false, new SensorData() { Latitude = lat, Longitude = lon, dataBar = new List<double>() { 999 } });
+                }
+                return;
+            }
+
+            var groupname = mock.FindRescuerGroup(helper.Account);
+            
+            if(groupname!=null)
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupname);
+                await Clients.Group(groupname).SendAsync("SomeBodyFinishRescue", Rescuer.Type+":"+Rescuer.Name+" 完成了救援");
+                if(mock.RemoveRescuer(helper.Account,Rescuer.Account).Equals(false))
+                {
+                    return;
+                }
+                var rescuers = mock.FindAllRescuer(helper.Account);
+                if (rescuers!=null)
+                {
+                    foreach(var rescuer in rescuers)
+                    {
+                        await Groups.RemoveFromGroupAsync(mock.FindConnectedUser(rescuer), groupname);
+                    }
+                }
+
+                if(mock.RemoveEmergencyHelpers(helper.Account))
+                {
+                    await Clients.Caller.SendAsync("FinishRescueResult", true,null);
+                }
+
+
+            }
+
+
+        }
+
+
 
         public async Task PublishEmergencyInformationToGuardians(double Latitude,double Longitude)
         {

@@ -209,9 +209,10 @@ namespace SDTS.Services
             {
                 System.Timers.Timer SensorsTimer = new System.Timers.Timer();
                 if (IsConnected.Equals(true))
-                {   
+                {
 
                     SensorsTimer.Interval = 1000;
+                    //SensorsTimer.Interval = 500;
                     SensorsTimer.Elapsed += SendSensorsData;
                     SensorsTimer.AutoReset = true;
                     SensorsTimer.Enabled = true;

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SDTS.Views.RescuePage"
+             
+             xmlns:bindings="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
+             xmlns:vm="clr-namespace:SDTS.ViewModels"
+             xmlns:googleMaps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps">
+    <ContentPage.Content>
+        <StackLayout>
+            <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
+                <googleMaps:Map.Behaviors>
+                    <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
+                    <bindings:MapClickedToCommandBehavior Command="{Binding MapClicked}"/>
+                </googleMaps:Map.Behaviors>
+            </googleMaps:Map>
+
+            <Button Text="完成救援" Command="{Binding FinishRescue}"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
