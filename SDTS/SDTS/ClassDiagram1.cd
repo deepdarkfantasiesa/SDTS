@@ -1,0 +1,360 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="SDTS.App" Collapsed="true">
+    <Position X="20.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>App.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.AppShell" Collapsed="true">
+    <Position X="22" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>AppShell.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Constants" Collapsed="true">
+    <Position X="25.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEIAAAAAQgACACAGQEAAAAIgAAASAAgIAAgSIAAAIAA=</HashCode>
+      <FileName>Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.GlobalVariables" Collapsed="true">
+    <Position X="18.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAQA=</HashCode>
+      <FileName>GlobalVariables.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Sign" Collapsed="true">
+    <Position X="25.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAACAAAEAAABAAAAAA=</HashCode>
+      <FileName>Sign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.TestPage">
+    <Position X="23.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TestPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ENotification.NotificationEventArgs" Collapsed="true">
+    <Position X="18.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>ENotification\NotificationEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.GuardianViews.AddWardPage" Collapsed="true">
+    <Position X="18.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GuardianViews\AddWardPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.GuardianViews.ManageSecureArea" Collapsed="true">
+    <Position X="22" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GuardianViews\ManageSecureArea.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.GuardianViews.ManageWardsPage" Collapsed="true">
+    <Position X="23.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GuardianViews\ManageWardsPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.GuardianViews.WardsDetailPage" Collapsed="true">
+    <Position X="18.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GuardianViews\WardsDetailPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Models.Item" Collapsed="true">
+    <Position X="23.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>Models\Item.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Models.Ward" Collapsed="true">
+    <Position X="16.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAACAAAAAQAwAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Ward.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Sensors.ReadSensorsrData" Collapsed="true">
+    <Position X="22" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gIAAAAAAAAAAAAAAAUEAAAGQAAAAAQEAAYAAkAAAAAA=</HashCode>
+      <FileName>Sensors\ReadSensorsrData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Services.CommunicateWithBackEnd" Collapsed="true">
+    <Position X="23.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAIAAAAAACQAAKAAAQChBgMAAABAAAAAA=</HashCode>
+      <FileName>Services\CommunicateWithBackEnd.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Services.HubServices" Collapsed="true">
+    <Position X="22" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEAAAAAgAAAAARAIEAAUAAABAgAAAAAAgQiAgQABAA=</HashCode>
+      <FileName>Services\HubServices.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Services.MockDataStore" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="25.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAgAABAAAABAAAAAAEAAAAAQAAA=</HashCode>
+      <FileName>Services\MockDataStore.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SDTS.Services.WardStore" BaseTypeListCollapsed="true">
+    <Position X="20.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAEAAAAAAAAAAABAAAAAAECAAIAAAAA=</HashCode>
+      <FileName>Services\WardStore.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SDTS.ViewModels.AboutViewModel">
+    <Position X="0.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>ViewModels\AboutViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.BasesViewModel" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAEAAIEAAAABAgAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\BasesViewModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="SDTS.ViewModels.BaseViewModel" Collapsed="true">
+    <Position X="5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAEAAIEAAAQBAgAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\BaseViewModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="SDTS.ViewModels.EmergencyViewModel" Collapsed="true">
+    <Position X="7.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAACEAAARBABQACgDGADiAwACAEEQAAAEAAAIAAAAAA=</HashCode>
+      <FileName>ViewModels\EmergencyViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.GlobalViewViewModel" Collapsed="true">
+    <Position X="9.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAABAgAAAAABEAAAARAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\GlobalViewViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.ItemDetailViewModel">
+    <Position X="5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAACgAAAAoAAAAAAAAAAAQAAIAAAACAAAAAA=</HashCode>
+      <FileName>ViewModels\ItemDetailViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.ItemsViewModel">
+    <Position X="7.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAgACBAAAAIAAAAABQAEAAAAABAAAAAAAEA=</HashCode>
+      <FileName>ViewModels\ItemsViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.LoginViewModel">
+    <Position X="9.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAACAAAA=</HashCode>
+      <FileName>ViewModels\LoginViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.ManageGuardianViewModel" Collapsed="true">
+    <Position X="14.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAgAIAAAAEAAAABAAAAQAAAAiAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\ManageGuardianViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.ManageSecureAreaViewModel">
+    <Position X="0.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RAAAIAAABBBAAAAghACCAABAAAQAQAABAAIAAAIAAAk=</HashCode>
+      <FileName>ViewModels\ManageSecureAreaViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.ManageWardsViewModel">
+    <Position X="3" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAARAgAAAAAAQIAABAAAAQAAAAAAAAAQAEAgAA=</HashCode>
+      <FileName>ViewModels\ManageWardsViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.NewItemViewModel">
+    <Position X="2.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>UAAAACAAAAAgAAQAIAAAAAAAAAAAAAAIAAAACAAEAAA=</HashCode>
+      <FileName>ViewModels\NewItemViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.RescueViewModel">
+    <Position X="5.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QgAAACAAQAAAAAAABEAAAABAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>ViewModels\RescueViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.ViewModels.SignInViewModel" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="18.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAIAAAAAEIggAAAAAAARAAQgAAAEA=</HashCode>
+      <FileName>ViewModels\SignInViewModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SDTS.ViewModels.SignUpViewModel" BaseTypeListCollapsed="true">
+    <Position X="22" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAEgQAABAAAACAIAAAwAkAgEAJAAAAAQAAQgAAAEA=</HashCode>
+      <FileName>ViewModels\SignUpViewModel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SDTS.ViewModels.WardDetailViewModel" Collapsed="true">
+    <Position X="12" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACEAAAABAAYACACEAAgAwAAAEEAABAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\WardDetailViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.AboutPage" Collapsed="true">
+    <Position X="16.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\AboutPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.EmergencyPage" Collapsed="true">
+    <Position X="16.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\EmergencyPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.GlobalViewPage" Collapsed="true">
+    <Position X="20.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\GlobalViewPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.ItemDetailPage" Collapsed="true">
+    <Position X="25.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\ItemDetailPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.ItemsPage" Collapsed="true">
+    <Position X="16.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\ItemsPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.LoginPage" Collapsed="true">
+    <Position X="18.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\LoginPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.NewItemPage" Collapsed="true">
+    <Position X="16.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\NewItemPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.PersonalInformationPage" Collapsed="true">
+    <Position X="20.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\PersonalInformationPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.RescuePage" Collapsed="true">
+    <Position X="23.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\RescuePage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.SignInPage" Collapsed="true">
+    <Position X="16.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\SignInPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.SignUpPage" Collapsed="true">
+    <Position X="20.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\SignUpPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.Views.TutorialPage">
+    <Position X="25.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Views\TutorialPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SDTS.WardsViews.ManageGuardianPage" Collapsed="true">
+    <Position X="20.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>WardsViews\ManageGuardianPage.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="SDTS.ENotification.INotificationManager" Collapsed="true">
+    <Position X="18.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAABAAAAAEAAAAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>ENotification\INotificationManager.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SDTS.Services.IDataStore&lt;T&gt;" Collapsed="true">
+    <Position X="16.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAABAAAABAAAAAAEAAAAAQAAA=</HashCode>
+      <FileName>Services\IDataStore.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="SDTS.Services.IWardStore&lt;T&gt;" Collapsed="true">
+    <Position X="20.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAEAAAAAAAAAAABAAAAAAEAAAIAAAAA=</HashCode>
+      <FileName>Services\IWardStore.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

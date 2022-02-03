@@ -21,11 +21,18 @@ namespace SDTS.Droid
         LaunchMode = LaunchMode.SingleTop)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
+        Intent startServiceIntent;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
+            startServiceIntent = new Intent(this, typeof(SensorsService));
+            startServiceIntent.SetAction("ServicesDemo3.action.START_SERVICE");
+            StartService(startServiceIntent);
+
 
             //github的
             Xamarin.FormsGoogleMapsBindings.Init();

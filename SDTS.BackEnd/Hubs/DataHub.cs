@@ -32,7 +32,7 @@ namespace SDTS.BackEnd.Hubs
             {
                 foreach (var acc in data.dataAcc)
                 {
-                    if (acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
+                    if (acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3) 
                     {
                         await PublishEmergencyInformationTimer(data);
                     }
@@ -59,13 +59,13 @@ namespace SDTS.BackEnd.Hubs
 
 
 
-            //Debug.WriteLine(data.user.Name);
-            //Debug.WriteLine(data.dataAcc.Count);
+            Debug.WriteLine(data.user.Name);
+            Debug.WriteLine(data.dataAcc.Count);
             //Debug.WriteLine(data.dataBar.Count);
             //Debug.WriteLine(data.dataGyr.Count);
             //Debug.WriteLine(data.dataMag.Count);
             //Debug.WriteLine(data.dataOri.Count);
-            //Debug.WriteLine(data.dateTime);
+            Debug.WriteLine(data.dateTime);
             //Debug.WriteLine(data.Latitude);
             //Debug.WriteLine(data.Longitude);
         }

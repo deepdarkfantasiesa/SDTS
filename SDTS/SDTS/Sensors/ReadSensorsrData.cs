@@ -24,6 +24,13 @@ namespace SDTS.Sensors
             Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;//磁力计
             OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;//方向传感器
 
+            //MainThread.BeginInvokeOnMainThread(()=> {
+            //    Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;//加速度计
+            //    Barometer.ReadingChanged += Barometer_ReadingChanged;//气压计
+            //    Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;//陀螺仪
+            //    Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;//磁力计
+            //    OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;//方向传感器
+            //});
         }
 
         public List<Tuple<double,double,double>> dataAcc = new List<Tuple<double, double, double>>();

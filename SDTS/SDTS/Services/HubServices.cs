@@ -210,9 +210,10 @@ namespace SDTS.Services
                 System.Timers.Timer SensorsTimer = new System.Timers.Timer();
                 if (IsConnected.Equals(true))
                 {
+                    readSensors = DependencyService.Get<ReadSensorsrData>();
+                    readSensors.ClearData();
 
                     SensorsTimer.Interval = 1000;
-                    //SensorsTimer.Interval = 500;
                     SensorsTimer.Elapsed += SendSensorsData;
                     SensorsTimer.AutoReset = true;
                     SensorsTimer.Enabled = true;
@@ -226,7 +227,8 @@ namespace SDTS.Services
             }
         }
 
-        ReadSensorsrData readSensors = new ReadSensorsrData();
+        //ReadSensorsrData readSensors = new ReadSensorsrData();
+        ReadSensorsrData readSensors = null;
         public async void SendSensorsData(Object source, System.Timers.ElapsedEventArgs e)
         {
             await SendSensorsDataToGuardian();
@@ -235,11 +237,6 @@ namespace SDTS.Services
         {
             if (!IsConnected)
                 throw new InvalidOperationException("Not connected");
-
-            if (!Accelerometer.IsMonitoring)
-            {
-                readSensors.ToggleAccelerometer();
-            }
 
             var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
             CancellationTokenSource cts = new CancellationTokenSource();
