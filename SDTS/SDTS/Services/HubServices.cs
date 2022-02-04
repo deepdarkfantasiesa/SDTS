@@ -238,24 +238,70 @@ namespace SDTS.Services
             if (!IsConnected)
                 throw new InvalidOperationException("Not connected");
 
-            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Location location = await Geolocation.GetLocationAsync(request, cts.Token);
+            //var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //Location location = await Geolocation.GetLocationAsync(request, cts.Token);
 
-            await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+            //await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+            //{
+            //    //把传感器数据全部读出来打包好发给后端
+            //    user = GlobalVariables.user,
+            //    dataBar = readSensors.dataBar,
+            //    dataMag = readSensors.dataMag,
+            //    dataGyr = readSensors.dataGyr,
+            //    dataOri = readSensors.dataOri,
+            //    dateTime = DateTime.Now,
+            //    dataAcc = readSensors.dataAcc,
+            //    Latitude = location.Latitude,
+            //    Longitude = location.Longitude
+            //});
+            //readSensors.ClearData();
+
+            try
             {
-                //把传感器数据全部读出来打包好发给后端
-                user = GlobalVariables.user,
-                dataBar = readSensors.dataBar,
-                dataMag = readSensors.dataMag,
-                dataGyr = readSensors.dataGyr,
-                dataOri = readSensors.dataOri,
-                dateTime = DateTime.Now,
-                dataAcc = readSensors.dataAcc,
-                Latitude = location.Latitude,
-                Longitude = location.Longitude
-            });
-            readSensors.ClearData();
+                var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromMilliseconds(1));
+                CancellationTokenSource cts = new CancellationTokenSource();
+                Location location = await Geolocation.GetLocationAsync(request, cts.Token);
+
+                if(location!=null)
+                {
+                    await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    {
+                        //把传感器数据全部读出来打包好发给后端
+                        user = GlobalVariables.user,
+                        dataBar = readSensors.dataBar,
+                        dataMag = readSensors.dataMag,
+                        dataGyr = readSensors.dataGyr,
+                        dataOri = readSensors.dataOri,
+                        dateTime = DateTime.Now,
+                        dataAcc = readSensors.dataAcc,
+                        Latitude = location.Latitude,
+                        Longitude = location.Longitude
+                    });
+                }
+                else
+                {
+                    await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    {
+                        //把传感器数据全部读出来打包好发给后端
+                        user = GlobalVariables.user,
+                        dataBar = readSensors.dataBar,
+                        dataMag = readSensors.dataMag,
+                        dataGyr = readSensors.dataGyr,
+                        dataOri = readSensors.dataOri,
+                        dateTime = DateTime.Now,
+                        dataAcc = readSensors.dataAcc
+                    });
+                }
+                
+
+
+                readSensors.ClearData();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
 

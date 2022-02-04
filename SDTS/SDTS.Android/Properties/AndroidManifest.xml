@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.companyname.sdts" android:installLocation="preferExternal">
 	<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28" />
 	<!--<application android:label="SDTS.Android" android:theme="@style/MainTheme" android:networkSecurityConfig="@xml/network_security_config">-->
-	<application android:label="SDTS.Android" android:theme="@style/MainTheme" android:usesCleartextTraffic="true">
+	<application android:label="SDTS.Android" android:theme="@style/MainTheme" android:usesCleartextTraffic="true" android:persistent="true">
 		<meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="AIzaSyCNNHMc7araISw6gFu7Iy6EAkbYsUKY-6o" />
 		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 		<!-- *****Necessary for apps that target Android 9.0 or higher***** -->
@@ -16,4 +16,7 @@
 	<uses-permission android:name="android.permission.BODY_SENSORS" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<permission android:name="com.companyname.sdts.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
+
+	
+
 </manifest>

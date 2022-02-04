@@ -64,7 +64,18 @@ namespace SDTS.Droid
 			return StartCommandResult.Sticky;
 		}
 
-        void TRegisterForegroundService()
+        public override void OnDestroy()
+        {
+
+            Intent localIntent = new Intent();
+            localIntent = new Intent(this, typeof(SensorsService));
+            localIntent.SetAction("ServicesDemo3.action.START_SERVICE");
+
+            this.StartForegroundService(localIntent);
+        }
+
+
+    void TRegisterForegroundService()
         {
             String NOTIFICATION_CHANNEL_ID = "no.jore.hajk";
             String channelName = "test app service";

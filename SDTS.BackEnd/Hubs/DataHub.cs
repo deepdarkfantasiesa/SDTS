@@ -58,16 +58,17 @@ namespace SDTS.BackEnd.Hubs
 
 
 
+            Debug.WriteLine($"Name:{data.user.Name} Acc:{data.dataAcc.Count} Lat:{data.Latitude} Long:{data.Longitude}");
 
-            Debug.WriteLine(data.user.Name);
-            Debug.WriteLine(data.dataAcc.Count);
+            //Debug.WriteLine(data.dataAcc.Count);
             //Debug.WriteLine(data.dataBar.Count);
             //Debug.WriteLine(data.dataGyr.Count);
             //Debug.WriteLine(data.dataMag.Count);
             //Debug.WriteLine(data.dataOri.Count);
-            Debug.WriteLine(data.dateTime);
             //Debug.WriteLine(data.Latitude);
             //Debug.WriteLine(data.Longitude);
+            //Debug.WriteLine(data.user.Name);
+            //Debug.WriteLine(data.dateTime);
         }
 
         //推送求救信息给监护人
@@ -305,7 +306,8 @@ namespace SDTS.BackEnd.Hubs
             //await ThrowException();
             //await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
             await base.OnDisconnectedAsync(exception);
-
+            var username = Context.User.Claims.First(p => p.Type.Equals("Name")).Value;
+            Debug.WriteLine($"{username} disconnected!!!!");
         }
 
         public Task ThrowException()
