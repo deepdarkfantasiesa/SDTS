@@ -112,6 +112,26 @@ namespace SDTS.Services
             }
             return result;
         }
+        public async Task<User> GetWardDetailWithAccount(string account)
+        {
+            Uri uri = new Uri(string.Format(Constants.GetWardDetailWithAccountString + "?access_token=" + GlobalVariables.token + "&account=" + account, string.Empty));
+            User ward = new User();
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    ward = JsonSerializer.Deserialize<User>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+
+            return ward;
+        }
 
         public async Task<User> GetWardDetail(int userid)
         {

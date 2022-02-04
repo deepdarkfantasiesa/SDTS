@@ -28,9 +28,8 @@ namespace SDTS.Droid
             if(sensorsrData==null)
             {
                 sensorsrData = new ReadSensorsrData();
-                sensorsrData.ToggleAccelerometer();
-                DependencyService.RegisterSingleton<ReadSensorsrData>(sensorsrData);
                 //sensorsrData.ToggleAccelerometer();
+                DependencyService.RegisterSingleton<ReadSensorsrData>(sensorsrData);
             }
             //SensorsTimer.Interval = 1000;
             //SensorsTimer.Elapsed += SendSensorsData;

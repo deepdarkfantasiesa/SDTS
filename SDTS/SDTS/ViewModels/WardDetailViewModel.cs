@@ -11,7 +11,8 @@ using Xamarin.Forms.GoogleMaps;
 
 namespace SDTS.ViewModels
 {
-    [QueryProperty(nameof(UserId), nameof(UserId))]
+    //[QueryProperty(nameof(UserId), nameof(UserId))]
+    [QueryProperty(nameof(Account), nameof(Account))]
     public class WardDetailViewModel : BasesViewModel
     {
         private string userId;
@@ -19,6 +20,8 @@ namespace SDTS.ViewModels
         private string information;
         private string gender;
         private string age;
+
+        private string account;
         //public Command CreateSecureArea = new Command(async () => { await Shell.Current.GoToAsync($"//WardsDetailPage/CreateSecureArea"); });
 
         public int Id { get; set; }
@@ -60,10 +63,40 @@ namespace SDTS.ViewModels
             set => SetProperty(ref age, value);
         }
 
+        public string Account
+        {
+            get => age;
+            set
+            {
+                account = value;
+                LoadWardWithAccount(value);
+            }
+        }
+
         public WardDetailViewModel()
         {
             //CreateSafeArea = new Command(async (args) =>await createarea(args));
             //CreateSecureArea = new Command(async () => { await Shell.Current.GoToAsync($"CreateSecureArea"); });
+        }
+
+        public async void LoadWardWithAccount(string useraccount)
+        {
+            try
+            {
+                //这里需要向服务器请求选中的用户数据
+                CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
+                var ward = await getwards.GetWardDetailWithAccount(useraccount);
+
+                Id = ward.UserID;
+                Name = ward.Name;
+                Information = ward.Information;
+                Gender = ward.Gender;
+                Age = (DateTime.Now.Year - ward.Birthday.Year).ToString();
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Failed to Load Ward");
+            }
         }
 
         //向服务器请求被选中的被监护人的详细信息

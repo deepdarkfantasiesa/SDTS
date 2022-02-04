@@ -55,7 +55,8 @@ namespace SDTS.ViewModels
         {
             if (ward == null)
                 return;
-            await Shell.Current.GoToAsync($"{nameof(WardsDetailPage)}?{nameof(WardDetailViewModel.UserId)}={ward.UserID}");
+            //await Shell.Current.GoToAsync($"{nameof(WardsDetailPage)}?{nameof(WardDetailViewModel.UserId)}={ward.UserID}");
+            await Shell.Current.GoToAsync($"{nameof(WardsDetailPage)}?{nameof(WardDetailViewModel.Account)}={ward.Account}");
         }
 
         async Task ExecuteLoadWardsCommand()

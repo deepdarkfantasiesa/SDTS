@@ -87,9 +87,12 @@ namespace SDTS.ViewModels
             GlobalVariables.user = null;
             */
             await sign.Signin(Account, PassWord);
-            await sign.GetUserInfo();
+            if(GlobalVariables.token!=null)
+            {
+                await sign.GetUserInfo();
+            }
             //监护人暂时无法登录
-            if (GlobalVariables.token != null && GlobalVariables.user != null)
+            if (GlobalVariables.user != null)
             {
                 //await Shell.Current.GoToAsync($"TestPage");
 

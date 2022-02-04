@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Models;
+using SDTS.DataAccess.Interface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,12 +15,17 @@ namespace SDTS.BackEnd.Hubs
     {
         IMockData mock;
         IEmergencyTimers timers;
-        public DataHub(IMockData data,IEmergencyTimers emergency)
+        private readonly IUserRepository _user;
+        private readonly IConnectedUsersRepository _connectedUsers;
+        public DataHub(IMockData data,IEmergencyTimers emergency, IUserRepository user,IConnectedUsersRepository connectedUsers)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
 
             timers = emergency;
+
+            _user = user;
+            _connectedUsers = connectedUsers;
         }
         public async Task SendSensorsDataToBackEnd(SensorData data)
         {
@@ -283,6 +289,9 @@ namespace SDTS.BackEnd.Hubs
             else
                 await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
 
+            _connectedUsers.AddConnectUser(connectaccount, connectid);
+
+
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -305,6 +314,10 @@ namespace SDTS.BackEnd.Hubs
             //Debug.WriteLine(DateTime.Now);
             //await ThrowException();
             //await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
+
+            _user.SignOut(connectaccount);
+            _connectedUsers.RemoveConnectUser(connectaccount, connectid);
+
             await base.OnDisconnectedAsync(exception);
             var username = Context.User.Claims.First(p => p.Type.Equals("Name")).Value;
             Debug.WriteLine($"{username} disconnected!!!!");

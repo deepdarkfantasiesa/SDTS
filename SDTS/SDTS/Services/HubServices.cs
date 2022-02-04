@@ -231,7 +231,7 @@ namespace SDTS.Services
         ReadSensorsrData readSensors = null;
         public async void SendSensorsData(Object source, System.Timers.ElapsedEventArgs e)
         {
-            await SendSensorsDataToGuardian();
+            //await SendSensorsDataToGuardian();
         }
         public async Task SendSensorsDataToGuardian()
         {

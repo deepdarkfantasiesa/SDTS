@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SDTS.DataAccess.Interface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,11 +17,13 @@ namespace SDTS.BackEnd.Controllers
     [Route("api/[controller]")]
     public class ManageWardsController : Controller
     {
-        public ManageWardsController(IMockData data)
+        public ManageWardsController(IMockData data, IUserRepository user)
         {
             mock = data;
+            _user = user;
         }
         IMockData mock;
+        private readonly IUserRepository _user;
 
         public IActionResult Index()
         {
@@ -34,21 +37,34 @@ namespace SDTS.BackEnd.Controllers
         [Route("getwards")]
         public IActionResult GetWards()
         {
-            var userid= HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            //以下方法只是模拟数据，真实场景需要查数据库,返回部分需要显示的数据即可，详细数据再GetDetail请求
-            //var wards = data.getwards(int.Parse(userid));
-            var wards = mock.getwards(int.Parse(userid));
-            
+            //var userid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            //var wards = mock.getwards(int.Parse(userid));
+            //return Ok(wards);
+
+            var useraccount = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            var wards = _user.GetWards(useraccount);
             return Ok(wards);
+
         }
 
         [HttpGet]
         [Route("getdetail")]
         public IActionResult GetDetail(int userid)
         {
-            //MockData data = new MockData();//ccchhh
             var ward = mock.getdetail(userid);
             return Ok(ward);
+
+
+        }
+
+        [HttpGet]
+        [Route("getdetailwithaccount")]
+        public IActionResult GetDetailWithAccount(string account)
+        {
+            var ward= _user.GetWardDetail(account);
+            return Ok(ward);
+
+
         }
 
         [HttpPut]

@@ -25,6 +25,7 @@ namespace SDTS
         public static string SignupString = http + host + SignController + "signup";
         public static string ManageWardsString = http + host + WardsController + "getwards";
         public static string GetWardDetailString = http + host + WardsController + "getdetail";
+        public static string GetWardDetailWithAccountString = http + host + WardsController + "getdetailwithaccount";
         public static string AddWardString = http + host + WardsController + "addward";
         public static string RemoveWardString = http + host + WardsController + "removeward";
 
