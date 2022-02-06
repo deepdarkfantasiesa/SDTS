@@ -17,7 +17,7 @@ namespace SDTS.BackEnd
         public bool addarea(SecureArea secureArea);
         public bool deletearea(SecureArea secureArea);
         public bool alterarea(SecureArea secureArea);
-        public SecureArea getarea(int areaid);
+        //public SecureArea getarea(int areaid);
         public User FindUser(string account, string password);
         public string signup(User user);
         public User getuser(string useraccount);
@@ -31,7 +31,7 @@ namespace SDTS.BackEnd
         public bool AddEmergencyHelpers(string account, double Latitude, double Longitude,string ConnectionId,string Problem);
         public bool RemoveEmergencyHelpers(string account);
         public Helpers FindEmergencyHelpers(string account);
-        public int EmergencyHelpersCount();
+        //public int EmergencyHelpersCount();
         public List<Helpers> AllEmergencyHelpers();
         public bool AddConnectUserData(string connectid, SensorData data);
         public bool AlterConnectUserData(string connectid, SensorData data);
@@ -40,9 +40,9 @@ namespace SDTS.BackEnd
 
         public string FindConnectedUser(string account);
 
-        public bool CreateRescuerGroup(string groupname, string helperaccount);
+        //public bool CreateRescuerGroup(string groupname, string helperaccount);
 
-        public bool AddRescuer(string rescueraccount, string helperaccount);
+        //public bool AddRescuer(string rescueraccount, string helperaccount);
         public string AddRescuerInGroup(string rescueraccount, string helperaccount);
         public string FindRescuerGroup(string helperaccount);
         public string UserInRescuerGroup(string account);

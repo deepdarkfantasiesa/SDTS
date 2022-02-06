@@ -65,7 +65,7 @@ namespace SDTS.ViewModels
 
         public string Account
         {
-            get => age;
+            get => account;
             set
             {
                 account = value;
@@ -121,13 +121,14 @@ namespace SDTS.ViewModels
         }
 
         public Command ManageSecureArea => new Command(async () => {
-            await Application.Current.MainPage.Navigation.PushAsync(new ManageSecureArea(UserId, Name));
+            //await Application.Current.MainPage.Navigation.PushAsync(new ManageSecureArea(UserId, Name));
+            await Application.Current.MainPage.Navigation.PushAsync(new ManageSecureArea(Account, Name));
         });
 
         public Command RemoveWard => new Command(async () => {
             var code = await Application.Current.MainPage.DisplayPromptAsync("移除被监护人", $"请在框内输入操作码", "完成", "取消");
             CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
-            var result = await cwb.RemoveWard(code, UserId);
+            var result = await cwb.RemoveWard(code,Account);
             if (result.Equals(true))
             {
                 //OnAppearing();

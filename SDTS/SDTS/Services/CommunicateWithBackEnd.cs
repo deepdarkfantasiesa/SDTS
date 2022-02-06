@@ -93,9 +93,9 @@ namespace SDTS.Services
             return result;
         }
 
-        public async Task<bool> RemoveWard(string code,string wardid)
+        public async Task<bool> RemoveWard(string code,string wardaccount)
         {
-            Uri uri = new Uri(string.Format(Constants.RemoveWardString + "?access_token=" + GlobalVariables.token + "&code=" + code+"&wardid="+wardid, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.RemoveWardString + "?access_token=" + GlobalVariables.token + "&code=" + code+"&wardaccount="+ wardaccount, string.Empty));
             bool result = false;
             try
             {
@@ -260,17 +260,14 @@ namespace SDTS.Services
             return null;
         }
 
-        public async Task<bool> DeleteSecureArea(SecureArea area)
+        public async Task<bool> DeleteSecureArea(string areaid)
         {
-            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + GlobalVariables.token, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.DeleteSecureAreaString + "?access_token=" + GlobalVariables.token + "&areaid=" + areaid, string.Empty));
             bool result;
 
             try
             {
-                var json = JsonSerializer.Serialize(area, serializerOptions);
-                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage message = await client.PostAsync(uri,content);
+                HttpResponseMessage message = await client.PostAsync(uri, null);
                 if (message.IsSuccessStatusCode)
                 {
                     string res = await message.Content.ReadAsStringAsync();
@@ -285,11 +282,12 @@ namespace SDTS.Services
             return false;
         }
 
-        public async Task<List<SecureArea>> GetWardSecureArea(int wardid)
+        //public async Task<List<SecureArea>> GetWardSecureArea(int wardid)
+        public async Task<List<SecureArea>> GetWardSecureArea(string wardaccount)
         {
             List<SecureArea> areas = new List<SecureArea>();
             
-            Uri uri = new Uri(string.Format(Constants.GetSecureAreasString + "?access_token=" + GlobalVariables.token + "&wardid=" + wardid, string.Empty));
+            Uri uri = new Uri(string.Format(Constants.GetSecureAreasString + "?access_token=" + GlobalVariables.token + "&wardaccount=" + wardaccount, string.Empty));
 
             try
             {

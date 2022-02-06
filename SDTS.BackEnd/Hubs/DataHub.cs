@@ -27,6 +27,7 @@ namespace SDTS.BackEnd.Hubs
             _user = user;
             _connectedUsers = connectedUsers;
         }
+        //要，手机端调用发送数据
         public async Task SendSensorsDataToBackEnd(SensorData data)
         {
             var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
@@ -92,7 +93,7 @@ namespace SDTS.BackEnd.Hubs
                 return;
             }
         }
-
+        //要，加入救援小组
         public async Task JoinRescueGroup(User Rescuer,Helpers helper)
         {
             var groupname = mock.AddRescuerInGroup(Rescuer.Account, helper.Account);
@@ -102,6 +103,7 @@ namespace SDTS.BackEnd.Hubs
             
         }
 
+        //要，救援者（加入救援队的志愿者和监护人）端调用
         public async Task VolunteerFinishRescue(User Rescuer, Helpers helper)
         {
             var rescuerdata = mock.FindConnectUserData(Context.ConnectionId);
@@ -195,7 +197,7 @@ namespace SDTS.BackEnd.Hubs
         }
 
 
-
+        //要，被监护人把数据发送给监护人，如果此被监护人有救援事件，则同时将数据发送给救援小组
         public async Task SendDataToGuardian(SensorData data)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
@@ -230,50 +232,50 @@ namespace SDTS.BackEnd.Hubs
             //Debug.WriteLine($"2");
         }
 
-        public async Task SendMessageToGuardian(string message)
-        {
-            var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+        //public async Task SendMessageToGuardian(string message)
+        //{
+        //    var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
 
-            var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
+        //    var guardians = mock.getguardians(wardaccount);//获取该被监护人的监护人账号
 
-            List<string> connectguardianids = new List<string>();
+        //    List<string> connectguardianids = new List<string>();
 
-            foreach(var guardian in guardians)
-            {
-                var connectguardianid = mock.ReflashGuardians(guardian.Account);
-                if (connectguardianid != null)
-                    connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
-            }
+        //    foreach(var guardian in guardians)
+        //    {
+        //        var connectguardianid = mock.ReflashGuardians(guardian.Account);
+        //        if (connectguardianid != null)
+        //            connectguardianids.Add(connectguardianid);//将已连接的监护人连接id存起来
+        //    }
 
-            foreach(var connectguardianid in connectguardianids)
-            {
-                await Clients.Client(connectguardianid).SendAsync("GuardianReceive", message);//向已连接的监护人发送被监护人的数据
-            }
-        }
+        //    foreach(var connectguardianid in connectguardianids)
+        //    {
+        //        await Clients.Client(connectguardianid).SendAsync("GuardianReceive", message);//向已连接的监护人发送被监护人的数据
+        //    }
+        //}
 
-        public async Task ConnectToHub()
-        {
-            var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+        //public async Task ConnectToHub()
+        //{
+        //    var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
 
-            var connectid = Context.ConnectionId;
+        //    var connectid = Context.ConnectionId;
 
-            if(mock.AddConnectUser(connectaccount, connectid))
-                await Clients.Client(connectid).SendAsync("Entered", "connect success!");
-            else
-                await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
-        }
+        //    if(mock.AddConnectUser(connectaccount, connectid))
+        //        await Clients.Client(connectid).SendAsync("Entered", "connect success!");
+        //    else
+        //        await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
+        //}
         
-        public async Task DisConnectToHub()
-        {
-            var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+        //public async Task DisConnectToHub()
+        //{
+        //    var connectaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
 
-            var connectid = Context.ConnectionId;
+        //    var connectid = Context.ConnectionId;
 
-            if(mock.RemoveConnectUser(connectaccount,connectid))
-                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
-            else
-                await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
-        }
+        //    if(mock.RemoveConnectUser(connectaccount,connectid))
+        //        await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
+        //    else
+        //        await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
+        //}
 
         public override async Task OnConnectedAsync()
         {

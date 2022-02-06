@@ -28,17 +28,18 @@ namespace SDTS.BackEnd
         Dictionary<string, string> ConnectedUser = new Dictionary<string, string>();
         Dictionary<string,SensorData> ConnectedUserLocation = new Dictionary<string,SensorData>();//存储连接用户的数据
 
-
+        //要，获取所有求救事件
         public List<Helpers> AllEmergencyHelpers()
         {
             return EmergencyHelpers.ToList().FindAll(p=>p.Published==false);
         }
 
-        public int EmergencyHelpersCount()
-        {
-            return EmergencyHelpers.Count;
-        }
+        //public int EmergencyHelpersCount()
+        //{
+        //    return EmergencyHelpers.Count;
+        //}
 
+        //目前只用作删除结束救援时间的救援者
         public bool RemoveRescuer(string helperaccount, string rescueraccount)
         {
             var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
@@ -60,28 +61,28 @@ namespace SDTS.BackEnd
                 var user = users.Where(p => p.Account == account).FirstOrDefault();
                 EmergencyHelpers.Add(new Helpers()
                 {
-                    Account = user.Account,
-                    Name = user.Name,
+                    Account = user.Account,//要
+                    Name = user.Name,//要
                     UserID = user.UserID,
-                    Information = user.Information,
-                    Gender = user.Gender,
-                    Birthday = user.Birthday,
-                    PhoneNumber = user.PhoneNumber,
+                    Information = user.Information,//要
+                    Gender = user.Gender,//要
+                    Birthday = user.Birthday,//要
+                    PhoneNumber = user.PhoneNumber,//要
                     GuardianID = user.GuardianID,
                     EmergencyContacts = user.EmergencyContacts,
-                    Latitude = Latitude,
-                    Longitude = Longitude,
-                    ConnectionId = ConnectionId,
-                    dateTime = DateTime.Now,
+                    Latitude = Latitude,//要
+                    Longitude = Longitude,//要
+                    ConnectionId = ConnectionId,//要
+                    dateTime = DateTime.Now,//要
                     Published = false,
-                    Problem = Problem,
-                    isPublished = new List<string>()
+                    Problem = Problem,//要
+                    isPublished = new List<string>()//要
                 });
                 return true;
             }
             return false;//已经存在于救援列表中
         }
-
+        //要，返回所有救援人员
         public List<string> FindAllRescuer(string helperaccount)
         {
             var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
@@ -91,7 +92,7 @@ namespace SDTS.BackEnd
             }
             return null;
         }
-
+        //要，移除救援事件
         public bool RemoveEmergencyHelpers(string account)
         {
             if(EmergencyHelpers.Remove(EmergencyHelpers.Where(p=>p.Account==account).FirstOrDefault()))
@@ -106,26 +107,26 @@ namespace SDTS.BackEnd
             return EmergencyHelpers.Where(p => p.Account == account).FirstOrDefault();
         }
 
-        public bool CreateRescuerGroup(string groupname,string helperaccount)
-        {
-            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup = groupname;
-            if (EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup.Equals(groupname))
-            {
-                return true;
-            }
-            return false;
-        }
+        //public bool CreateRescuerGroup(string groupname,string helperaccount)
+        //{
+        //    EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup = groupname;
+        //    if (EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().RescuerGroup.Equals(groupname))
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
-        public bool AddRescuer(string rescueraccount, string helperaccount)
-        {
-            EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);
-            if(EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Exists(p=>p==rescueraccount))
-            {
-                return true;
-            }
-            return false;
-        }
-
+        //public bool AddRescuer(string rescueraccount, string helperaccount)
+        //{
+        //    EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Add(rescueraccount);
+        //    if(EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault().Rescuers.Exists(p=>p==rescueraccount))
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
+        //要，救援者加入救援小组
         public string AddRescuerInGroup(string rescueraccount, string helperaccount)
         {//这里可能要锁表里的行
             var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();//查询求救事件
@@ -145,7 +146,7 @@ namespace SDTS.BackEnd
             }
             return null;
         }
-
+        //要，返回求助人的救援小组名
         public string FindRescuerGroup(string helperaccount)
         {
             var helper = EmergencyHelpers.Where(p => p.Account == helperaccount).FirstOrDefault();
@@ -186,7 +187,7 @@ namespace SDTS.BackEnd
             var connectid = ConnectedUser.Where(p => p.Key == guardianaccount).FirstOrDefault().Value;
             return connectid;
         }
-
+        //要，查找目前调用者的连接id
         public string FindConnectedUser(string account)
         {
             return ConnectedUser.Where(p => p.Key == account).FirstOrDefault().Value;
@@ -218,6 +219,7 @@ namespace SDTS.BackEnd
             return true;
         }
 
+        //要，考虑专门建立一个所有已连接的用户的传感器数据表，只存gps、账号、气压计数据
         public SensorData FindConnectUserData(string connectionid)
         {
             return ConnectedUserLocation.Where(p => p.Key == connectionid).FirstOrDefault().Value;
@@ -262,33 +264,33 @@ namespace SDTS.BackEnd
         public bool removeward(int guardianid, int code, string account)
         {
 
-            var wardaccount = Inviter.Where(p => p.Value == code).FirstOrDefault().Key;
-            if (wardaccount == null|| wardaccount != account)
-            {
-                return false;//邀请码不正确
-            }
+            //var wardaccount = Inviter.Where(p => p.Value == code).FirstOrDefault().Key;
+            //if (wardaccount == null|| wardaccount != account)
+            //{
+            //    return false;//邀请码不正确
+            //}
 
 
-            if (users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count() == 0)
-            {
-                return false;//不存在此监护人
-            }
+            //if (users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count() == 0)
+            //{
+            //    return false;//不存在此监护人
+            //}
 
-            users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Remove(guardianid);
-            var result = users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count();
-            if (result == 0)
-            {
-                Inviter.Remove(wardaccount);
+            //users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Remove(guardianid);
+            //var result = users.Where(p => p.Account == wardaccount).FirstOrDefault().GuardianID.Where(i => i == guardianid).Count();
+            //if (result == 0)
+            //{
+            //    Inviter.Remove(wardaccount);
 
-                var wardareas = getareas(users.Where(p => p.Account == wardaccount).FirstOrDefault().UserID).Where(p=>p.createrid==guardianid.ToString());
-                foreach (var area in wardareas)
-                {
-                    deletearea(area);
-                }
+            //    var wardareas = getareas(users.Where(p => p.Account == wardaccount).FirstOrDefault().UserID).Where(p=>p.createrid==guardianid.ToString());
+            //    foreach (var area in wardareas)
+            //    {
+            //        deletearea(area);
+            //    }
 
 
-                return true;//移除成功
-            }
+            //    return true;//移除成功
+            //}
             return false;//未知错误
         }
 
@@ -345,12 +347,14 @@ namespace SDTS.BackEnd
 
         public List<SecureArea> getareas(int wardid)
         {
-            return secureAreas.ToList().FindAll(p=>p.wardid==wardid.ToString());
+            //return secureAreas.ToList().FindAll(p => p.wardid == wardid.ToString());
+            return null;
         }
 
         public SecureArea getarea(int areaid)
         {
-            return secureAreas.ToList().Find(p => p.id == areaid);
+            //return secureAreas.ToList().Find(p => p.id == areaid);
+            return null;
         }
 
         public bool addarea(SecureArea secureArea)
@@ -362,14 +366,15 @@ namespace SDTS.BackEnd
         public bool deletearea(SecureArea secureArea)
         {
             //var res = secureAreas.ToList().Remove(secureArea);
-            var res = secureAreas.Remove(secureAreas.Where(p=>p.id==secureArea.id).FirstOrDefault());
-            return res;
+            //var res = secureAreas.Remove(secureAreas.Where(p=>p.id==secureArea.id).FirstOrDefault());
+            //return res;
+            return false;
         }
 
         public bool alterarea(SecureArea newarea)
         {
-            var oldarea=secureAreas.ToList().Find(p => p.id == newarea.id);
-            alter(oldarea, newarea);
+            //var oldarea=secureAreas.ToList().Find(p => p.id == newarea.id);
+            //alter(oldarea, newarea);
             //这里使用equals和==无法返回正确的结果，所以默认修改必成功
             return true;
         }

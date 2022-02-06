@@ -32,7 +32,7 @@ namespace SDTS
         public static string PutSecureAreaString = http + host + AreaController + "ctreatearea";
         public static string PostSecureAreaString = http + host + AreaController + "alterarea";
         public static string DeleteSecureAreaString = http + host + AreaController + "deletearea";
-        public static string GetSecureAreasString = http + host + AreaController + "getareas";
+        public static string GetSecureAreasString = http + host + AreaController + "getwardareas";
 
         public static string GetUserInfoString = http + host + UserController + "getuserinfo";
 

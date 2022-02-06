@@ -115,6 +115,9 @@ namespace SDTS.BackEnd
             services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));// ÷Ã·server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IConnectedUsersRepository, ConnectedUsersRepository>();
+            services.AddScoped<IComplexRepository, ComplexRepository>(); 
+            services.AddScoped<ISecureAreaRepository, SecureAreaRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

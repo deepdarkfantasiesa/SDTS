@@ -28,9 +28,11 @@ namespace SDTS.ViewModels
         {
 
         }
-        public ManageSecureAreaViewModel(string warid,string wardname)
+        //public ManageSecureAreaViewModel(string warid,string wardname)
+        public ManageSecureAreaViewModel(string wardaccount, string wardname)
         {
-            WardId = warid;
+            //WardId = warid;//改成wardaccount
+            WardAccount = wardaccount;
             WardName = wardname;
             LoadSecureAreasCommand = new Command(async () => await ExecuteLoadSecureAreasCommand());
             Polygons = new ObservableCollection<Polygon>();
@@ -46,20 +48,24 @@ namespace SDTS.ViewModels
                 Polygons.Clear();
                 secureAreas.Clear();
                 CommunicateWithBackEnd getareas = new CommunicateWithBackEnd();
-                secureAreas= await getareas.GetWardSecureArea(int.Parse(WardId));
+              
+                secureAreas = await getareas.GetWardSecureArea(WardAccount);
                 Polygon pol;
                 foreach (var area in secureAreas)
                 {
+                    string[] latgroup = area.Latitude.Split(",");
+                    string[] longroup = area.Longitude.Split(",");
+
                     pol = new Polygon();
-                    foreach(var pos in area.area)
+
+                    for(int i=0;i<latgroup.Length;i++)
                     {
-                        pol.Positions.Add(new Position(pos.Latitude,pos.Longitude));
+                        pol.Positions.Add(new Position(double.Parse(latgroup[i]), double.Parse(longroup[i])));
                     }
                     pol.Clicked += Polygon_Clicked;
                     pol.StrokeWidth = 3f;
                     pol.IsClickable = true;
-                    pol.Tag = "POLYGON";
-                    pol.ZIndex = area.id;
+                    pol.Tag = area.areaid;
                     if (area.status)
                     {
                         pol.StrokeColor = Color.Green;
@@ -89,6 +95,20 @@ namespace SDTS.ViewModels
             set
             {
                 wardid = value;
+                //LoadWardId(value);
+            }
+        }
+
+        private string wardaccount;
+        public string WardAccount
+        {
+            get
+            {
+                return wardaccount;
+            }
+            set
+            {
+                wardaccount = value;
                 //LoadWardId(value);
             }
         }
@@ -178,7 +198,7 @@ namespace SDTS.ViewModels
                 polygon.StrokeWidth = 3f;
                 polygon.FillColor = Color.FromRgba(255, 0, 0, 64);
                 polygon.IsClickable = true;
-                polygon.Tag = "POLYGON";
+                //polygon.Tag = "POLYGON";
                 polygon.Clicked += Polygon_Clicked;
                 
                 Pins.Clear();
@@ -207,14 +227,17 @@ namespace SDTS.ViewModels
                     secureArea.createtime = DateTime.Now;
                     secureArea.information = result;
                     secureArea.status = true;
-                    secureArea.wardid = WardId;
+                    //secureArea.wardid = WardId;//改成wardaccount
+                    secureArea.wardaccount = WardAccount;
                     secureArea.wardname = WardName;
 
                     CommunicateWithBackEnd postarea = new CommunicateWithBackEnd();
                     var newarea= await postarea.PutSecureArea(secureArea);
                     if(newarea!=null)
                     {
-                        polygon.ZIndex = newarea.id;//暂时用这个属性充当唯一标识（id）
+                        //polygon.ZIndex = newarea.id;//暂时用这个属性充当唯一标识（id）2022年2月6日：改成areaid
+                        //polygon.ZIndex = int.Parse(newarea.areaid);
+                        polygon.Tag = newarea.areaid;
                         secureAreas.Add(newarea);
                         Polygons.Add(polygon);
                     }
@@ -228,8 +251,10 @@ namespace SDTS.ViewModels
             var pol = (Polygon)sender;//选中的安全区域
             
             string action;
-            var se = secureAreas.Find(p => p.id == pol.ZIndex);
-            
+            //var se = secureAreas.Find(p => p.id == pol.ZIndex);//p.id改成p.areaid
+            //var se = secureAreas.Find(p => int.Parse(p.areaid) == pol.ZIndex);
+            var se = secureAreas.Find(p => p.areaid == pol.Tag.ToString());
+
             bool res;
             res = await Application.Current.MainPage.DisplayAlert("安全区域基本信息", "创建者：" + se.creatername + "\n被监护人：" + se.wardname + "\n创建时间：" + se.createtime + "\n说明：" + se.information + "\n状态：" + se.status, "编辑", "取消");
             
@@ -270,7 +295,7 @@ namespace SDTS.ViewModels
                 var newarea = await cwb.PostSecureArea(se);
                 if (newarea != null)
                 {
-                    se.createrid = newarea.createrid;
+                    se.createrid = newarea.createrid;//改成createraccount
                     se.creatername = newarea.creatername;
 
                     se.createtime = newarea.createtime;
@@ -295,15 +320,16 @@ namespace SDTS.ViewModels
                 if(newarea!=null)
                 {
                     se.createtime = newarea.createtime;
-                    se.createrid = newarea.createrid;
+                    //se.createrid = newarea.createrid;//改成createraccount
+                    se.createraccount = newarea.createraccount;
                     se.creatername = newarea.creatername;
                 }
             }
             else if (action.Equals("删除"))
             {
                 //先跟后端通讯再移除客户端的对象
-                var result=await cwb.DeleteSecureArea(se);
-                if(result == true)
+                var result = await cwb.DeleteSecureArea(se.areaid);
+                if (result == true)
                 {
                     Polygons.Remove(pol);
                     secureAreas.Remove(se);

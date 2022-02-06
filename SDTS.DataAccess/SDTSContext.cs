@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
-
+using SDTS.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +19,7 @@ namespace SDTS.DataAccess
         public DbSet<ConnectedUser> ConnectedUsers { get; set; }
         public DbSet<GuardianAndWard> GuardiansAndWards { get; set; }
         public DbSet<Invitation> Invitations { get; set; }
+        public DbSet<SecureArea> SecureAreas { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.Entity<UserModel>().ToTable("UserModel");

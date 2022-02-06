@@ -17,13 +17,15 @@ namespace SDTS.BackEnd.Controllers
     [Route("api/[controller]")]
     public class ManageWardsController : Controller
     {
-        public ManageWardsController(IMockData data, IUserRepository user)
+        public ManageWardsController(IMockData data, IUserRepository user,IComplexRepository complex)
         {
             mock = data;
             _user = user;
+            _complex = complex;
         }
         IMockData mock;
         private readonly IUserRepository _user;
+        private readonly IComplexRepository _complex;
 
         public IActionResult Index()
         {
@@ -47,15 +49,15 @@ namespace SDTS.BackEnd.Controllers
 
         }
 
-        [HttpGet]
-        [Route("getdetail")]
-        public IActionResult GetDetail(int userid)
-        {
-            var ward = mock.getdetail(userid);
-            return Ok(ward);
+        //[HttpGet]
+        //[Route("getdetail")]
+        //public IActionResult GetDetail(int userid)
+        //{
+        //    var ward = mock.getdetail(userid);
+        //    return Ok(ward);
 
 
-        }
+        //}
 
         [HttpGet]
         [Route("getdetailwithaccount")]
@@ -69,20 +71,27 @@ namespace SDTS.BackEnd.Controllers
 
         [HttpPut]
         [Route("addward")]
-        public IActionResult AddWard(int code)
+        public async Task<IActionResult> AddWard(int code)
         {
-            var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            var result= mock.addward(int.Parse(guardianid),code);
+            //var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            //var result= mock.addward(int.Parse(guardianid),code);
+            //return Ok(result);
+
+            var guardianaccount = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            var result =await _complex.AddWard(guardianaccount, code.ToString());
             return Ok(result);
         }
 
         [HttpPut]
         [Route("removeward")]
-        public IActionResult RemoveWard(int code,int wardid)
+        public async Task<IActionResult> RemoveWard(int code,string wardaccount)
         {
-            var wardaccount = mock.getdetail(wardid).Account;
-            var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            var result = mock.removeward(int.Parse(guardianid), code, wardaccount);
+            //var wardaccount = mock.getdetail(wardid).Account;
+            //var guardianid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
+            //var result = mock.removeward(int.Parse(guardianid), code, wardaccount);
+            //return Ok(result);
+            var guardianaccount = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            var result =await _complex.RemoveWard(guardianaccount, wardaccount, code.ToString());
             return Ok(result);
         }
     }
