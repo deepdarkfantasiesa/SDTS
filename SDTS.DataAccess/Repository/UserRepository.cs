@@ -63,14 +63,26 @@ namespace SDTS.DataAccess.Repository
             return _context.Users.Where(p => p.Account == useraccount).FirstOrDefault();
         }
 
-        public bool SignOut(string useraccount)
+        public async Task<bool> SignOut(string useraccount)
         {
-            var user = _context.Users.Where(p => p.Account == useraccount).FirstOrDefault();
-            user.state = "signout";
+            //var user = _context.Users.Where(p => p.Account == useraccount).FirstOrDefault();
+            //user.state = "signout";
+            //var edituser = _context.Users.Attach(user);
+            //edituser.State = EntityState.Modified;
+            //_context.SaveChanges();
+            //if(_context.Users.Where(p => p.Account == useraccount).FirstOrDefault().state.Equals("signout"))
+            //{
+            //    return true;
+            //}
+            //return false;
+
+            var table =await _context.Users.ToListAsync();
+            var user = table.Where(p => p.Account == useraccount).FirstOrDefault();
             var edituser = _context.Users.Attach(user);
             edituser.State = EntityState.Modified;
-            _context.SaveChanges();
-            if(_context.Users.Where(p => p.Account == useraccount).FirstOrDefault().state.Equals("signout"))
+            user.state = "signout";
+            await _context.SaveChangesAsync();
+            if(edituser.State==EntityState.Unchanged)
             {
                 return true;
             }
@@ -138,6 +150,15 @@ namespace SDTS.DataAccess.Repository
         {
             var ward = _context.Users.Where(p => p.Account == account).FirstOrDefault();
             return ward;
+        }
+
+        public async Task<List<User>> GetVolunteers()
+        {
+            //var table = await _context.Users.ToListAsync();
+            //var volunteers = table.Where(p => p.Type == "志愿者");
+
+            var volunteers = _context.Users.Where(p => p.Type == "志愿者");
+            return await volunteers.ToListAsync();
         }
     }
 }

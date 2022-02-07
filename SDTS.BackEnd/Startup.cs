@@ -117,7 +117,9 @@ namespace SDTS.BackEnd
             services.AddScoped<IConnectedUsersRepository, ConnectedUsersRepository>();
             services.AddScoped<IComplexRepository, ComplexRepository>(); 
             services.AddScoped<ISecureAreaRepository, SecureAreaRepository>();
-
+            
+            services.AddScoped<IUserDataRepository, UserDataRepository>();
+            services.AddScoped<IEmergencyHelpersRepository, EmergencyHelpersRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

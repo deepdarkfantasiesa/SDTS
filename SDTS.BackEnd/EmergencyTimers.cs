@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Models;
 using SDTS.BackEnd.Hubs;
+using SDTS.DataAccess.Interface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,10 +15,24 @@ namespace SDTS.BackEnd
     {
         private IMockData mock;
         private IHubContext<DataHub> hubContext;
-        public EmergencyTimers(IMockData data, IHubContext<DataHub> hub)
+        private readonly IEmergencyHelpersRepository _emergencyHelpers;
+        private readonly IUserRepository _user;
+        private readonly IConnectedUsersRepository _connectedUsers;
+        private readonly IUserDataRepository _userData;
+
+        public EmergencyTimers(IMockData data, 
+            IHubContext<DataHub> hub, 
+            IEmergencyHelpersRepository emergencyHelpers,
+            IUserRepository user,
+            IConnectedUsersRepository connectedUsers,
+            IUserDataRepository userData)
         {
             mock = data;
             hubContext = hub;
+            _emergencyHelpers = emergencyHelpers;
+            _user = user;
+            _connectedUsers = connectedUsers;
+            _userData = userData;
         }
         
 
@@ -32,6 +47,7 @@ namespace SDTS.BackEnd
             Emergencytimer.AutoReset = true;
             Emergencytimer.Enabled = true;
         }
+    
 
         public async void EmergencyEvent(Object source, System.Timers.ElapsedEventArgs e)
         {
@@ -73,6 +89,46 @@ namespace SDTS.BackEnd
             }
         }
 
-        
+        public void InitTimer()
+        {
+            if (Emergencytimer != null)
+                return;
+            Emergencytimer = new Timer();
+            Emergencytimer.Interval = 5000;
+            Emergencytimer.Elapsed += EmergencyEvents;
+            Emergencytimer.AutoReset = true;
+            Emergencytimer.Enabled = true;
+        }
+
+        public async void EmergencyEvents(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            var helpers =await _emergencyHelpers.GetAllEmergencyHelper();
+            foreach(var helper in helpers)
+            {
+                var guardians = _user.GetGuardians(helper.Account);
+                List<string> guardiansconnnectionids = new List<string>();
+                foreach(var guardian in guardians)
+                {
+                    guardiansconnnectionids.Add(await _connectedUsers.QueryConnectUserAsync(guardian.Account));
+                }
+                var volunteers = _user.GetVolunteers().Result;
+                List<string> volunteersconnnectionids = new List<string>();
+                foreach(var volunteer in volunteers)
+                {
+                    volunteersconnnectionids.Add(await _connectedUsers.QueryConnectUserAsync(volunteer.Account));
+                }
+                foreach(var volunteersconnnectionid in volunteersconnnectionids)
+                {
+                    var volunteerdata = await _userData.QueryUserDatasAsync(volunteersconnnectionid);
+                    if (Math.Abs(volunteerdata.Latitude-helper.Latitude) <= 0.005 && Math.Abs(volunteerdata.Longitude-helper.Longitude) <= 0.005)
+                    {
+
+                    }
+
+                }
+
+            }
+        }
+
     }
 }

@@ -94,10 +94,29 @@ namespace SDTS.ViewModels
                 HubServices hubServices = DependencyService.Get<HubServices>();
                 if (hubServices.IsFirstOnpenGlobalView)
                 {
-                    hubServices.hubConnection.On<SensorData>("ReceiveData", (data) =>
+                    //hubServices.hubConnection.On<SensorData>("ReceiveData", (data) =>
+                    //{
+                    //    int index;
+                    //    if (PinsIndex.TryGetValue(data.user.Account, out index))
+                    //    {
+                    //        Position newlocation = new Position(data.Latitude, data.Longitude);
+                    //        MainThread.BeginInvokeOnMainThread(() =>
+                    //        {
+                    //            Pins[index].Position = newlocation;
+                    //            //Debug.WriteLine("\nLatitude:" + Pins[index].Position.Latitude+ "\nLongitude:" + Pins[index].Position .Longitude);
+                    //        });
+                    //    }
+                    //    else
+                    //    {
+                    //        Debug.WriteLine("没有找到对应用户的索引");
+                    //    }
+
+                    //});
+
+                    hubServices.hubConnection.On<SensorsData>("ReceiveDataFromOthers", (data) =>
                     {
                         int index;
-                        if (PinsIndex.TryGetValue(data.user.Account, out index))
+                        if (PinsIndex.TryGetValue(data.Account, out index))
                         {
                             Position newlocation = new Position(data.Latitude, data.Longitude);
                             MainThread.BeginInvokeOnMainThread(() =>

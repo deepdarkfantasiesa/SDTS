@@ -211,7 +211,8 @@ namespace SDTS.Services
                 if (IsConnected.Equals(true))
                 {
                     readSensors = DependencyService.Get<ReadSensorsrData>();
-                    readSensors.ClearData();
+                    readSensors.ToggleAccelerometer();
+                    //readSensors.ClearData();
 
                     SensorsTimer.Interval = 1000;
                     SensorsTimer.Elapsed += SendSensorsData;
@@ -231,7 +232,7 @@ namespace SDTS.Services
         ReadSensorsrData readSensors = null;
         public async void SendSensorsData(Object source, System.Timers.ElapsedEventArgs e)
         {
-            //await SendSensorsDataToGuardian();
+            await SendSensorsDataToGuardian();
         }
         public async Task SendSensorsDataToGuardian()
         {
@@ -265,10 +266,12 @@ namespace SDTS.Services
 
                 if(location!=null)
                 {
-                    await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    //await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    await hubConnection.InvokeAsync("BackEndReceiveData", new SensorsData()
                     {
                         //把传感器数据全部读出来打包好发给后端
-                        user = GlobalVariables.user,
+                        //user = GlobalVariables.user,
+                        Account = GlobalVariables.user.Account,
                         dataBar = readSensors.dataBar,
                         dataMag = readSensors.dataMag,
                         dataGyr = readSensors.dataGyr,
@@ -281,10 +284,12 @@ namespace SDTS.Services
                 }
                 else
                 {
-                    await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    //await hubConnection.InvokeAsync("SendSensorsDataToBackEnd", new SensorData()
+                    await hubConnection.InvokeAsync("BackEndReceiveData", new SensorsData()
                     {
                         //把传感器数据全部读出来打包好发给后端
-                        user = GlobalVariables.user,
+                        //user = GlobalVariables.user,
+                        Account = GlobalVariables.user.Account,
                         dataBar = readSensors.dataBar,
                         dataMag = readSensors.dataMag,
                         dataGyr = readSensors.dataGyr,

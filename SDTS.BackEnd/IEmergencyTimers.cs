@@ -9,5 +9,6 @@ namespace SDTS.BackEnd
     public interface IEmergencyTimers
     {
         public void Init();
+        public void InitTimer();
     }
 }

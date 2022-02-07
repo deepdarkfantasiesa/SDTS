@@ -14,10 +14,11 @@ namespace SDTS.DataAccess.Interface
         public User SignIn(string account, string password);
 
         public User GetUser(string useraccount);
-        public bool SignOut(string useraccount);
+        public Task<bool> SignOut(string useraccount);
         public List<User> GetGuardians(string account);
         public string Invite(string account, string code);
         public List<User> GetWards(string account);
         public User GetWardDetail(string account);
+        public Task<List<User>> GetVolunteers();
     }
 }

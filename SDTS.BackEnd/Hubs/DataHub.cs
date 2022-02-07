@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Models;
 using SDTS.DataAccess.Interface;
+using SDTS.DataAccess.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,13 @@ namespace SDTS.BackEnd.Hubs
         IEmergencyTimers timers;
         private readonly IUserRepository _user;
         private readonly IConnectedUsersRepository _connectedUsers;
-        public DataHub(IMockData data,IEmergencyTimers emergency, IUserRepository user,IConnectedUsersRepository connectedUsers)
+        private readonly IUserDataRepository _userData;
+        private readonly IEmergencyHelpersRepository _emergencyHelpers;
+        public DataHub(IMockData data,IEmergencyTimers emergency, 
+            IUserRepository user,
+            IConnectedUsersRepository connectedUsers, 
+            IUserDataRepository userData,
+            IEmergencyHelpersRepository emergencyHelpers)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
@@ -26,14 +33,13 @@ namespace SDTS.BackEnd.Hubs
 
             _user = user;
             _connectedUsers = connectedUsers;
+            _userData = userData;
+            _emergencyHelpers = emergencyHelpers;
         }
         //要，手机端调用发送数据
         public async Task SendSensorsDataToBackEnd(SensorData data)
         {
             var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
-
-            //data.Latitude = data.Latitude + 1;
-            //data.Longitude = data.Longitude + 2;
 
             if(type.Equals("被监护人"))
             {
@@ -77,6 +83,102 @@ namespace SDTS.BackEnd.Hubs
             //Debug.WriteLine(data.user.Name);
             //Debug.WriteLine(data.dateTime);
         }
+
+        public async Task BackEndReceiveData(SensorsData data)
+        {
+            var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
+            data.ConnectionId = Context.ConnectionId;
+            /*计算传感器数据*/
+            var computeddata = ComputeData(data,type);
+            /*计算传感器数据*/
+
+            if (type.Equals("被监护人"))
+            {
+                await SendDataToOthers(computeddata);
+                //await _userData.AlterUserDatasAsync(computeddata);
+            }
+
+            if (type.Equals("志愿者") || type.Equals("监护人"))
+            {
+                //var groupname = mock.UserInRescuerGroup(data.user.Account);
+                //if (groupname != null)
+                //{
+                //    await Clients.Group(groupname).SendAsync("ReceiveRescuerData", data);
+                //}
+
+                //await _userData.AlterUserDatasAsync(computeddata);
+            }
+            await _userData.AlterUserDatasAsync(computeddata);
+
+
+
+
+
+            Debug.WriteLine($"Name:{data.Account} Acc:{data.dataAcc.Count} Lat:{data.Latitude} Long:{data.Longitude}");
+
+            //Debug.WriteLine(data.dataAcc.Count);
+            //Debug.WriteLine(data.dataBar.Count);
+            //Debug.WriteLine(data.dataGyr.Count);
+            //Debug.WriteLine(data.dataMag.Count);
+            //Debug.WriteLine(data.dataOri.Count);
+            //Debug.WriteLine(data.Latitude);
+            //Debug.WriteLine(data.Longitude);
+            //Debug.WriteLine(data.user.Name);
+            //Debug.WriteLine(data.dateTime);
+        }
+        private SensorsData ComputeData(SensorsData data,string type)
+        {
+            if (data.dataBar != null)
+            {
+                data.BarometerData = data.dataBar.Average();
+            }
+            //用加速度计和陀螺仪计算移动距离后再校准gps数据
+
+
+            if (type.Equals("被监护人"))
+            {
+                foreach (var acc in data.dataAcc)
+                {
+                    if (acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
+                    {
+                        var helper = _user.GetUser(data.Account);
+                        var result= _emergencyHelpers.CreateEmergencyHelper(new EmergencyHelper() {
+                           Name=helper.Name,
+                           Information=helper.Information,
+                           Birthday=helper.Birthday,
+                           Account=helper.Account,
+                           Gender=helper.Gender,
+                            Latitude=data.Latitude,
+                            Longitude=data.Longitude,
+                            dateTime=data.dateTime,
+                            Problem="滑倒",
+                            PhoneNumber=helper.PhoneNumber,
+                            Altitude=data.BarometerData,
+                            ConnectionId=Context.ConnectionId
+                        });
+                        //timers.InitTimer();
+                        Debug.WriteLine(result.Result);
+                    }
+                }
+            }
+
+
+
+            SensorsData computedata = new SensorsData();
+
+            computedata.Latitude = data.Latitude;
+            computedata.Longitude = data.Longitude;
+            computedata.ConnectionId = data.ConnectionId;
+            computedata.dateTime = data.dateTime;
+            computedata.Account = data.Account;
+            //if (data.dataBar != null)
+            //{
+            //    computedata.BarometerData = data.dataBar.Average();
+            //}
+            computedata.BarometerData = data.BarometerData;
+            return computedata;
+        }
+
 
         //推送求救信息给监护人
         public async Task PublishEmergencyInformationTimer(SensorData data)
@@ -196,6 +298,25 @@ namespace SDTS.BackEnd.Hubs
             
         }
 
+        public async Task SendDataToOthers(SensorsData data)
+        {
+            var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
+            var guardians = _user.GetGuardians(wardaccount);
+            List<string> connectguardianids = new List<string>();
+            foreach (var guardian in guardians)
+            {
+                var connectionid =await _connectedUsers.QueryConnectUserAsync(guardian.Account);
+                if(connectionid!=null)
+                {
+                    connectguardianids.Add(connectionid);
+                }
+            }
+            foreach(var connectguardianid in connectguardianids)
+            {
+                await Clients.Client(connectguardianid).SendAsync("ReceiveDataFromOthers", data);//向已连接的监护人发送被监护人的数据
+            }
+
+        }
 
         //要，被监护人把数据发送给监护人，如果此被监护人有救援事件，则同时将数据发送给救援小组
         public async Task SendDataToGuardian(SensorData data)
@@ -286,13 +407,16 @@ namespace SDTS.BackEnd.Hubs
 
             var connectid = Context.ConnectionId;
 
-            if (mock.AddConnectUser(connectaccount, connectid) && mock.AddConnectUserData(connectid, null))
-                await Clients.Client(connectid).SendAsync("Entered", "connect success!");
-            else
-                await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
+            //if (mock.AddConnectUser(connectaccount, connectid) && mock.AddConnectUserData(connectid, null))
+            //    await Clients.Client(connectid).SendAsync("Entered", "connect success!");
+            //else
+            //    await Clients.Client(connectid).SendAsync("Entered", "connect success but fail to add from Dictionary，may be you are already connect!");
 
-            _connectedUsers.AddConnectUser(connectaccount, connectid);
-
+            await _connectedUsers.AddConnectUser(connectaccount, connectid);
+            SensorsData AddData = new SensorsData();
+            AddData.Account = connectaccount;
+            AddData.ConnectionId = connectid;
+            await _userData.AddUserDatasAsync(AddData);
 
         }
 
@@ -302,23 +426,25 @@ namespace SDTS.BackEnd.Hubs
 
             var connectid = Context.ConnectionId;
 
-            if (mock.RemoveConnectUser(connectaccount, connectid)&&mock.RemoveConnectUserData(connectid))
-            {
-                //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
+            //if (mock.RemoveConnectUser(connectaccount, connectid)&&mock.RemoveConnectUserData(connectid))
+            //{
+            //    //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success!");
 
-            } 
-            else
-            {
-                //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
-            }
+            //} 
+            //else
+            //{
+            //    //await Clients.Client(connectid).SendAsync("Lefted", "disconnect success but fail to remove from Dictionary!!");
+            //}
 
 
             //Debug.WriteLine(DateTime.Now);
             //await ThrowException();
             //await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
 
-            _user.SignOut(connectaccount);
-            _connectedUsers.RemoveConnectUser(connectaccount, connectid);
+            await _user.SignOut(connectaccount);
+            await _connectedUsers.RemoveConnectUser(connectaccount, connectid);
+    
+            await _userData.DeleteUserDatasAsync(connectaccount);
 
             await base.OnDisconnectedAsync(exception);
             var username = Context.User.Claims.First(p => p.Type.Equals("Name")).Value;
