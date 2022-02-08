@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Timers;
 using System.Threading.Tasks;
 
 namespace SDTS.BackEnd.Hubs
@@ -20,11 +21,13 @@ namespace SDTS.BackEnd.Hubs
         private readonly IConnectedUsersRepository _connectedUsers;
         private readonly IUserDataRepository _userData;
         private readonly IEmergencyHelpersRepository _emergencyHelpers;
+        private readonly IRescureGroupRepository _rescureGroups;
         public DataHub(IMockData data,IEmergencyTimers emergency, 
             IUserRepository user,
             IConnectedUsersRepository connectedUsers, 
             IUserDataRepository userData,
-            IEmergencyHelpersRepository emergencyHelpers)
+            IEmergencyHelpersRepository emergencyHelpers,
+            IRescureGroupRepository rescureGroups)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
@@ -35,6 +38,7 @@ namespace SDTS.BackEnd.Hubs
             _connectedUsers = connectedUsers;
             _userData = userData;
             _emergencyHelpers = emergencyHelpers;
+            _rescureGroups = rescureGroups;
         }
         //要，手机端调用发送数据
         public async Task SendSensorsDataToBackEnd(SensorData data)
@@ -94,7 +98,7 @@ namespace SDTS.BackEnd.Hubs
 
             if (type.Equals("被监护人"))
             {
-                await SendDataToOthers(computeddata);
+                await SendDataToOthers(computeddata,type);
                 //await _userData.AlterUserDatasAsync(computeddata);
             }
 
@@ -107,6 +111,12 @@ namespace SDTS.BackEnd.Hubs
                 //}
 
                 //await _userData.AlterUserDatasAsync(computeddata);
+                var rescurer = await _rescureGroups.QueryRescurer(computeddata.Account);
+                if(rescurer!=null)
+                {
+                    await Clients.Group(rescurer.GroupName).SendAsync("ReceiveOthersData", computeddata,type);
+                    //Debug.WriteLine("Share Data Successfully");
+                }
             }
             await _userData.AlterUserDatasAsync(computeddata);
 
@@ -114,7 +124,7 @@ namespace SDTS.BackEnd.Hubs
 
 
 
-            Debug.WriteLine($"Name:{data.Account} Acc:{data.dataAcc.Count} Lat:{data.Latitude} Long:{data.Longitude}");
+            //Debug.WriteLine($"Name:{data.Account} Acc:{data.dataAcc.Count} Lat:{data.Latitude} Long:{data.Longitude}");
 
             //Debug.WriteLine(data.dataAcc.Count);
             //Debug.WriteLine(data.dataBar.Count);
@@ -126,11 +136,17 @@ namespace SDTS.BackEnd.Hubs
             //Debug.WriteLine(data.user.Name);
             //Debug.WriteLine(data.dateTime);
         }
+
+        //Timer publishtimer = null;
         private SensorsData ComputeData(SensorsData data,string type)
         {
-            if (data.dataBar != null)
+            if (data.dataBar.Count != 0)
             {
                 data.BarometerData = data.dataBar.Average();
+            }
+            else
+            {
+                data.BarometerData = 0;
             }
             //用加速度计和陀螺仪计算移动距离后再校准gps数据
 
@@ -142,6 +158,7 @@ namespace SDTS.BackEnd.Hubs
                     if (acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
                     {
                         var helper = _user.GetUser(data.Account);
+                        var groupname = DateTime.Now.ToString("yyyyMMddHHmmss") + helper.Account;
                         var result= _emergencyHelpers.CreateEmergencyHelper(new EmergencyHelper() {
                            Name=helper.Name,
                            Information=helper.Information,
@@ -154,10 +171,13 @@ namespace SDTS.BackEnd.Hubs
                             Problem="滑倒",
                             PhoneNumber=helper.PhoneNumber,
                             Altitude=data.BarometerData,
-                            ConnectionId=Context.ConnectionId
+                            ConnectionId=Context.ConnectionId,
+                            GroupName= groupname
                         });
-                        //timers.InitTimer();
-                        Debug.WriteLine(result.Result);
+                        timers.InitTimer();
+                        //Debug.WriteLine(result.Result);
+                        Groups.AddToGroupAsync(Context.ConnectionId, groupname);
+
                     }
                 }
             }
@@ -204,6 +224,19 @@ namespace SDTS.BackEnd.Hubs
 
             
         }
+
+        public async Task UserJoinRescueGroup(string rescueraccount, string helperaccount)
+        {
+            var helper = await _emergencyHelpers.QueryEmergencyHelper(helperaccount);
+            await Groups.AddToGroupAsync(Context.ConnectionId, helper.GroupName);
+            await _rescureGroups.AddToRescureGroup(new RescureGroup()
+            {
+                Account = rescueraccount,
+                ConnectionId = Context.ConnectionId,
+                GroupName = helper.GroupName
+            });
+        }
+        
 
         //要，救援者（加入救援队的志愿者和监护人）端调用
         public async Task VolunteerFinishRescue(User Rescuer, Helpers helper)
@@ -298,7 +331,7 @@ namespace SDTS.BackEnd.Hubs
             
         }
 
-        public async Task SendDataToOthers(SensorsData data)
+        public async Task SendDataToOthers(SensorsData data,string type)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
             var guardians = _user.GetGuardians(wardaccount);
@@ -316,6 +349,11 @@ namespace SDTS.BackEnd.Hubs
                 await Clients.Client(connectguardianid).SendAsync("ReceiveDataFromOthers", data);//向已连接的监护人发送被监护人的数据
             }
 
+            var helper =await _emergencyHelpers.QueryEmergencyHelper(data.Account);
+            if(helper!=null)
+            {
+                await Clients.Group(helper.GroupName).SendAsync("ReceiveOthersData", data,type);
+            }
         }
 
         //要，被监护人把数据发送给监护人，如果此被监护人有救援事件，则同时将数据发送给救援小组

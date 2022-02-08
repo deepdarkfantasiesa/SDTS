@@ -96,13 +96,37 @@ namespace SDTS.Services
             }
             if(GlobalVariables.user.Type.Equals("监护人") || GlobalVariables.user.Type.Equals("志愿者"))
             {
-                hubConnection.On<Helpers>("loadhelpers", (user) =>
+                //hubConnection.On<Helpers>("loadhelpers", (user) =>
+                //{
+                //    if (GlobalVariables.helpers == null)
+                //        GlobalVariables.helpers = new List<Helpers>();
+                //    if (GlobalVariables.helpers.Find(p=>p.UserID==user.UserID)==null)
+                //    {
+                //        GlobalVariables.helpers.Add(user);
+                //        Debug.WriteLine(user.Problem);
+                //        Debug.WriteLine(user.Name);
+
+                //        //发送通知
+                //        INotificationManager notificationManager;
+                //        notificationManager = DependencyService.Get<INotificationManager>();
+                //        string title = $"有人需要救助";
+                //        string message = user.Name+$"需要救助";
+                //        notificationManager.SendNotification(title, message);
+
+                //    }
+                //    else
+                //    {
+                //        Debug.WriteLine(user.UserID);
+                //    }
+                //});
+
+                hubConnection.On<EmergencyHelper>("loadhelpers", (user) =>
                 {
-                    if (GlobalVariables.helpers == null)
-                        GlobalVariables.helpers = new List<Helpers>();
-                    if (GlobalVariables.helpers.Find(p=>p.UserID==user.UserID)==null)
+                    if (GlobalVariables.Ehelpers == null)
+                        GlobalVariables.Ehelpers = new List<EmergencyHelper>();
+                    if (GlobalVariables.Ehelpers.Find(p => p.Account == user.Account) == null)
                     {
-                        GlobalVariables.helpers.Add(user);
+                        GlobalVariables.Ehelpers.Add(user);
                         Debug.WriteLine(user.Problem);
                         Debug.WriteLine(user.Name);
 
@@ -110,17 +134,17 @@ namespace SDTS.Services
                         INotificationManager notificationManager;
                         notificationManager = DependencyService.Get<INotificationManager>();
                         string title = $"有人需要救助";
-                        string message = user.Name+$"需要救助";
+                        string message = user.Name + $"需要救助";
                         notificationManager.SendNotification(title, message);
 
                     }
                     else
                     {
-                        Debug.WriteLine(user.UserID);
+                        Debug.WriteLine(user.Name);
                     }
-
-
                 });
+
+
             }
         }
 

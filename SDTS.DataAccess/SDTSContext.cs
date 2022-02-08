@@ -21,8 +21,8 @@ namespace SDTS.DataAccess
         public DbSet<Invitation> Invitations { get; set; }
         public DbSet<SecureArea> SecureAreas { get; set; }
         public DbSet<EmergencyHelper> EmergencyHelpers { get; set; }
-        //public DbSet<RescureGroup> RescureGroups { get; set; }
-        //public DbSet<IsPublished> IsPublisheds { get; set; }
+        public DbSet<RescureGroup> RescureGroups { get; set; }
+        public DbSet<IsPublished> IsPublisheds { get; set; }
         public DbSet<SensorsData> UserData { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

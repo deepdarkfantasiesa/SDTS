@@ -28,6 +28,17 @@ namespace SDTS.Views
             map.MoveToRegion(mapSpan);
         }
 
+        public RescuePage(EmergencyHelper helper)
+        {
+            InitializeComponent();
+
+            BindingContext = _viewModel = new RescueViewModel();
+            _viewModel.Ehelper = helper;
+
+            MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(helper.Latitude, helper.Longitude), Distance.FromKilometers(0));
+            map.MoveToRegion(mapSpan);
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();

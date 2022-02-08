@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SDTS.DataAccess;
 
 namespace SDTS.DataAccess.Migrations
 {
     [DbContext(typeof(SDTSContext))]
-    partial class SDTSContextModelSnapshot : ModelSnapshot
+    [Migration("20220208030937_AddIsPublisheds")]
+    partial class AddIsPublisheds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -143,30 +145,6 @@ namespace SDTS.DataAccess.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("IsPublisheds");
-                });
-
-            modelBuilder.Entity("Models.RescureGroup", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Account")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ConnectionId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GroupName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("RescureGroups");
                 });
 
             modelBuilder.Entity("Models.SecureArea", b =>

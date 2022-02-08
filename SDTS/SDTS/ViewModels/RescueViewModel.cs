@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
 using Microsoft.AspNetCore.SignalR.Client;
+using Xamarin.Essentials;
 
 namespace SDTS.ViewModels
 {
@@ -22,6 +23,7 @@ namespace SDTS.ViewModels
             Pins = new ObservableCollection<Pin>();
 
             Users = new List<SensorData>();
+            Others = new List<SensorsData>();
         }
 
         bool isBusy = false;
@@ -56,9 +58,9 @@ namespace SDTS.ViewModels
                     }
                 });
 
-                await hubServices.hubConnection.InvokeAsync("VolunteerFinishRescue", GlobalVariables.user, helper);
+                //await hubServices.hubConnection.InvokeAsync("VolunteerFinishRescue", GlobalVariables.user, helper);
 
-                
+                await hubServices.hubConnection.InvokeAsync("SomeBodyFinishRescue", GlobalVariables.user, Ehelper);
             }
 
         });
@@ -66,7 +68,11 @@ namespace SDTS.ViewModels
 
         public Helpers helper { get; set; }
 
+        public EmergencyHelper Ehelper { get; set; }
+
         List<SensorData> Users { get; set; }
+
+        List<SensorsData> Others { get; set; }
 
         async Task ExecuteLoadRescueGroupCommand()
         {
@@ -76,7 +82,52 @@ namespace SDTS.ViewModels
             {
                 HubServices hubServices = DependencyService.Get<HubServices>();
 
-                await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
+                //await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
+                await hubServices.hubConnection.InvokeAsync("UserJoinRescueGroup", GlobalVariables.user.Account, Ehelper.Account);
+
+                hubServices.hubConnection.On<SensorsData,string>("ReceiveOthersData", (data,type) =>
+                {
+                    if (Others.Exists(p => p.Account == data.Account).Equals(false))
+                    {
+                        Others.Add(data);
+
+                        Pin Pin = new Pin
+                        {
+                            Label = type + ":" + data.Name,
+                            Tag = data,
+                            Position = new Position(data.Latitude, data.Longitude)
+                        };
+                        if (data.Account == GlobalVariables.user.Account)
+                        {
+                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Green);
+                        }
+                        else if (type.Equals("被监护人"))
+                        {
+                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Red);
+                        }
+                        else if (type.Equals("监护人"))
+                        {
+                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Blue);
+                        }
+                        else if (type.Equals("志愿者"))
+                        {
+                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Yellow);
+                        }
+                        Pins?.Add(Pin);
+
+                    }
+
+                    foreach (var pin in Pins)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => {
+                            if (((SensorsData)pin.Tag).Account == data.Account)
+                            {
+                                Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
+                                Debug.WriteLine(data.Name + "\n" + data.dateTime);
+                            }
+                        });
+                    }
+                });
 
                 hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
                 {

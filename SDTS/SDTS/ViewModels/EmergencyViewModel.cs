@@ -23,7 +23,6 @@ namespace SDTS.ViewModels
         private string gender;
         private string age;
 
-        //public User helper;
 
         private Pin _pin;
         public Pin Pin//仅仅用于页面数据绑定，不用于Pin的移动
@@ -111,13 +110,37 @@ namespace SDTS.ViewModels
 
 
 
-                if (GlobalVariables.helpers==null)
+                //if (GlobalVariables.helpers==null)
+                //{
+                //    return;
+                //}
+                //var wards = GlobalVariables.helpers;
+
+
+
+                //Pin Pin;
+                //foreach (var ward in wards)
+                //{
+                //    Pin = new Pin
+                //    {
+                //        Label = ward.Name,
+                //        Tag = ward,
+                //        Position = new Position(ward.Latitude, ward.Longitude)
+                //    };
+                //    Pin.Clicked += PinClickedAsync;
+                //    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                //    Pins?.Add(Pin);
+                //    var helper = (Helpers)Pin.Tag;
+                //    Debug.WriteLine(helper.Name + "\n" + helper.Information + "\n" + helper.Birthday + "\n" + helper.Gender);
+                //}
+
+                if (GlobalVariables.Ehelpers == null)
                 {
                     return;
                 }
-                var wards = GlobalVariables.helpers;
+                var wards = GlobalVariables.Ehelpers;
 
-                
+
 
                 Pin Pin;
                 foreach (var ward in wards)
@@ -131,9 +154,10 @@ namespace SDTS.ViewModels
                     Pin.Clicked += PinClickedAsync;
                     Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
                     Pins?.Add(Pin);
-                    var helper = (Helpers)Pin.Tag;
-                    Debug.WriteLine(helper.Name + "\n" + helper.Information + "\n" + helper.Birthday + "\n" + helper.Gender);
+                    //var helper = (Helpers)Pin.Tag;
+                    //Debug.WriteLine(helper.Name + "\n" + helper.Information + "\n" + helper.Birthday + "\n" + helper.Gender);
                 }
+
             }
             catch (Exception ex)
             {
@@ -176,6 +200,7 @@ namespace SDTS.ViewModels
         }
 
         Helpers helper;
+        EmergencyHelper Ehelper;
 
         public Command StartRescue => new Command(async () => {
             var result = await Application.Current.MainPage.DisplayAlert("警告", "您确定要开始救助此人吗", "确定", "取消");
@@ -196,7 +221,8 @@ namespace SDTS.ViewModels
                 //    }
                 //});
 
-                await Application.Current.MainPage.Navigation.PushAsync(new RescuePage(helper));
+                //await Application.Current.MainPage.Navigation.PushAsync(new RescuePage(helper));
+                await Application.Current.MainPage.Navigation.PushAsync(new RescuePage(Ehelper));
             }
         });
 
@@ -206,10 +232,18 @@ namespace SDTS.ViewModels
             {
                 foreach(var pin in Pins)
                 {
-                    if(((Helpers)pin.Tag).Account.Equals(helper.Account))
+                    //if(((Helpers)pin.Tag).Account.Equals(helper.Account))
+                    //{
+                    //    Pins.Remove(pin);
+                    //    GlobalVariables.helpers.Remove(helper);
+                    //    ResetView();
+                    //    return;
+                    //}
+
+                    if (((EmergencyHelper)pin.Tag).Account.Equals(Ehelper.Account))
                     {
                         Pins.Remove(pin);
-                        GlobalVariables.helpers.Remove(helper);
+                        GlobalVariables.Ehelpers.Remove(Ehelper);
                         ResetView();
                         return;
                     }
@@ -223,11 +257,29 @@ namespace SDTS.ViewModels
         });
         async void PinClickedAsync(object sender, EventArgs e)
         {
-            helper = (Helpers)((Pin)sender).Tag;
-            Name = helper.Name;
-            Information = helper.Information;
-            Gender = helper.Gender;
-            Age = (DateTime.Now.Year- helper.Birthday.Year).ToString();
+            //helper = (Helpers)((Pin)sender).Tag;
+            //Name = helper.Name;
+            //Information = helper.Information;
+            //Gender = helper.Gender;
+            //Age = (DateTime.Now.Year- helper.Birthday.Year).ToString();
+            //try
+            //{
+            //    RescueButton.Text = "开始救援";
+            //    GiveUpButton.IsEnabled = true;
+            //    RescueButton.IsEnabled = true;
+            //    RescueButton.BackgroundColor = Color.Green;
+            //    GiveUpButton.BackgroundColor = Color.Red;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine(ex);
+            //}
+
+            Ehelper = (EmergencyHelper)((Pin)sender).Tag;
+            Name = Ehelper.Name;
+            Information = Ehelper.Information;
+            Gender = Ehelper.Gender;
+            Age = (DateTime.Now.Year - Ehelper.Birthday.Year).ToString();
             try
             {
                 RescueButton.Text = "开始救援";
@@ -245,7 +297,8 @@ namespace SDTS.ViewModels
         private void ResetView()
         {
             RescueButton.Text = "请选择目标";
-            helper = new Helpers();
+            //helper = new Helpers();
+            Ehelper = new EmergencyHelper();
             Name = "";
             Information = "";
             Gender = "";

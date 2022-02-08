@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Models;
 using SDTS.BackEnd.Hubs;
+using SDTS.DataAccess;
 using SDTS.DataAccess.Interface;
+using SDTS.DataAccess.Repository;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,26 +19,31 @@ namespace SDTS.BackEnd
     {
         private IMockData mock;
         private IHubContext<DataHub> hubContext;
-        private readonly IEmergencyHelpersRepository _emergencyHelpers;
-        private readonly IUserRepository _user;
-        private readonly IConnectedUsersRepository _connectedUsers;
-        private readonly IUserDataRepository _userData;
+        //private readonly IEmergencyHelpersRepository _emergencyHelpers;
+        //private readonly IUserRepository _user;
+        //private readonly IConnectedUsersRepository _connectedUsers;
+        //private readonly IUserDataRepository _userData;
 
-        public EmergencyTimers(IMockData data, 
-            IHubContext<DataHub> hub, 
-            IEmergencyHelpersRepository emergencyHelpers,
-            IUserRepository user,
-            IConnectedUsersRepository connectedUsers,
-            IUserDataRepository userData)
+        //public EmergencyTimers(IMockData data, 
+        //    IHubContext<DataHub> hub, 
+        //    IEmergencyHelpersRepository emergencyHelpers,
+        //    IUserRepository user,
+        //    IConnectedUsersRepository connectedUsers,
+        //    IUserDataRepository userData)
+        //{
+        //    mock = data;
+        //    hubContext = hub;
+        //    _emergencyHelpers = emergencyHelpers;
+        //    _user = user;
+        //    _connectedUsers = connectedUsers;
+        //    _userData = userData;
+        //}
+        public EmergencyTimers(IMockData data,IHubContext<DataHub> hub)
         {
             mock = data;
             hubContext = hub;
-            _emergencyHelpers = emergencyHelpers;
-            _user = user;
-            _connectedUsers = connectedUsers;
-            _userData = userData;
         }
-        
+
 
         private Timer Emergencytimer;
         public void Init()
@@ -89,45 +98,99 @@ namespace SDTS.BackEnd
             }
         }
 
+        public Timer Emergencystimer;
         public void InitTimer()
         {
-            if (Emergencytimer != null)
+            if (Emergencystimer != null)
                 return;
-            Emergencytimer = new Timer();
-            Emergencytimer.Interval = 5000;
-            Emergencytimer.Elapsed += EmergencyEvents;
-            Emergencytimer.AutoReset = true;
-            Emergencytimer.Enabled = true;
+            Emergencystimer = new Timer();
+            Emergencystimer.Interval = 5000;
+            Emergencystimer.Elapsed += EmergencyEvents;
+            Emergencystimer.AutoReset = true;
+            Emergencystimer.Enabled = true;
+            Debug.WriteLine("timer start");
         }
 
         public async void EmergencyEvents(Object source, System.Timers.ElapsedEventArgs e)
         {
-            var helpers =await _emergencyHelpers.GetAllEmergencyHelper();
-            foreach(var helper in helpers)
+            var services = new ServiceCollection();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IConnectedUsersRepository, ConnectedUsersRepository>();
+            services.AddScoped<IComplexRepository, ComplexRepository>();
+            services.AddScoped<ISecureAreaRepository, SecureAreaRepository>();
+
+            services.AddScoped<IUserDataRepository, UserDataRepository>();
+            services.AddScoped<IEmergencyHelpersRepository, EmergencyHelpersRepository>();
+            services.AddScoped<IIsPublishedsRepository, IsPublishedsRepository>();
+            services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));//手提server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
+
+            var provider = services.BuildServiceProvider();
+            var _user = provider.GetService<IUserRepository>();
+            var _userData = provider.GetService<IUserDataRepository>();
+            var _connectedUsers= provider.GetService<IConnectedUsersRepository>();
+            var _emergencyHelpers = provider.GetService<IEmergencyHelpersRepository>();
+            var _isPublishedsRepository = provider.GetService<IIsPublishedsRepository>();
+
+            var helpers = await _emergencyHelpers.GetAllEmergencyHelper();
+            foreach (var helper in helpers)
             {
+                var ispublisheds = _isPublishedsRepository.QueryUsers(helper.Account).Result;
                 var guardians = _user.GetGuardians(helper.Account);
-                List<string> guardiansconnnectionids = new List<string>();
-                foreach(var guardian in guardians)
+                //List<string> connedctid_guarvoluns = new List<string>();
+                List<string> connectionguardians = new List<string>();
+                List<IsPublished> publishinguser = new List<IsPublished>();
+                foreach (var guardian in guardians)//先默此次求助还未发布给所有监护人
                 {
-                    guardiansconnnectionids.Add(await _connectedUsers.QueryConnectUserAsync(guardian.Account));
+                    if (ispublisheds.Exists(p => p.Account == guardian.Account) == false)
+                    {
+                        var connecteduser = await _connectedUsers.QueryConnectUserAsync(guardian.Account);
+                        if(connecteduser!=null)
+                        {
+                            //connedctid_guarvoluns.Add(connecteduser);
+                            publishinguser.Add(new IsPublished { Account = guardian.Account, ConnectionId = connecteduser, HelperAccount = helper.Account });
+                        }
+                    }
                 }
+
                 var volunteers = _user.GetVolunteers().Result;
                 List<string> volunteersconnnectionids = new List<string>();
-                foreach(var volunteer in volunteers)
+                foreach (var volunteer in volunteers)
                 {
-                    volunteersconnnectionids.Add(await _connectedUsers.QueryConnectUserAsync(volunteer.Account));
+                    if(ispublisheds.Exists(p=>p.Account==volunteer.Account)==false)
+                    {
+                        var connectid = await _connectedUsers.QueryConnectUserAsync(volunteer.Account);
+                        if(connectid!=null)
+                        {
+                            volunteersconnnectionids.Add(connectid);
+                            publishinguser.Add(new IsPublished() { Account = volunteer.Account, ConnectionId = connectid, HelperAccount = helper.Account });
+                        }
+                    }
                 }
-                foreach(var volunteersconnnectionid in volunteersconnnectionids)
+
+                foreach (var volunteersconnnectionid in volunteersconnnectionids)
                 {
                     var volunteerdata = await _userData.QueryUserDatasAsync(volunteersconnnectionid);
-                    if (Math.Abs(volunteerdata.Latitude-helper.Latitude) <= 0.005 && Math.Abs(volunteerdata.Longitude-helper.Longitude) <= 0.005)
+                    if (Math.Abs(volunteerdata.Latitude - helper.Latitude) <= 0.005 
+                        && Math.Abs(volunteerdata.Longitude - helper.Longitude) <= 0.005)
                     {
-
+                        //connedctid_guarvoluns.Add(volunteersconnnectionid);
                     }
-
+                    else
+                    {
+                        publishinguser.Remove(ispublisheds.Where(p => p.ConnectionId == volunteersconnnectionid).FirstOrDefault());
+                    }
                 }
 
+                foreach(var user in publishinguser)
+                {
+                    await hubContext.Clients.Client(user.ConnectionId).SendAsync("loadhelpers", helper);
+                    await _isPublishedsRepository.AddUser(user);
+                    Debug.WriteLine($"publishsuccessfully to{user.Account}");
+                }
             }
+
+
+
         }
 
     }
