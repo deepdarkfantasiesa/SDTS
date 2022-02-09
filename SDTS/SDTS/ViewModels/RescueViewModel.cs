@@ -10,6 +10,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
 using Microsoft.AspNetCore.SignalR.Client;
 using Xamarin.Essentials;
+using SDTS.Views;
 
 namespace SDTS.ViewModels
 {
@@ -39,28 +40,38 @@ namespace SDTS.ViewModels
             set;
         }
 
+        public RescuePage rescuePage;
+
         public Command FinishRescue => new Command(async () => {
             var result = await Application.Current.MainPage.DisplayAlert("警告", "请确认结束此次救援", "确定", "取消");
             if (result.Equals(true))
             {
                 HubServices hubServices = DependencyService.Get<HubServices>();
 
-                hubServices.hubConnection.On<bool,SensorData>("FinishRescueResult", async (message,data) =>
+                //hubServices.hubConnection.On<bool,SensorData>("FinishRescueResult", async (message,data) =>
+                hubServices.hubConnection.On<bool, SensorsData,string>("FinishResult", async (message, data,helperaccount) =>
                 {
 
                     if (message.Equals(true))
                     {
-                        await Application.Current.MainPage.DisplayAlert("通知", "关闭成功", "完成");
+                        var deletehelper = GlobalVariables.Ehelpers.Find(p => p.Account == helperaccount);
+                        GlobalVariables.Ehelpers.Remove(deletehelper);
+                        //Debug.WriteLine("\nFinishResult5\n");
+                        //await Application.Current.MainPage.DisplayAlert("通知", "关闭成功", "完成");
+                        //await rescuePage.DisplayAlert("通知", "关闭成功", "完成");
+                        await Shell.Current.GoToAsync("//EmergencyPage");
+                        //Application.Current.MainPage.Navigation.RemovePage(rescuePage);
+                        //await Application.Current.MainPage.Navigation.PopAsync();
                     }
                     else
                     {
-                        await Application.Current.MainPage.DisplayAlert("通知", $"关闭失败 \nlat:{data.Latitude}\nlon:{data.Longitude}\nbar{data.dataBar[0]}", "返回");
+                        await Application.Current.MainPage.DisplayAlert("通知", $"关闭失败 \nlat:{data.Latitude}\nlon:{data.Longitude}\nbar{data.BarometerData}", "返回");
                     }
                 });
 
                 //await hubServices.hubConnection.InvokeAsync("VolunteerFinishRescue", GlobalVariables.user, helper);
 
-                await hubServices.hubConnection.InvokeAsync("SomeBodyFinishRescue", GlobalVariables.user, Ehelper);
+                await hubServices.hubConnection.InvokeAsync("UserFinishRescue", GlobalVariables.user.Account, Ehelper.Account);
             }
 
         });
@@ -119,15 +130,23 @@ namespace SDTS.ViewModels
 
                     foreach (var pin in Pins)
                     {
-                        MainThread.BeginInvokeOnMainThread(() => {
+                        //MainThread.BeginInvokeOnMainThread(() => {
                             if (((SensorsData)pin.Tag).Account == data.Account)
                             {
                                 Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
-                                Debug.WriteLine(data.Name + "\n" + data.dateTime);
+                                //Debug.WriteLine(data.Name + "\n" + data.dateTime);
                             }
-                        });
+                        //});
                     }
                 });
+                hubServices.hubConnection.On<string>("OthersFinishRescue",async (message) =>
+                {
+                    //await Application.Current.MainPage.DisplayAlert("通知", message, "返回");
+                    GlobalVariables.Ehelpers.Remove(Ehelper);
+                    Debug.WriteLine("\nFinishResult4\n");
+                    await Application.Current.MainPage.Navigation.PopAsync();
+                });
+
 
                 hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
                 {
@@ -176,7 +195,7 @@ namespace SDTS.ViewModels
                     Application.Current.MainPage.DisplayAlert("通知", message, "返回");
                 });
 
-
+              
 
             }
             catch (Exception ex)

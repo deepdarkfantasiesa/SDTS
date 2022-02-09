@@ -43,6 +43,33 @@ namespace SDTS.DataAccess.Repository
 
         }
 
+        public async Task<bool> DeleteRescurerAsync(string rescureraccount)
+        {
+            var table = await _context.RescureGroups.ToListAsync();
+            var selected = table.Where(p => p.Account == rescureraccount).FirstOrDefault();
+            var deletedata = _context.RescureGroups.Attach(selected);
+            if(deletedata.State==EntityState.Unchanged)
+            {
+                _context.RescureGroups.Remove(selected);
+                if(deletedata.State==EntityState.Deleted)
+                {
+                    await _context.SaveChangesAsync();
+                    if(deletedata.State==EntityState.Detached)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
+        public async Task<IEnumerable<RescureGroup>> DeleteRescurersAsync(string groupname)
+        {
+            var table = await _context.RescureGroups.ToListAsync();
+            var selected = table.Where(p => p.GroupName == groupname);
+            _context.RescureGroups.RemoveRange(selected);
+            await _context.SaveChangesAsync();
+            return selected;
+        }
     }
 }

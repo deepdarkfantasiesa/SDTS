@@ -2,6 +2,7 @@
 using SDTS.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -50,8 +51,9 @@ namespace SDTS.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
+            Debug.WriteLine("EmergencyPage OnAppearing!!");
             _viewModel.LoadHelpersCommand.Execute(null);
+            _viewModel.MapClicked.Execute(null);
             var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             if (status == PermissionStatus.Granted)
             {

@@ -22,12 +22,14 @@ namespace SDTS.BackEnd.Hubs
         private readonly IUserDataRepository _userData;
         private readonly IEmergencyHelpersRepository _emergencyHelpers;
         private readonly IRescureGroupRepository _rescureGroups;
+        private readonly IIsPublishedsRepository _isPublisheds;
         public DataHub(IMockData data,IEmergencyTimers emergency, 
             IUserRepository user,
             IConnectedUsersRepository connectedUsers, 
             IUserDataRepository userData,
             IEmergencyHelpersRepository emergencyHelpers,
-            IRescureGroupRepository rescureGroups)
+            IRescureGroupRepository rescureGroups,
+            IIsPublishedsRepository isPublisheds)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
@@ -39,6 +41,7 @@ namespace SDTS.BackEnd.Hubs
             _userData = userData;
             _emergencyHelpers = emergencyHelpers;
             _rescureGroups = rescureGroups;
+            _isPublisheds = isPublisheds;
         }
         //要，手机端调用发送数据
         public async Task SendSensorsDataToBackEnd(SensorData data)
@@ -186,6 +189,7 @@ namespace SDTS.BackEnd.Hubs
 
             SensorsData computedata = new SensorsData();
 
+            computedata.Name = data.Name;
             computedata.Latitude = data.Latitude;
             computedata.Longitude = data.Longitude;
             computedata.ConnectionId = data.ConnectionId;
@@ -236,7 +240,63 @@ namespace SDTS.BackEnd.Hubs
                 GroupName = helper.GroupName
             });
         }
-        
+        public async Task UserFinishRescue(string rescueraccount, string helperaccount)
+        {
+            var rescuerdata = await _userData.QueryUserDatasAsync(Context.ConnectionId);
+            var helperconnectionid =await _connectedUsers.QueryConnectUserAsync(helperaccount);
+            var helperdata = await _userData.QueryUserDatasAsync(helperconnectionid);
+
+            var lat = Math.Abs(rescuerdata.Latitude - helperdata.Latitude);
+            var lon = Math.Abs(rescuerdata.Longitude - helperdata.Longitude);
+            double bardata = 0;
+            if (rescuerdata.BarometerData != 0 && helperdata.BarometerData != 0)
+            {
+                bardata = Math.Abs(rescuerdata.BarometerData - helperdata.BarometerData);
+            }
+            if (lat > 0.003 || lon > 0.003)
+            {
+                if (bardata != 0)
+                {
+                    await Clients.Caller.SendAsync("FinishResult", false, new SensorsData() { Latitude = lat, Longitude = lon, dataBar = new List<double>() { bardata } }, helperaccount);
+                    //Debug.WriteLine("\nFinishResult1\n");
+                }
+                else if (bardata == 0)
+                {
+                    await Clients.Caller.SendAsync("FinishResult", false, new SensorsData() { Latitude = lat, Longitude = lon, dataBar = new List<double>() { 999 } }, helperaccount);
+                    //Debug.WriteLine("\nFinishResult2\n");
+                }
+                return;
+            }
+
+            var helper = await _emergencyHelpers.QueryEmergencyHelper(helperaccount);
+            var groupname = helper.GroupName;
+            var Rescuer = _user.GetUser(rescueraccount);
+            if (groupname != null)
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupname);
+                await Clients.Group(groupname).SendAsync("OthersFinishRescue", Rescuer.Type + ":" + Rescuer.Name + " 完成了救援");
+                var deleterescurerresult = await _rescureGroups.DeleteRescurerAsync(rescueraccount);
+                if (deleterescurerresult.Equals(false))
+                {
+                    return;
+                }
+                var otherrescuers = await _rescureGroups.DeleteRescurersAsync(groupname);
+                foreach(var otherrescuer in otherrescuers)
+                {
+                    await Groups.RemoveFromGroupAsync(otherrescuer.ConnectionId, groupname);
+                }
+                await Groups.RemoveFromGroupAsync(helper.ConnectionId, groupname);
+                var deleteEHelper = await _emergencyHelpers.DeleteEmergencyHelper(helperaccount);
+                await _isPublisheds.DeleteUsers(helperaccount);
+                if (deleteEHelper.Equals(true))
+                {
+                    var rescuer = await _userData.QueryUserDatasAsync(Context.ConnectionId);
+                    //await Clients.Caller.SendAsync("FinishResult", true, null);
+                    await Clients.Caller.SendAsync("FinishResult", true, rescuer, helperaccount);
+                    Debug.WriteLine("\nFinishResult3\n");
+                }
+            }
+        }
 
         //要，救援者（加入救援队的志愿者和监护人）端调用
         public async Task VolunteerFinishRescue(User Rescuer, Helpers helper)

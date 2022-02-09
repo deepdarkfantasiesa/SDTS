@@ -152,7 +152,8 @@ namespace SDTS.ViewModels
                         Position = new Position(ward.Latitude, ward.Longitude)
                     };
                     Pin.Clicked += PinClickedAsync;
-                    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                    //Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Red);
                     Pins?.Add(Pin);
                     //var helper = (Helpers)Pin.Tag;
                     //Debug.WriteLine(helper.Name + "\n" + helper.Information + "\n" + helper.Birthday + "\n" + helper.Gender);

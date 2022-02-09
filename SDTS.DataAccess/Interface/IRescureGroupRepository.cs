@@ -11,5 +11,7 @@ namespace SDTS.DataAccess.Interface
     {
         public Task<bool> AddToRescureGroup(RescureGroup rescureGroup);
         public Task<RescureGroup> QueryRescurer(string rescureraccount);
+        public Task<bool> DeleteRescurerAsync(string rescureraccount);
+        public Task<IEnumerable<RescureGroup>> DeleteRescurersAsync(string groupname);
     }
 }

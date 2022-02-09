@@ -296,6 +296,7 @@ namespace SDTS.Services
                         //把传感器数据全部读出来打包好发给后端
                         //user = GlobalVariables.user,
                         Account = GlobalVariables.user.Account,
+                        Name=GlobalVariables.user.Name,
                         dataBar = readSensors.dataBar,
                         dataMag = readSensors.dataMag,
                         dataGyr = readSensors.dataGyr,

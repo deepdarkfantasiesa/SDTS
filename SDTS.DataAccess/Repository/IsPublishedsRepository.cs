@@ -47,6 +47,7 @@ namespace SDTS.DataAccess.Repository
             var table = await _context.IsPublisheds.ToListAsync();
             var selected = table.Where(p => p.HelperAccount == helperaccount);
             _context.IsPublisheds.RemoveRange(selected);
+            await _context.SaveChangesAsync();
         }
     }
 }

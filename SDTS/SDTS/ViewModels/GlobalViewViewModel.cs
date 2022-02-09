@@ -78,7 +78,8 @@ namespace SDTS.ViewModels
                         Label = ward.Name,
                         Tag=ward
                     };
-                    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                    //Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.AliceBlue);
                     Pins?.Add(Pin);
                     PinsIndex.Add(ward.Account, Pins.Count - 1);
                     

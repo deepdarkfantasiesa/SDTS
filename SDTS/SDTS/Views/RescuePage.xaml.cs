@@ -28,13 +28,24 @@ namespace SDTS.Views
             map.MoveToRegion(mapSpan);
         }
 
+        //public RescuePage(SensorsData data)
+        //{
+        //    InitializeComponent();
+
+        //    BindingContext = _viewModel = new RescueViewModel();
+        //    //_viewModel.helper = helper;
+
+        //    MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(data.Latitude, data.Longitude), Distance.FromKilometers(0));
+        //    map.MoveToRegion(mapSpan);
+        //}
+
         public RescuePage(EmergencyHelper helper)
         {
             InitializeComponent();
 
             BindingContext = _viewModel = new RescueViewModel();
             _viewModel.Ehelper = helper;
-
+            _viewModel.rescuePage = this;
             MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(helper.Latitude, helper.Longitude), Distance.FromKilometers(0));
             map.MoveToRegion(mapSpan);
         }
