@@ -150,6 +150,8 @@ namespace SDTS.Services
 
 
         public bool IsFirstOnpenGlobalView = true;
+        public bool IsFirstOnpenRescuerView = true;
+        public bool IsFirstTimeFinishRescuerView = true;
 
         //public void StartReceiveData()
         //{

@@ -35,6 +35,7 @@ namespace SDTS.ViewModels
             Pins = new ObservableCollection<Pin>();
 
             PinsIndex = new Dictionary<string, int>();
+            WardsAccount = new List<string>();
         }
 
         public void OnAppearing()
@@ -56,35 +57,66 @@ namespace SDTS.ViewModels
             new Tuple<string, Color>("Aqua", Color.Aqua)
         };
 
+        List<string> WardsAccount { get; set; }
+
         async Task ExecuteLoadWardsCommand()
         {
             IsBusy = true;
 
             try
             {
-                Pins.Clear();
-                PinsIndex.Clear();
-                //WardStore dataStore = new WardStore();//123
-                //此处需要请求服务器返回与此监护人绑定的被监护人的信息，并遍历载入Wards集合中
-                //var wards = await dataStore.GetWardsAsync(true);
-                CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
-                //此处需要添加登录成功后解析token并将用户信息以全局变量的形式存储好，取出userid传入RefreshDataAsync
-                var wards = await getwards.RefreshWardsDataAsync();
-                Pin Pin;
-                foreach (var ward in wards)
+                HubServices hubServices = DependencyService.Get<HubServices>();
+                if (hubServices.IsFirstOnpenGlobalView)
                 {
-                    Pin = new Pin
+                    hubServices.hubConnection.On<SensorsData>("ReceiveDataFromOthers", (data) =>
                     {
-                        Label = ward.Name,
-                        Tag=ward
-                    };
-                    //Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
-                    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.AliceBlue);
-                    Pins?.Add(Pin);
-                    PinsIndex.Add(ward.Account, Pins.Count - 1);
-                    
+                        if (WardsAccount.Exists(p => p == data.Account).Equals(false))
+                        {
+                            WardsAccount.Add(data.Account);
+                            Pin Pin = new Pin
+                            {
+                                Label = data.Name,
+                                Tag = data,
+                                Position = new Position(data.Latitude, data.Longitude)
+                            };
+                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Bisque);
+                            Pins?.Add(Pin);
+                        }
+                        else
+                        {
+                            foreach (var pin in Pins)
+                            {
+                                if (((SensorsData)pin.Tag).Account == data.Account)
+                                {
+                                    Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
+                                }
+                            }
+                        }
+                    });
+                    hubServices.IsFirstOnpenGlobalView = false;
+                    //Debug.WriteLine($"\n\n{hubServices.IsFirstOnpenGlobalView}\n\n");
                 }
-            }
+
+                    //Pins.Clear();
+                    //PinsIndex.Clear();
+                    //此处需要请求服务器返回与此监护人绑定的被监护人的信息，并遍历载入Wards集合中
+                    //CommunicateWithBackEnd getwards = new CommunicateWithBackEnd();
+                    //此处需要添加登录成功后解析token并将用户信息以全局变量的形式存储好，取出userid传入RefreshDataAsync
+                    //var wards = await getwards.RefreshWardsDataAsync();
+                    //Pin Pin;
+                    //foreach (var ward in wards)
+                    //{
+                    //    Pin = new Pin
+                    //    {
+                    //        Label = ward.Name,
+                    //        Tag=ward
+                    //    };
+                    //    //Pin.Icon = BitmapDescriptorFactory.DefaultMarker(_colors[0].Item2);
+                    //    Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.AliceBlue);
+                    //    Pins?.Add(Pin);
+                    //    PinsIndex.Add(ward.Account, Pins.Count - 1);
+                    //}
+                }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
@@ -92,9 +124,9 @@ namespace SDTS.ViewModels
             finally
             {
                 IsBusy = false;
-                HubServices hubServices = DependencyService.Get<HubServices>();
-                if (hubServices.IsFirstOnpenGlobalView)
-                {
+                //HubServices hubServices = DependencyService.Get<HubServices>();
+                //if (hubServices.IsFirstOnpenGlobalView)
+                //{
                     //hubServices.hubConnection.On<SensorData>("ReceiveData", (data) =>
                     //{
                     //    int index;
@@ -114,27 +146,55 @@ namespace SDTS.ViewModels
 
                     //});
 
-                    hubServices.hubConnection.On<SensorsData>("ReceiveDataFromOthers", (data) =>
-                    {
-                        int index;
-                        if (PinsIndex.TryGetValue(data.Account, out index))
-                        {
-                            Position newlocation = new Position(data.Latitude, data.Longitude);
-                            MainThread.BeginInvokeOnMainThread(() =>
-                            {
-                                Pins[index].Position = newlocation;
-                                //Debug.WriteLine("\nLatitude:" + Pins[index].Position.Latitude+ "\nLongitude:" + Pins[index].Position .Longitude);
-                            });
-                        }
-                        else
-                        {
-                            Debug.WriteLine("没有找到对应用户的索引");
-                        }
+                    //hubServices.hubConnection.On<SensorsData>("ReceiveDataFromOthers", (data) =>
+                    //{
+                    //    int index;
+                    //    if (PinsIndex.TryGetValue(data.Account, out index))
+                    //    {
+                    //        Position newlocation = new Position(data.Latitude, data.Longitude);
+                    //        MainThread.BeginInvokeOnMainThread(() =>
+                    //        {
+                    //            Pins[index].Position = newlocation;
+                    //            //Debug.WriteLine("\nLatitude:" + Pins[index].Position.Latitude+ "\nLongitude:" + Pins[index].Position .Longitude);
+                    //        });
+                    //    }
+                    //    else
+                    //    {
+                    //        Debug.WriteLine("没有找到对应用户的索引");
+                    //    }
 
-                    });
+                    //});
 
-                    hubServices.IsFirstOnpenGlobalView = false;
-                }
+                    //hubServices.hubConnection.On<SensorsData>("ReceiveDataFromOthers", (data) =>
+                    //{
+                    //    if (WardsAccount.Exists(p => p == data.Account).Equals(false))
+                    //    {
+                    //        WardsAccount.Add(data.Account);
+                    //        Pin Pin = new Pin
+                    //        {
+                    //            Label = data.Name,
+                    //            Tag = data,
+                    //            Position = new Position(data.Latitude, data.Longitude)
+                    //        };
+                    //        Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Bisque);
+                    //        Pins?.Add(Pin);
+                    //    }
+                    //    else
+                    //    {
+                    //        foreach (var pin in Pins)
+                    //        {
+                    //            if (((SensorsData)pin.Tag).Account == data.Account)
+                    //            {
+                    //                Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
+                    //            }
+                    //        }
+                    //    }
+                    //});
+
+            //        hubServices.IsFirstOnpenGlobalView = false;
+            //}
+
+            
 
             }
         }
