@@ -28,6 +28,8 @@ namespace SDTS.BackEnd
         Dictionary<string, string> ConnectedUser = new Dictionary<string, string>();
         Dictionary<string,SensorData> ConnectedUserLocation = new Dictionary<string,SensorData>();//存储连接用户的数据
 
+        public double mockdata { get; set; } = 0;
+
         //要，获取所有求救事件
         public List<Helpers> AllEmergencyHelpers()
         {

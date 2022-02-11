@@ -305,6 +305,28 @@ namespace SDTS.Services
             return areas;
         }
 
+        public async Task<List<SecureArea>> GetWardSecureAreaWithGA(string guardianaccount)
+        {
+            List<SecureArea> areas = new List<SecureArea>();
+
+            Uri uri = new Uri(string.Format(Constants.GetSecureAreasWithGAccountString + "?access_token=" + GlobalVariables.token + "&guardianaccount=" + guardianaccount, string.Empty));
+
+            try
+            {
+                HttpResponseMessage message = await client.GetAsync(uri);
+                if (message.IsSuccessStatusCode)
+                {
+                    string content = await message.Content.ReadAsStringAsync();
+                    areas = JsonSerializer.Deserialize<List<SecureArea>>(content, serializerOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return areas;
+        }
+
         public async Task GetUserInfo()
         {
             Uri uri = new Uri(string.Format(Constants.GetUserInfoString + "?access_token=" + GlobalVariables.token, string.Empty));

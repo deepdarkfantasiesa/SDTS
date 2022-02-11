@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using SDTS.DataAccess.Interface;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,10 +24,12 @@ namespace SDTS.BackEnd.Controllers
 
         IMockData mock;
         private readonly ISecureAreaRepository _securearea;
-        public SecureAreaController(IMockData data, ISecureAreaRepository securearea)
+        private readonly IUserRepository _user;
+        public SecureAreaController(IMockData data, ISecureAreaRepository securearea,IUserRepository user)
         {
             mock = data;
             _securearea = securearea;
+            _user = user;
         }
 
         //[HttpPost]
@@ -143,5 +146,28 @@ namespace SDTS.BackEnd.Controllers
             var areas = await _securearea.FindWardAreasAsync(wardaccount);
             return Ok(areas);
         }
+
+        [HttpGet]
+        [Route("getwardsareas")]
+        public async Task<IActionResult> GetWardsAreas(string guardianaccount)
+        {
+            var wards = _user.GetWards(guardianaccount);
+            List<SecureArea> secureAreas=null;
+            if(wards!=null)
+            {
+                secureAreas = new List<SecureArea>();
+                foreach (var ward in wards)
+                {
+                    var areas = await _securearea.FindWardAreasAsync(ward.Account);
+                    foreach(var area in areas)
+                    {
+                        secureAreas.Add(area);
+                    }
+                }
+            }
+            return Ok(secureAreas);
+        }
+
+
     }
 }

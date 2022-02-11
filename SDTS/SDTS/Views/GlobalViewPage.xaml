@@ -12,7 +12,7 @@
                 <googleMaps:Map.Behaviors>
                     
                     <bindings:BindingPinsBehavior Value="{Binding Pins}"/>
-
+                    <bindings:BindingPolygonsBehavior Value="{Binding Polygons}"/>
                 </googleMaps:Map.Behaviors>
             </googleMaps:Map>
             

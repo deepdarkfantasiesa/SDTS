@@ -23,13 +23,15 @@ namespace SDTS.BackEnd.Hubs
         private readonly IEmergencyHelpersRepository _emergencyHelpers;
         private readonly IRescureGroupRepository _rescureGroups;
         private readonly IIsPublishedsRepository _isPublisheds;
+        private readonly ISecureAreaRepository _secureArea;
         public DataHub(IMockData data,IEmergencyTimers emergency, 
             IUserRepository user,
             IConnectedUsersRepository connectedUsers, 
             IUserDataRepository userData,
             IEmergencyHelpersRepository emergencyHelpers,
             IRescureGroupRepository rescureGroups,
-            IIsPublishedsRepository isPublisheds)
+            IIsPublishedsRepository isPublisheds,
+            ISecureAreaRepository secureArea)
         {
             mock = data;
             //var id = Context.User.Claims.First(p => p.Type.Equals("UserID")).Value;
@@ -42,6 +44,7 @@ namespace SDTS.BackEnd.Hubs
             _emergencyHelpers = emergencyHelpers;
             _rescureGroups = rescureGroups;
             _isPublisheds = isPublisheds;
+            _secureArea = secureArea;
         }
         //要，手机端调用发送数据
         public async Task SendSensorsDataToBackEnd(SensorData data)
@@ -96,7 +99,7 @@ namespace SDTS.BackEnd.Hubs
             var type = Context.User.Claims.First(p => p.Type.Equals("Type")).Value;
             data.ConnectionId = Context.ConnectionId;
             /*计算传感器数据*/
-            var computeddata = ComputeData(data,type);
+            var computeddata =await ComputeData(data,type);
             /*计算传感器数据*/
 
             if (type.Equals("被监护人"))
@@ -141,8 +144,32 @@ namespace SDTS.BackEnd.Hubs
         }
 
         //Timer publishtimer = null;
-        private SensorsData ComputeData(SensorsData data,string type)
+        //private SensorsData ComputeData(SensorsData data, string type)
+        private async Task<SensorsData> ComputeData(SensorsData data,string type)
         {
+            /*模拟gps数据*/
+            if(data.Account=="1")
+            {
+                var result = await _emergencyHelpers.QueryEmergencyHelper(data.Account);
+                if(result==null)
+                {
+                    data.Latitude = 22.3254973 + mock.mockdata;
+                    data.Longitude = 114.1671742 + mock.mockdata;
+                    mock.mockdata += 0.0000003;
+
+                }
+                else
+                {
+                    var helperdata = await _userData.QueryUserDatasAsync(Context.ConnectionId);
+                    data.Latitude = helperdata.Latitude - mock.mockdata;
+                    data.Longitude = helperdata.Longitude - mock.mockdata;
+                    mock.mockdata += 0.0000003;
+                }
+                
+            }
+            /*模拟gps数据*/
+
+
             if (data.dataBar.Count != 0)
             {
                 data.BarometerData = data.dataBar.Average();

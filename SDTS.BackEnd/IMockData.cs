@@ -9,6 +9,7 @@ namespace SDTS.BackEnd
 {
     public interface IMockData
     {
+        public double mockdata { get; set; }
         public User getdetail(int userid);
         public List<User> getwards(int userid);
 

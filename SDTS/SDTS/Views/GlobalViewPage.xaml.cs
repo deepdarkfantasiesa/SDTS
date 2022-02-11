@@ -20,7 +20,7 @@ namespace SDTS.Views
             InitializeComponent();
 
             
-            MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(22.26, 114.12), Distance.FromKilometers(0));
+            MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(22.3254973, 114.1671742), Distance.FromKilometers(0));
             map.MoveToRegion(mapSpan);
             //DisplayPromptAsync
             BindingContext = _viewModel = new GlobalViewViewModel();

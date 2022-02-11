@@ -36,6 +36,8 @@ namespace SDTS.ViewModels
 
             PinsIndex = new Dictionary<string, int>();
             WardsAccount = new List<string>();
+
+            Polygons = new ObservableCollection<Polygon>();
         }
 
         public void OnAppearing()
@@ -59,12 +61,52 @@ namespace SDTS.ViewModels
 
         List<string> WardsAccount { get; set; }
 
+        public ObservableCollection<Polygon> Polygons { get; set; }
+        List<SecureArea> secureAreas = new List<SecureArea>();
+
         async Task ExecuteLoadWardsCommand()
         {
             IsBusy = true;
 
             try
             {
+                Polygons.Clear();
+                secureAreas.Clear();
+                CommunicateWithBackEnd getareas = new CommunicateWithBackEnd();
+
+                secureAreas = await getareas.GetWardSecureAreaWithGA(GlobalVariables.user.Account);
+                Polygon pol;
+                foreach (var area in secureAreas)
+                {
+                    string[] latgroup = area.Latitude.Split(",");
+                    string[] longroup = area.Longitude.Split(",");
+
+                    pol = new Polygon();
+
+                    for (int i = 0; i < latgroup.Length; i++)
+                    {
+                        pol.Positions.Add(new Position(double.Parse(latgroup[i]), double.Parse(longroup[i])));
+                    }
+                    pol.Clicked += Polygon_Clicked;
+                    pol.StrokeWidth = 3f;
+                    pol.IsClickable = true;
+                    pol.Tag = area.areaid;
+                    if (area.status)
+                    {
+                        pol.StrokeColor = Color.Green;
+                        pol.FillColor = Color.FromRgba(255, 0, 0, 64);
+                    }
+                    else
+                    {
+                        pol.StrokeColor = Color.Black;
+                        pol.FillColor = Color.FromRgba(126, 0, 0, 20);
+                    }
+                    Polygons.Add(pol);
+                }
+
+
+
+
                 HubServices hubServices = DependencyService.Get<HubServices>();
                 if (hubServices.IsFirstOnpenGlobalView)
                 {
@@ -116,7 +158,7 @@ namespace SDTS.ViewModels
                     //    Pins?.Add(Pin);
                     //    PinsIndex.Add(ward.Account, Pins.Count - 1);
                     //}
-                }
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
@@ -198,5 +240,26 @@ namespace SDTS.ViewModels
 
             }
         }
+
+        private async void Polygon_Clicked(object sender, EventArgs e)
+        {
+            var pol = (Polygon)sender;//选中的安全区域
+
+            //string action;
+            //var se = secureAreas.Find(p => p.id == pol.ZIndex);//p.id改成p.areaid
+            //var se = secureAreas.Find(p => int.Parse(p.areaid) == pol.ZIndex);
+            var se = secureAreas.Find(p => p.areaid == pol.Tag.ToString());
+
+            //bool res;
+            //res = await Application.Current.MainPage.DisplayAlert("安全区域基本信息", "创建者：" + se.creatername + "\n被监护人：" + se.wardname + "\n创建时间：" + se.createtime + "\n说明：" + se.information + "\n状态：" + se.status, "编辑", "取消");
+            await Application.Current.MainPage.DisplayAlert(
+                "安全区域详情", 
+                $"创建者：{se.creatername}\n被监护人：{ se.wardname}\n创建时间：{se.createtime}\n说明：{se.information}", 
+                "返回");
+
+        }
+
+
+
     }
 }
