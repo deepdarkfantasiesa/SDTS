@@ -122,7 +122,8 @@ namespace SDTS.BackEnd
             services.AddScoped<IUserDataRepository, UserDataRepository>();
             services.AddScoped<IEmergencyHelpersRepository, EmergencyHelpersRepository>();
             services.AddScoped<IIsPublishedsRepository, IsPublishedsRepository>();
-            services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));//手提server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
+            //services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));//手提server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
+            services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB;User ID=sa;Password=sa;"));
 
             var provider = services.BuildServiceProvider();
             var _user = provider.GetService<IUserRepository>();
@@ -131,63 +132,138 @@ namespace SDTS.BackEnd
             var _emergencyHelpers = provider.GetService<IEmergencyHelpersRepository>();
             var _isPublishedsRepository = provider.GetService<IIsPublishedsRepository>();
 
-            var helpers = await _emergencyHelpers.GetAllEmergencyHelper();
-            foreach (var helper in helpers)
+            try
             {
-                var ispublisheds = _isPublishedsRepository.QueryUsers(helper.Account).Result;
-                var guardians = _user.GetGuardians(helper.Account);
-                //List<string> connedctid_guarvoluns = new List<string>();
-                List<string> connectionguardians = new List<string>();
-                List<IsPublished> publishinguser = new List<IsPublished>();
-                foreach (var guardian in guardians)//先默此次求助还未发布给所有监护人
+                var helpers = await _emergencyHelpers.GetAllEmergencyHelper();
+                foreach (var helper in helpers)
                 {
-                    if (ispublisheds.Exists(p => p.Account == guardian.Account) == false)
+                    var ispublisheds = await _isPublishedsRepository.QueryUsersAsync(helper.Account);
+                    var guardians = await _user.GetGuardiansAsync(helper.Account);
+                    //List<string> connedctid_guarvoluns = new List<string>();
+                    List<string> connectionguardians = new List<string>();
+                    List<IsPublished> publishinguser = new List<IsPublished>();
+                    foreach (var guardian in guardians)//先默此次求助还未发布给所有监护人
                     {
-                        var connecteduser = await _connectedUsers.QueryConnectUserAsync(guardian.Account);
-                        if(connecteduser!=null)
+                        if (ispublisheds == null)
                         {
-                            //connedctid_guarvoluns.Add(connecteduser);
-                            publishinguser.Add(new IsPublished { Account = guardian.Account, ConnectionId = connecteduser, HelperAccount = helper.Account });
+                            ispublisheds = new List<IsPublished>();
+                        }
+
+                        if (ispublisheds.Exists(p => p.Account == guardian.Account) == false)
+                        {
+                            var connecteduser = await _connectedUsers.QueryConnectUserAsync(guardian.Account);
+                            if (connecteduser != null)
+                            {
+                                //connedctid_guarvoluns.Add(connecteduser);
+                                publishinguser.Add(new IsPublished { Account = guardian.Account, ConnectionId = connecteduser, HelperAccount = helper.Account });
+                            }
                         }
                     }
-                }
 
-                var volunteers = _user.GetVolunteers().Result;
-                List<string> volunteersconnnectionids = new List<string>();
-                foreach (var volunteer in volunteers)
-                {
-                    if(ispublisheds.Exists(p=>p.Account==volunteer.Account)==false)
+                    var volunteers = await _user.GetVolunteers();
+                    List<string> volunteersconnnectionids = new List<string>();
+                    foreach (var volunteer in volunteers)
                     {
-                        var connectid = await _connectedUsers.QueryConnectUserAsync(volunteer.Account);
-                        if(connectid!=null)
+                        if (ispublisheds.Exists(p => p.Account == volunteer.Account) == false)
                         {
-                            volunteersconnnectionids.Add(connectid);
-                            publishinguser.Add(new IsPublished() { Account = volunteer.Account, ConnectionId = connectid, HelperAccount = helper.Account });
+                            var connectid = await _connectedUsers.QueryConnectUserAsync(volunteer.Account);
+                            if (connectid != null)
+                            {
+                                volunteersconnnectionids.Add(connectid);
+                                publishinguser.Add(new IsPublished() { Account = volunteer.Account, ConnectionId = connectid, HelperAccount = helper.Account });
+                            }
                         }
                     }
-                }
 
-                foreach (var volunteersconnnectionid in volunteersconnnectionids)
-                {
-                    var volunteerdata = await _userData.QueryUserDatasAsync(volunteersconnnectionid);
-                    if (Math.Abs(volunteerdata.Latitude - helper.Latitude) <= 0.005 
-                        && Math.Abs(volunteerdata.Longitude - helper.Longitude) <= 0.005)
+                    foreach (var volunteersconnnectionid in volunteersconnnectionids)
                     {
-                        //connedctid_guarvoluns.Add(volunteersconnnectionid);
+                        var volunteerdata = await _userData.QueryUserDatasAsync(volunteersconnnectionid);
+                        if (Math.Abs(volunteerdata.Latitude - helper.Latitude) <= 0.005
+                            && Math.Abs(volunteerdata.Longitude - helper.Longitude) <= 0.005)
+                        {
+                            //connedctid_guarvoluns.Add(volunteersconnnectionid);
+                        }
+                        else
+                        {
+                            publishinguser.Remove(ispublisheds.Where(p => p.ConnectionId == volunteersconnnectionid).FirstOrDefault());
+                        }
                     }
-                    else
-                    {
-                        publishinguser.Remove(ispublisheds.Where(p => p.ConnectionId == volunteersconnnectionid).FirstOrDefault());
-                    }
-                }
 
-                foreach(var user in publishinguser)
-                {
-                    await hubContext.Clients.Client(user.ConnectionId).SendAsync("loadhelpers", helper);
-                    await _isPublishedsRepository.AddUser(user);
-                    Debug.WriteLine($"publishsuccessfully to{user.Account}");
+                    foreach (var user in publishinguser)
+                    {
+                        await hubContext.Clients.Client(user.ConnectionId).SendAsync("loadhelpers", helper);
+                        await _isPublishedsRepository.AddUser(user);
+                        Debug.WriteLine($"publishsuccessfully to{user.Account}");
+                    }
                 }
             }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            //var helpers = await _emergencyHelpers.GetAllEmergencyHelper();
+            //foreach (var helper in helpers)
+            //{
+            //    var ispublisheds =await _isPublishedsRepository.QueryUsersAsync(helper.Account);
+            //    var guardians = await _user.GetGuardiansAsync(helper.Account);
+            //    //List<string> connedctid_guarvoluns = new List<string>();
+            //    List<string> connectionguardians = new List<string>();
+            //    List<IsPublished> publishinguser = new List<IsPublished>();
+            //    foreach (var guardian in guardians)//先默此次求助还未发布给所有监护人
+            //    {
+            //        if(ispublisheds==null)
+            //        {
+            //            ispublisheds = new List<IsPublished>();
+            //        }
+
+            //        if (ispublisheds.Exists(p => p.Account == guardian.Account) == false)
+            //        {
+            //            var connecteduser = await _connectedUsers.QueryConnectUserAsync(guardian.Account);
+            //            if(connecteduser!=null)
+            //            {
+            //                //connedctid_guarvoluns.Add(connecteduser);
+            //                publishinguser.Add(new IsPublished { Account = guardian.Account, ConnectionId = connecteduser, HelperAccount = helper.Account });
+            //            }
+            //        }
+            //    }
+
+            //    var volunteers = await _user.GetVolunteers();
+            //    List<string> volunteersconnnectionids = new List<string>();
+            //    foreach (var volunteer in volunteers)
+            //    {
+            //        if(ispublisheds.Exists(p=>p.Account==volunteer.Account)==false)
+            //        {
+            //            var connectid = await _connectedUsers.QueryConnectUserAsync(volunteer.Account);
+            //            if(connectid!=null)
+            //            {
+            //                volunteersconnnectionids.Add(connectid);
+            //                publishinguser.Add(new IsPublished() { Account = volunteer.Account, ConnectionId = connectid, HelperAccount = helper.Account });
+            //            }
+            //        }
+            //    }
+
+            //    foreach (var volunteersconnnectionid in volunteersconnnectionids)
+            //    {
+            //        var volunteerdata = await _userData.QueryUserDatasAsync(volunteersconnnectionid);
+            //        if (Math.Abs(volunteerdata.Latitude - helper.Latitude) <= 0.005 
+            //            && Math.Abs(volunteerdata.Longitude - helper.Longitude) <= 0.005)
+            //        {
+            //            //connedctid_guarvoluns.Add(volunteersconnnectionid);
+            //        }
+            //        else
+            //        {
+            //            publishinguser.Remove(ispublisheds.Where(p => p.ConnectionId == volunteersconnnectionid).FirstOrDefault());
+            //        }
+            //    }
+
+            //    foreach(var user in publishinguser)
+            //    {
+            //        await hubContext.Clients.Client(user.ConnectionId).SendAsync("loadhelpers", helper);
+            //        await _isPublishedsRepository.AddUser(user);
+            //        Debug.WriteLine($"publishsuccessfully to{user.Account}");
+            //    }
+            //}
 
 
 

@@ -13,6 +13,7 @@ namespace SDTS
 
         private static string ipadress = "192.168.50.113";
         private static string port = "24082";
+        //private static string port = "2450";
         public static string host = ipadress + ":" + port;
 
         private static string SignController = "/api/sign/";

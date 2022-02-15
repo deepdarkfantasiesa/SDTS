@@ -89,9 +89,9 @@ namespace SDTS.DataAccess.Repository
             return false;
         }
 
-        public List<User> GetGuardians(string account)
+        public async Task<List<User>> GetGuardiansAsync(string account)
         {
-            var SelectedUsers = _context.GuardiansAndWards.Where(p => p.WardAccount == account).ToList();
+            var SelectedUsers =await _context.GuardiansAndWards.Where(p => p.WardAccount == account).ToListAsync();
             List<User> guardians = null;
             if (SelectedUsers != null)
             {

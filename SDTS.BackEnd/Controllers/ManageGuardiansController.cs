@@ -49,13 +49,13 @@ namespace SDTS.BackEnd.Controllers
 
         [HttpGet]
         [Route("getguardians")]
-        public IActionResult GetGuardians()
+        public async Task<IActionResult> GetGuardians()
         {
             //var account = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
             //var result = mock.getguardians(account);
             //return Ok(result);
             var account = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
-            var result = _user.GetGuardians(account);
+            var result = await _user.GetGuardiansAsync(account);//ssd
             return Ok(result);
         }
     }

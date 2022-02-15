@@ -112,7 +112,8 @@ namespace SDTS.BackEnd
 
             services.AddSignalR();
 
-            services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));//手提server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
+            //services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));//手提server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
+            services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB;User ID=sa;Password=sa;"));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IConnectedUsersRepository, ConnectedUsersRepository>();
             services.AddScoped<IComplexRepository, ComplexRepository>(); 

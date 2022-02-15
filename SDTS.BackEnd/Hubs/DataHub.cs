@@ -148,25 +148,25 @@ namespace SDTS.BackEnd.Hubs
         private async Task<SensorsData> ComputeData(SensorsData data,string type)
         {
             /*模拟gps数据*/
-            if(data.Account=="1")
-            {
-                var result = await _emergencyHelpers.QueryEmergencyHelper(data.Account);
-                if(result==null)
-                {
-                    data.Latitude = 22.3254973 + mock.mockdata;
-                    data.Longitude = 114.1671742 + mock.mockdata;
-                    mock.mockdata += 0.0000003;
+            //if(data.Account=="1")
+            //{
+            //    var result = await _emergencyHelpers.QueryEmergencyHelper(data.Account);
+            //    if(result==null)
+            //    {
+            //        data.Latitude = 22.3254973 + mock.mockdata;
+            //        data.Longitude = 114.1671742 + mock.mockdata;
+            //        mock.mockdata += 0.0000003;
 
-                }
-                else
-                {
-                    var helperdata = await _userData.QueryUserDatasAsync(Context.ConnectionId);
-                    data.Latitude = helperdata.Latitude - mock.mockdata;
-                    data.Longitude = helperdata.Longitude - mock.mockdata;
-                    mock.mockdata += 0.0000003;
-                }
+            //    }
+            //    else
+            //    {
+            //        var helperdata = await _userData.QueryUserDatasAsync(Context.ConnectionId);
+            //        data.Latitude = helperdata.Latitude - mock.mockdata;
+            //        data.Longitude = helperdata.Longitude - mock.mockdata;
+            //        mock.mockdata += 0.0000003;
+            //    }
                 
-            }
+            //}
             /*模拟gps数据*/
 
 
@@ -185,11 +185,12 @@ namespace SDTS.BackEnd.Hubs
             {
                 foreach (var acc in data.dataAcc)
                 {
-                    if (acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
+                    //if (acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3)
+                    if (await _emergencyHelpers.QueryEmergencyHelper(data.Account) == null && acc != null && acc.Item1 * acc.Item1 + acc.Item2 * acc.Item2 + acc.Item3 * acc.Item3 > 3) 
                     {
                         var helper = _user.GetUser(data.Account);
                         var groupname = DateTime.Now.ToString("yyyyMMddHHmmss") + helper.Account;
-                        var result= _emergencyHelpers.CreateEmergencyHelper(new EmergencyHelper() {
+                        var result=await _emergencyHelpers.CreateEmergencyHelper(new EmergencyHelper() {
                            Name=helper.Name,
                            Information=helper.Information,
                            Birthday=helper.Birthday,
@@ -206,7 +207,7 @@ namespace SDTS.BackEnd.Hubs
                         });
                         timers.InitTimer();
                         //Debug.WriteLine(result.Result);
-                        Groups.AddToGroupAsync(Context.ConnectionId, groupname);
+                        await Groups.AddToGroupAsync(Context.ConnectionId, groupname);
 
                     }
                 }
@@ -421,7 +422,7 @@ namespace SDTS.BackEnd.Hubs
         public async Task SendDataToOthers(SensorsData data,string type)
         {
             var wardaccount = Context.User.Claims.First(p => p.Type.Equals("Account")).Value;
-            var guardians = _user.GetGuardians(wardaccount);
+            var guardians = await _user.GetGuardiansAsync(wardaccount);
             List<string> connectguardianids = new List<string>();
             foreach (var guardian in guardians)
             {

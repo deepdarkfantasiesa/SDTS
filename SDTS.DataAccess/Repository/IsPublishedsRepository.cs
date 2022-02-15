@@ -33,7 +33,7 @@ namespace SDTS.DataAccess.Repository
 
         }
 
-        public async Task<List<IsPublished>> QueryUsers(string helperaccount)
+        public async Task<List<IsPublished>> QueryUsersAsync(string helperaccount)
         {
             var selected = _context.IsPublisheds.Where(p => p.HelperAccount == helperaccount);
 
