@@ -1,14 +1,6 @@
-﻿using Models;
-using SDTS.Services;
+﻿using SDTS.Services;
 using SDTS.Views;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 
@@ -65,7 +57,6 @@ namespace SDTS.ViewModels
         }
         public Command signup => new Command(async () => 
         {
-            //await Shell.Current.GoToAsync($"SignUpPage");
             await Application.Current.MainPage.Navigation.PushAsync(new SignUpPage());
         });
 
@@ -76,25 +67,16 @@ namespace SDTS.ViewModels
 
         public Command signin => new Command(async () => 
         {
-
-            //Debug.WriteLine("username:"+username);
-            //Debug.WriteLine("password:" + password);
-
-            //Sign sign = new Sign();//321
             CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
-            /*
-            GlobalVariables.token = null;
-            GlobalVariables.user = null;
-            */
+        
             await sign.Signin(Account, PassWord);
             if(GlobalVariables.token!=null)
             {
                 await sign.GetUserInfo();
             }
-            //监护人暂时无法登录
+    
             if (GlobalVariables.user != null)
             {
-                //await Shell.Current.GoToAsync($"TestPage");
 
                 HubServices hubServices = DependencyService.Get<HubServices>();
                 hubServices.Init(Constants.host);
@@ -102,27 +84,12 @@ namespace SDTS.ViewModels
 
                 Application.Current.MainPage = new AppShell();
 
-                //判断用户类型，返回到指定的页面
-                //if(GlobalVariables.user.Type.Equals("监护人"))
-                //{
-
-                //    Application.Current.MainPage = new AppShell();
-                //}
-                //else if(GlobalVariables.user.Type.Equals("志愿者"))
-                //{
-                //    Application.Current.MainPage = new AppShell();
-                //}
-                //else if (GlobalVariables.user.Type.Equals("被监护人"))
-                //{
-
-                //}
             }
             else
             {
                 //弹窗提示登陆失败
             }
 
-            //Debug.WriteLine(TokenString.token);
         });
     }
 }

@@ -1,18 +1,10 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Xamarin.Forms;
 using AndroidApp = Android.App.Application;
 using AndroidX.Core.App;
-
 using Android.Graphics;
 using SDTS.ENotification;
 

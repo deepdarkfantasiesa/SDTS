@@ -7,11 +7,9 @@
         <vm:SignUpViewModel/>
     </ContentPage.BindingContext>
 
-
-    <!--<ContentPage.Content>-->
     <ScrollView>
         <Grid>
-            
+
             <Label Grid.Row="0" Grid.Column="0" Text="账号"/>
             <Label Grid.Row="1" Grid.Column="0" Text="密码"/>
             <Label Grid.Row="2" Grid.Column="0" Text="信息"/>
@@ -21,7 +19,7 @@
             <Label Grid.Row="6" Grid.Column="0" Text="生日"/>
             <Label Grid.Row="7" Grid.Column="0" Text="名称"/>
 
-            
+
             <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Account}"/>
             <Entry Grid.Row="1" Grid.Column="1" Text="{Binding PassWord}"/>
             <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Information}"/>
@@ -33,6 +31,5 @@
             <Button Text="注册" Grid.Row="8" Grid.Column="1" Command="{Binding Register}"/>
         </Grid>
 
-        </ScrollView>
-    <!--</ContentPage.Content>-->
+    </ScrollView>
 </ContentPage>

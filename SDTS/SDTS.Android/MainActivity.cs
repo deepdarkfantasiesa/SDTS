@@ -1,6 +1,4 @@
-﻿using System;
-using Xamarin.Forms.GoogleMaps.Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
@@ -12,7 +10,6 @@ using SDTS.ENotification;
 
 namespace SDTS.Droid
 {
-    //[Register("MainActivity")]
     [Activity(Label = "SDTS", 
         Icon = "@mipmap/icon", 
         Theme = "@style/MainTheme", 
@@ -33,12 +30,8 @@ namespace SDTS.Droid
             startServiceIntent.SetAction("ServicesDemo3.action.START_SERVICE");
             StartService(startServiceIntent);
 
-
-            //github的
             Xamarin.FormsGoogleMapsBindings.Init();
             Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
-            //官方包
-            //Xamarin.FormsMaps.Init(this, savedInstanceState);
             var hubservices = new HubServices();
             DependencyService.RegisterSingleton<HubServices>(hubservices);
             LoadApplication(new App());

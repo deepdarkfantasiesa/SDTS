@@ -1,16 +1,12 @@
 ﻿using Models;
-using SDTS.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.GoogleMaps;
 
 namespace SDTS.Services
 {
@@ -52,8 +48,6 @@ namespace SDTS.Services
         public async Task Signin(string account, string password)
         {
             User user = new User();
-            //user.Name = username;
-            //user.PassWord = password;
             Uri uri = new Uri(string.Format(Constants.SigninString + "?account=" + account + "&password=" + password, string.Empty));
             try
             {
@@ -63,14 +57,12 @@ namespace SDTS.Services
                 {
                     //存储token，SignalR传数据、以及修改资料添加（被）监护人要用
                     GlobalVariables.token = await response.Content.ReadAsStringAsync();
-                    //Debug.WriteLine(token);
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(@"\tERROR {0}", ex.Message);
             }
-            //return user;//返回对象待定
         }
 
         public async Task<bool> AddWard(string code)
@@ -129,7 +121,6 @@ namespace SDTS.Services
             {
                 Debug.WriteLine(@"\tERROR {0}", ex.Message);
             }
-
             return ward;
         }
 
@@ -156,7 +147,6 @@ namespace SDTS.Services
         public async Task<ObservableCollection<User>> RefreshGuardiansDataAsync()
         {
             ObservableCollection<User> guardians = new ObservableCollection<User>();
-            //token放在哪需要验证
             Uri uri = new Uri(string.Format(Constants.GetGuardiansString + "?access_token=" + GlobalVariables.token, string.Empty));
 
             try
@@ -178,7 +168,6 @@ namespace SDTS.Services
         public async Task<ObservableCollection<User>> RefreshWardsDataAsync()
         {
             ObservableCollection<User> wards = new ObservableCollection<User>();
-            //token放在哪需要验证
             Uri uri = new Uri(string.Format(Constants.ManageWardsString+"?access_token="+ GlobalVariables.token, string.Empty));
             
             try
@@ -206,11 +195,9 @@ namespace SDTS.Services
                  
                  var json= JsonSerializer.Serialize(area,serializerOptions);
                 StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-                //Debug.WriteLine(content.ReadAsStringAsync().Result);
 
                 HttpResponseMessage response = await client.PutAsync(uri, content);
 
-                //HttpResponseMessage response = await client.GetAsync(uri);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -238,11 +225,9 @@ namespace SDTS.Services
 
                 var json = JsonSerializer.Serialize(area, serializerOptions);
                 StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-                //Debug.WriteLine(content.ReadAsStringAsync().Result);
 
                 HttpResponseMessage response = await client.PostAsync(uri, content);
 
-                //HttpResponseMessage response = await client.GetAsync(uri);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -282,7 +267,6 @@ namespace SDTS.Services
             return false;
         }
 
-        //public async Task<List<SecureArea>> GetWardSecureArea(int wardid)
         public async Task<List<SecureArea>> GetWardSecureArea(string wardaccount)
         {
             List<SecureArea> areas = new List<SecureArea>();
@@ -350,7 +334,6 @@ namespace SDTS.Services
         public async Task<string> GetInvitationCode()
         {
             Uri uri = new Uri(string.Format(Constants.GetInvitationCodeString + "?access_token=" + GlobalVariables.token, string.Empty));
-            //User user = new User();
 
             string content=null;
 
@@ -360,8 +343,6 @@ namespace SDTS.Services
                 if (message.IsSuccessStatusCode)
                 {
                     content = await message.Content.ReadAsStringAsync();
-                    //user = JsonSerializer.Deserialize<User>(content, serializerOptions);
-                    //GlobalVariables.user = user;
                 }
             }
             catch (Exception ex)

@@ -3,9 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Models;
 using SDTS.DataAccess.Interface;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SDTS.DataAccess.Repository
@@ -20,16 +18,6 @@ namespace SDTS.DataAccess.Repository
 
         public async Task<bool> AddUserDatasAsync(SensorsData userData)
         {
-            //var result = await _context.UserData.AddAsync(userData);
-            //if (result.State == EntityState.Added)
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //if (result.State == EntityState.Unchanged)
-            //{
-            //    return true;
-            //}
-            //return false;
             var table = await _context.UserData.ToListAsync();
             var selected = table.Where(p => p.Account == userData.Account).FirstOrDefault();
             if(selected==null)
@@ -50,7 +38,6 @@ namespace SDTS.DataAccess.Repository
         public async Task<bool> AlterUserDatasAsync(SensorsData userData)
         {
             var table = await _context.UserData.ToListAsync();
-            //var selected = table.FirstOrDefault(p => p.ConnectionId == userData.ConnectionId);
             var selected = table.FirstOrDefault(p => p.Account == userData.Account);
             if (selected != null)
             {

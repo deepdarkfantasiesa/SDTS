@@ -2,10 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SDTS.DataAccess.Interface;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SDTS.BackEnd.Controllers
 {
@@ -19,10 +16,8 @@ namespace SDTS.BackEnd.Controllers
             return View();
         }
         private readonly IUserRepository _user;
-        IMockData mock;
-        public UserController(IMockData data, IUserRepository user)
+        public UserController(IUserRepository user)
         {
-            mock = data;
             _user = user;
         }
 
@@ -30,15 +25,10 @@ namespace SDTS.BackEnd.Controllers
         [Route("getuserinfo")]
         public IActionResult GetUserInfo()
         {
-            //var account = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
-            //var user = mock.getuser(account);
-            //return Ok(user);
-
             var account = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
             var user = _user.GetUser(account);
             return Ok(user);
         }
 
-        
     }
 }

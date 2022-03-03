@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
-using SDTS.DataAccess.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SDTS.DataAccess
 {
@@ -26,15 +21,8 @@ namespace SDTS.DataAccess
         public DbSet<SensorsData> UserData { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<UserModel>().ToTable("UserModel");
-            //base.OnModelCreating(modelBuilder);
-
             modelBuilder.Ignore<List<string>>();
-
             modelBuilder.Ignore<List<int>>();
         }
-
-
-
     }
 }

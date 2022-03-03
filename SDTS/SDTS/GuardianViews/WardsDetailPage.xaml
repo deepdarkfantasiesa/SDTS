@@ -2,10 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SDTS.GuardianViews.WardsDetailPage"
-             
              xmlns:googleMaps="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
-             xmlns:bindings="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
-             
              xmlns:vm="clr-namespace:SDTS.ViewModels">
     <ContentPage.BindingContext>
         <vm:WardDetailViewModel/>
@@ -27,12 +24,8 @@
             <Button Text="RemoveWard" Command="{Binding RemoveWard}"/>
 
             <googleMaps:Map VerticalOptions="FillAndExpand" x:Name="map">
-                
+
             </googleMaps:Map>
         </StackLayout>
-        
     </ScrollView>
-
-    
-
 </ContentPage>

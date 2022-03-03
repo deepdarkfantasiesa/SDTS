@@ -1,10 +1,8 @@
 ﻿using Models;
 using SDTS.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -36,7 +34,6 @@ namespace SDTS.ViewModels
 
         private async void GenerateOpcode(object obj)
         {
-            //await Shell.Current.GoToAsync(nameof(AddWardPage));
             CommunicateWithBackEnd cwb = new CommunicateWithBackEnd();
             var code =await cwb.GetInvitationCode();
 
@@ -59,12 +56,8 @@ namespace SDTS.ViewModels
             try
             {
                 Guardians.Clear();
-                //WardStore dataStore = new WardStore();//123
-                //此处需要请求服务器返回与此监护人绑定的被监护人的信息，并遍历载入Wards集合中，WardStore需要重写
-                //var wards = await dataStore.GetWardsAsync(true);
+
                 CommunicateWithBackEnd getguardian = new CommunicateWithBackEnd();
-                //此处需要添加登录成功后解析token并将用户信息以全局变量的形式存储好，取出userid传入RefreshDataAsync
-                //var wards = await getwards.RefreshDataAsync();
                 var guardians = await getguardian.RefreshGuardiansDataAsync();
                 foreach (var guardian in guardians)
                 {

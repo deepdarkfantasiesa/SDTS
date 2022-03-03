@@ -3,9 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Models;
 using SDTS.DataAccess.Interface;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SDTS.DataAccess.Repository
@@ -20,27 +18,6 @@ namespace SDTS.DataAccess.Repository
 
         public async Task<bool> AddWard(string guardianaccount, string code)
         {
-            //var invitation = _context.Invitations.Where(p => p.InviteCode == code).FirstOrDefault();
-            //if(invitation==null)
-            //{
-            //    return false;//邀请码不正确
-            //}
-            //var guardianandward = _context.GuardiansAndWards.Where(p => p.WardAccount == invitation.InviterAccount&&p.GuardianAccount==guardianaccount).FirstOrDefault();
-            //if(guardianandward!=null)
-            //{
-            //    return false;//已存在此被监护人
-            //}
-            //var newguardianandward = new GuardianAndWard() { GuardianAccount=guardianaccount,WardAccount=invitation.InviterAccount};
-            //_context.GuardiansAndWards.Add(newguardianandward);
-            //_context.SaveChangesAsync();
-            //if(_context.GuardiansAndWards.Where(p=>p.WardAccount==newguardianandward.WardAccount&&p.GuardianAccount==newguardianandward.GuardianAccount).FirstOrDefault()!=null)
-            //{
-            //    _context.Invitations.Remove(invitation);
-            //    _context.SaveChangesAsync();
-            //    return true;
-            //}
-            //return false;
-
             var invitation = _context.Invitations.Where(p => p.InviteCode == code).FirstOrDefaultAsync().Result;
             if (invitation == null)
             {
@@ -85,16 +62,9 @@ namespace SDTS.DataAccess.Repository
 
                 //此处后续加入删除对应监护人已创建的安全区域代码
 
-
-
-
-
-
                 return true;
             }
-
-
-                return false;
+            return false;
         }
     }
 }

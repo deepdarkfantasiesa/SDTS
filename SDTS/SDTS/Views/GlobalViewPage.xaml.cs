@@ -1,9 +1,4 @@
 ﻿using SDTS.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
@@ -22,7 +17,6 @@ namespace SDTS.Views
             
             MapSpan mapSpan = MapSpan.FromCenterAndRadius(new Position(22.3254973, 114.1671742), Distance.FromKilometers(0));
             map.MoveToRegion(mapSpan);
-            //DisplayPromptAsync
             BindingContext = _viewModel = new GlobalViewViewModel();
         }
 

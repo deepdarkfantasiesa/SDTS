@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SDTS.DataAccess.Repository
@@ -47,25 +46,6 @@ namespace SDTS.DataAccess.Repository
                 Debug.WriteLine(ex);
             }
             return false;
-
-
-            //var table = await _context.EmergencyHelpers.ToListAsync();
-
-            //var selected = table.Where(p => p.Account == helper.Account).Count();
-            //if(selected!=0)
-            //{
-            //    return false;
-            //}
-            //var result = await _context.EmergencyHelpers.AddAsync(helper);
-            //if(result.State==EntityState.Added)
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //if(result.State==EntityState.Unchanged)
-            //{
-            //    return true;
-            //}
-            //return false;
         }
 
         public async Task<EmergencyHelper> QueryEmergencyHelper(string helperaccount)

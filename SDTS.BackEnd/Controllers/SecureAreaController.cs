@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 
 namespace SDTS.BackEnd.Controllers
 {
-
-    //[Authorize(JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Policy = "guardianspolicy")]
     [ApiController]
     [Route("api/[controller]")]
@@ -22,33 +20,18 @@ namespace SDTS.BackEnd.Controllers
             return View();
         }
 
-        IMockData mock;
         private readonly ISecureAreaRepository _securearea;
         private readonly IUserRepository _user;
-        public SecureAreaController(IMockData data, ISecureAreaRepository securearea,IUserRepository user)
+        public SecureAreaController(ISecureAreaRepository securearea, IUserRepository user)
         {
-            mock = data;
             _securearea = securearea;
             _user = user;
         }
 
-        //[HttpPost]
-        //[Route("postarea")]
         [HttpPut]
         [Route("ctreatearea")]
         public async Task<IActionResult> CreateArea(SecureArea Area)
         {
-            //var createrid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            //var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
-            //Random random = new Random();
-
-            //Area.createrid = createrid;
-            //Area.creatername = creatername;
-            //Area.id = random.Next(101);//这个实际获取需要通过数据库查询返回
-            //mock.addarea(Area);
-            //var newarea = mock.getarea(Area.id);//此处需要执行数据库插入操作，然后查询返回此area返回给客户端
-            //return Ok(newarea);
-
             var createraccount = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
             var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
             Random random = new Random();
@@ -100,21 +83,6 @@ namespace SDTS.BackEnd.Controllers
         [Route("alterarea")]
         public async Task<IActionResult> AlterArea(SecureArea Area)
         {
-            //Area.createtime = DateTime.Now;
-
-            //var createrid = HttpContext.User.Claims.First(p => p.Type.Equals("UserID")).Value;
-            //var creatername = HttpContext.User.Claims.First(p => p.Type.Equals("Name")).Value;
-            //Area.createrid = createrid;
-            //Area.creatername = creatername;
-            //var result= mock.alterarea(Area);
-            //if(result==true)
-            //{
-            //    var newarea = mock.getarea(Area.id);
-
-            //    return Ok(newarea);
-            //}
-            //return BadRequest();
-
             Area.createtime = DateTime.Now;
 
             var createraccount = HttpContext.User.Claims.First(p => p.Type.Equals("Account")).Value;
@@ -131,10 +99,6 @@ namespace SDTS.BackEnd.Controllers
         [Route("deletearea")]
         public async Task<IActionResult> DeleteArea(string areaid)
         {
-            //执行数据库操作
-            //var result= mock.deletearea(area);
-            //return Ok(result);
-
             var result = await _securearea.DeleteareaAsync(areaid);
             return Ok(result);
         }

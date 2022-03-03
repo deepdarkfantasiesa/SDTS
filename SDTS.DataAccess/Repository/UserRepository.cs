@@ -2,11 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Models;
 using SDTS.DataAccess.Interface;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SDTS.DataAccess.Repository
@@ -16,7 +14,6 @@ namespace SDTS.DataAccess.Repository
         private readonly SDTSContext _context;
         public UserRepository(IServiceProvider provider)
         {
-            //_context = provider.CreateScope().ServiceProvider.GetRequiredService<webtestContext>();
             _context = provider.CreateScope().ServiceProvider.GetRequiredService<SDTSContext>();
         }
 
@@ -65,17 +62,6 @@ namespace SDTS.DataAccess.Repository
 
         public async Task<bool> SignOut(string useraccount)
         {
-            //var user = _context.Users.Where(p => p.Account == useraccount).FirstOrDefault();
-            //user.state = "signout";
-            //var edituser = _context.Users.Attach(user);
-            //edituser.State = EntityState.Modified;
-            //_context.SaveChanges();
-            //if(_context.Users.Where(p => p.Account == useraccount).FirstOrDefault().state.Equals("signout"))
-            //{
-            //    return true;
-            //}
-            //return false;
-
             var table =await _context.Users.ToListAsync();
             var user = table.Where(p => p.Account == useraccount).FirstOrDefault();
             var edituser = _context.Users.Attach(user);
@@ -98,7 +84,6 @@ namespace SDTS.DataAccess.Repository
                 guardians = new List<User>();
                 foreach (var SelectedUser in SelectedUsers)
                 {
-                    //var guardian = _context.Users.Where(p => p.Account == SelectedUser.GuardianAccount).FirstOrDefault();
                     var guardian = _context.Users.Where(p => p.Account == SelectedUser.GuardianAccount).Select(a => new User() { Name = a.Name, Information = a.Information, Account = a.Account, state = a.state }).FirstOrDefault();
                     guardians.Add(guardian);
                 }
@@ -115,7 +100,6 @@ namespace SDTS.DataAccess.Repository
                 Wards = new List<User>();
                 foreach (var SelectedUser in SelectedUsers)
                 {
-                    //var ward = _context.Users.Where(p => p.Account == SelectedUser.WardAccount).FirstOrDefault();
                     var ward = _context.Users.Where(p => p.Account == SelectedUser.WardAccount).Select(a => new User() { Name = a.Name, Information = a.Information, Account = a.Account, state = a.state }).FirstOrDefault();
                     Wards.Add(ward);
                 }
@@ -154,9 +138,6 @@ namespace SDTS.DataAccess.Repository
 
         public async Task<List<User>> GetVolunteers()
         {
-            //var table = await _context.Users.ToListAsync();
-            //var volunteers = table.Where(p => p.Type == "志愿者");
-
             var volunteers = _context.Users.Where(p => p.Type == "志愿者");
             return await volunteers.ToListAsync();
         }

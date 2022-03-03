@@ -2,20 +2,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SDTS.BackEnd.Hubs;
 using SDTS.DataAccess;
 using SDTS.DataAccess.Interface;
 using SDTS.DataAccess.Repository;
-using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SDTS.BackEnd
@@ -36,7 +32,6 @@ namespace SDTS.BackEnd
 
             services.AddControllers();
 
-            services.AddSingleton<IMockData,MockData>();
             services.AddSingleton<IEmergencyTimers, EmergencyTimers>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -60,7 +55,6 @@ namespace SDTS.BackEnd
                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api")
                            || path.StartsWithSegments("/hubs/data")
                            )
-                           //path.StartsWithSegments("/api/managewards"))
                            {
                                context.Token = accessToken;
                            }
@@ -111,8 +105,6 @@ namespace SDTS.BackEnd
             }));
 
             services.AddSignalR();
-
-            //services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB; Trusted_Connection = true"));// ÷Ã·server = localhost\\MSSQLSERVER01; database = webtestDB; Trusted_Connection = true
             services.AddDbContextPool<SDTSContext>(options => options.UseSqlServer("server = localhost\\MSSQLSERVER01; database = SDTSDB;User ID=sa;Password=sa;"));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IConnectedUsersRepository, ConnectedUsersRepository>();

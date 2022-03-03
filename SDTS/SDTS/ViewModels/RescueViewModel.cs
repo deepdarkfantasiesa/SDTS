@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
 using Microsoft.AspNetCore.SignalR.Client;
-using Xamarin.Essentials;
 using SDTS.Views;
 
 namespace SDTS.ViewModels
@@ -23,7 +21,6 @@ namespace SDTS.ViewModels
 
             Pins = new ObservableCollection<Pin>();
 
-            Users = new List<SensorData>();
             Others = new List<SensorsData>();
         }
 
@@ -47,25 +44,15 @@ namespace SDTS.ViewModels
             if (result.Equals(true))
             {
                 HubServices hubServices = DependencyService.Get<HubServices>();
-                //if(hubServices.IsFirstTimeFinishRescuerView)
-                //{
-                    
-                //}
-                //hubServices.hubConnection.On<bool,SensorData>("FinishRescueResult", async (message,data) =>
+
                 hubServices.hubConnection.On<bool, SensorsData, string>("FinishResult", async (message, data, helperaccount) =>
                 {
 
                     if (message.Equals(true))
                     {
-                        //Others.Clear();
-                        //Pins.Clear();
                         var deletehelper = GlobalVariables.Ehelpers.Find(p => p.Account == helperaccount);
                         GlobalVariables.Ehelpers.Remove(deletehelper);
-                        //Debug.WriteLine("\nFinishResult5\n");
                         await Application.Current.MainPage.DisplayAlert("通知", "关闭成功", "完成");
-                        //await rescuePage.DisplayAlert("通知", "关闭成功", "完成");
-                        //await Shell.Current.GoToAsync("//EmergencyPage");
-                        //Application.Current.MainPage.Navigation.RemovePage(rescuePage);
                         await Application.Current.MainPage.Navigation.PopAsync();
 
                         hubServices.hubConnection.Remove("OthersFinishRescue");
@@ -78,22 +65,15 @@ namespace SDTS.ViewModels
                     }
                 });
 
-                //await hubServices.hubConnection.InvokeAsync("VolunteerFinishRescue", GlobalVariables.user, helper);
-
                 await hubServices.hubConnection.InvokeAsync("UserFinishRescue", GlobalVariables.user.Account, Ehelper.Account);
-                //hubServices.IsFirstTimeFinishRescuerView = false;
+
                 Debug.WriteLine($"\n\n{hubServices.IsFirstTimeFinishRescuerView}\n\n");
 
             }
 
         });
 
-
-        public Helpers helper { get; set; }
-
         public EmergencyHelper Ehelper { get; set; }
-
-        List<SensorData> Users { get; set; }
 
         List<SensorsData> Others { get; set; }
 
@@ -105,13 +85,9 @@ namespace SDTS.ViewModels
             {
                 HubServices hubServices = DependencyService.Get<HubServices>();
 
-                //await hubServices.hubConnection.InvokeAsync("JoinRescueGroup", GlobalVariables.user, helper);
+
                 await hubServices.hubConnection.InvokeAsync("UserJoinRescueGroup", GlobalVariables.user.Account, Ehelper.Account);
 
-                //if(hubServices.IsFirstOnpenRescuerView)
-                //{
-                    
-                //}
                 hubServices.hubConnection.On<SensorsData, string>("ReceiveOthersData", (data, type) =>
                 {
                     if (Others.Exists(p => p.Account == data.Account).Equals(false))
@@ -146,88 +122,26 @@ namespace SDTS.ViewModels
 
                     foreach (var pin in Pins)
                     {
-                        //MainThread.BeginInvokeOnMainThread(() => {
                         if (((SensorsData)pin.Tag).Account == data.Account)
                         {
                             Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
                             Debug.WriteLine("\n" + data.Name + "\n" + data.dateTime);
                         }
-                        //});
                     }
                     Debug.WriteLine(Pins.Count);
                 });
 
                 hubServices.hubConnection.On<string>("OthersFinishRescue", async (message) =>
                 {
-                    //Pins.Clear();
-                    //Others.Clear();
                     await Application.Current.MainPage.DisplayAlert("通知", message, "返回");
                     GlobalVariables.Ehelpers.Remove(Ehelper);
 
-                    //Debug.WriteLine("\nFinishResult4\n");
                     await Application.Current.MainPage.Navigation.PopAsync();
 
                     hubServices.hubConnection.Remove("OthersFinishRescue");
                     hubServices.hubConnection.Remove("ReceiveOthersData");
                     hubServices.hubConnection.Remove("FinishResult");
                 });
-
-                //hubServices.IsFirstOnpenRescuerView = false;
-                //Debug.WriteLine($"\n\n{hubServices.IsFirstOnpenRescuerView}\n\n");
-
-
-
-
-
-                hubServices.hubConnection.On<SensorData>("ReceiveRescuerData", (data) =>
-                {
-                    if(Users.Exists(p=>p.user.Account==data.user.Account).Equals(false))
-                    {
-                        Users.Add(data);
-
-                        Pin Pin = new Pin
-                        {
-                            Label =data.user.Type+":"+ data.user.Name,
-                            Tag = data,
-                            Position = new Position(data.Latitude, data.Longitude)
-                        };
-                        if (data.user.Account==GlobalVariables.user.Account)
-                        {
-                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Green);
-                        }
-                        else if(data.user.Type.Equals("被监护人"))
-                        {
-                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Red);
-                        }
-                        else if (data.user.Type.Equals("监护人"))
-                        {
-                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Blue);
-                        }
-                        else if (data.user.Type.Equals("志愿者"))
-                        {
-                            Pin.Icon = BitmapDescriptorFactory.DefaultMarker(Color.Yellow);
-                        }
-                        Pins?.Add(Pin);
-
-                    }
-
-                    foreach (var pin in Pins)
-                    {
-                        if (((Helpers)pin.Tag).Account == data.user.Account)
-                        {
-                            Pins[Pins.IndexOf(pin)].Position = new Position(data.Latitude, data.Longitude);
-                            Debug.WriteLine(data.user.Name + "\n" + data.dateTime);
-                        }
-                    }
-                });
-
-                hubServices.hubConnection.On<string>("SomeBodyFinishRescue", (message) =>
-                {
-                    Application.Current.MainPage.DisplayAlert("通知", message, "返回");
-                });
-
-              
-
             }
             catch (Exception ex)
             {

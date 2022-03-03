@@ -11,8 +11,6 @@ namespace SDTS
 
         public static User user;
 
-        public static List<Helpers> helpers;
-
         public static List<EmergencyHelper> Ehelpers;
     }
 }

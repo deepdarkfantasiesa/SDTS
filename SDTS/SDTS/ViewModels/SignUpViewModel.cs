@@ -3,10 +3,7 @@ using SDTS.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
 using Xamarin.Forms;
-using static Models.User;
 
 namespace SDTS.ViewModels
 {
@@ -133,7 +130,6 @@ namespace SDTS.ViewModels
 
         public Command Register => new Command(async () => 
         {
-            //Sign sign = new Sign();//321
             CommunicateWithBackEnd sign = new CommunicateWithBackEnd();
             User user = new User();
             user.Name = UserName;
@@ -148,26 +144,10 @@ namespace SDTS.ViewModels
             if (result.Equals("注册成功"))
             {
                 //待添加，弹窗提示注册成功
-                //await Shell.Current.GoToAsync("../");
                 await Application.Current.MainPage.Navigation.PopToRootAsync();
             }
             //待添加，弹窗提示注册失败
         });
-
-        //没有get,OnPropertyChanged("emergencycontacts")可能有问题
-        //List<string> emergencycontacts;
-        //public string EmergencyContacts 
-        //{ 
-        //    //get
-        //    //{
-        //    //    return emergencycontacts;
-        //    //}
-        //    set
-        //    {
-        //        emergencycontacts.Add(value);
-        //        OnPropertyChanged("emergencycontacts");
-        //    }
-        //}
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)

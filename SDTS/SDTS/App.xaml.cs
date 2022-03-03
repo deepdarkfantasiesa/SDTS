@@ -15,7 +15,7 @@ namespace SDTS
         {
             InitializeComponent();
 
-            DependencyService.Register<MockDataStore>();
+            //DependencyService.Register<MockDataStore>();
             //MainPage = new AppShell();
             DependencyService.Get<INotificationManager>().Initialize();
 

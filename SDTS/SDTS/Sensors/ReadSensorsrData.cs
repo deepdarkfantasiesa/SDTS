@@ -1,20 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Models;
-using SDTS.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Xamarin.Essentials;
-using Xamarin.Forms;
 
 namespace SDTS.Sensors
 {
     public class ReadSensorsrData
     {
-        // Set speed delay for monitoring changes.
         SensorSpeed speed = SensorSpeed.Default;
-        //SensorSpeed speed = SensorSpeed.Fastest;
-        HubServices hubServices;
 
         public ReadSensorsrData()
         {
@@ -24,13 +16,6 @@ namespace SDTS.Sensors
             Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;//磁力计
             OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;//方向传感器
 
-            //MainThread.BeginInvokeOnMainThread(()=> {
-            //    Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;//加速度计
-            //    Barometer.ReadingChanged += Barometer_ReadingChanged;//气压计
-            //    Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;//陀螺仪
-            //    Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;//磁力计
-            //    OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;//方向传感器
-            //});
         }
 
         public List<Tuple<double,double,double>> dataAcc = new List<Tuple<double, double, double>>();
@@ -66,7 +51,6 @@ namespace SDTS.Sensors
             dataGyr.Clear();
             dataMag.Clear();
             dataOri.Clear();
-
         }
 
         public void ToggleAccelerometer()
@@ -86,8 +70,6 @@ namespace SDTS.Sensors
                     Gyroscope.Stop();
                     Magnetometer.Stop();
                     OrientationSensor.Stop();
-
-                    
                 }
                 else
                 {

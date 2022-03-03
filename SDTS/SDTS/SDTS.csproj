@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="VolunteerViews\**" />
+    <EmbeddedResource Remove="VolunteerViews\**" />
+    <None Remove="VolunteerViews\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.1" />
     <PackageReference Include="System.Text.Json" Version="6.0.1" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2291" />  
@@ -34,9 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="GuardianViews\AddWardPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Update="GuardianViews\ManageSecureArea.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -44,9 +47,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GuardianViews\WardsDetailPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TestPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\EmergencyPage.xaml">
@@ -79,9 +79,5 @@
     <None Update="Views\SignPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="VolunteerViews\" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:SDTS.ViewModels"
-             xmlns:views="clr-namespace:SDTS.Views"
              x:Class="SDTS.Views.SignInPage">
     <ContentPage.BindingContext>
         <vm:SignInViewModel/>
@@ -10,28 +9,21 @@
     <ContentPage.Content>
         
         <StackLayout BackgroundColor="White">
-            
+
             <Grid>
-              
                 <Label Text="账号" Grid.Column="0" Grid.Row="0"/>
                 <Entry Grid.Column="1" Grid.Row="0" Text="{Binding Account}"/>
-                
+
                 <Label Text="密码" Grid.Column="0" Grid.Row="1" />
                 <Entry Grid.Column="1" Grid.Row="1" Text="{Binding PassWord}"/>
             </Grid>
             
-            
             <Button Grid.Row="2"  Text="登录" Command="{Binding signin}"/>
-
+            
             <Grid>
                 <Button Grid.Column="0" Grid.Row="3"  Text="注册账号" Command="{Binding signup}"/>
                 <Button Grid.Column="1" Grid.Row="3" Text="忘记密码" Command="{Binding forgetpwd}"/>
             </Grid>
-
-            
-
-
-
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
