@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using DotNetCore.CAP;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace Infrastructure.Core
         bool HasActiveTransaction { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IDbContextTransaction> BeginTransactionAsyncTest(ICapPublisher publisher);
 
         Task CommitTransactionAsync(IDbContextTransaction transaction);
 

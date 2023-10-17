@@ -16,5 +16,7 @@ namespace Infrastructure.Core
         Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
         bool Remove(Entity entity);
         Task<bool> RemoveAsync(Entity entity);
+
+        Task<TEntity> GetAsync(int id);
     }
 }
