@@ -1,0 +1,19 @@
+syntax="proto3";
+
+option csharp_namespace = "user_rpcservices";
+
+package user_rpcservices;
+
+service UserGrpc{
+	rpc CreateUser(CreateUserCommand)returns (CreateUserResult);
+}
+
+message CreateUserCommand{
+	string country=1;
+	int32 UserCardId=2;
+	double UserWealth=3;
+}
+
+message CreateUserResult{
+	int32 UserId=1;
+}

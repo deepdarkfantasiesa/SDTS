@@ -1,6 +1,7 @@
 
 using User.API.Application.Behaviors;
 using User.API.Extension;
+using User.API.Services;
 using User.Infrastructure;
 
 namespace User.API
@@ -28,7 +29,7 @@ namespace User.API
             builder.Services.AddContexts(builder.Configuration.GetValue<string>("MySQL"));
             builder.Services.AddRegister(builder.Configuration);
             builder.Services.AddEventBus(builder.Configuration);
-
+            builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
             
 
             var app = builder.Build();
@@ -52,6 +53,11 @@ namespace User.API
 
 
             app.MapControllers();
+            app.UseRouting();
+            app.UseEndpoints(options =>
+            {
+                options.MapGrpcService<UserService>();
+            });
 
             app.Run();
         }
