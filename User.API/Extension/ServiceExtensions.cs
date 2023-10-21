@@ -28,11 +28,19 @@ namespace User.API.Extension
             {
                 options.UseEntityFramework<UserContext>();
 
-                options.UseRabbitMQ(opt =>
+                //options.UseRabbitMQ(opt =>
+                //{
+                //    configuration.GetSection("RabbitMQ").Bind(opt);
+                //});
+                string connstr = configuration.GetValue<string>("kafka");
+                //options.UseKafka(connstr);
+                options.UseKafka(opt =>
                 {
-                    configuration.GetSection("RabbitMQ").Bind(opt);
+                    //opt.Servers = connstr;
+                    opt.Servers = "192.168.18.107:9092";
                 });
             });
+            
             return services;
         }
 
