@@ -27,7 +27,8 @@ namespace User.API
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
             builder.Services.AddContexts(builder.Configuration.GetValue<string>("MySQL"));
-            builder.Services.AddRegister(builder.Configuration);
+            builder.Services.AddRepositories(builder.Configuration);
+            builder.Services.AddQueries(builder.Configuration);
             builder.Services.AddEventBus(builder.Configuration);
             builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
             
