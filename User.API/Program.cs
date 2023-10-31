@@ -34,11 +34,13 @@ namespace User.API
 
             var app = builder.Build();
 
+
             using (var scope = app.Services.CreateScope())
             {
                 var dc = scope.ServiceProvider.GetService<UserContext>();
                 dc.Database.EnsureCreated();
             }
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

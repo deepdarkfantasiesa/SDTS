@@ -12,12 +12,17 @@ namespace User.API.Extension
     {
         public static IServiceCollection AddContexts(this IServiceCollection services,string connectionstring)
         {
-
+            /*
             var serverVersion = new MySqlServerVersion(new Version(8, 1, 0));
             services.AddDbContext<UserContext>(builder =>
             {
                 //builder.UseMySql(connectionstring, serverVersion);
                 builder.UseMySql(connectionstring, ServerVersion.AutoDetect(connectionstring));
+            });
+            */
+            services.AddDbContext<UserContext>(builder =>
+            {
+                builder.UseMongoDB("mongodb://192.168.18.107:27017/","mgtestdb");
             });
             return services;
         }
