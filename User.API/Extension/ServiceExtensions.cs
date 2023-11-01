@@ -13,11 +13,8 @@ namespace User.API.Extension
     {
         public static IServiceCollection AddContexts(this IServiceCollection services,string connectionstring)
         {
-            
-            var serverVersion = new MySqlServerVersion(new Version(8, 1, 0));
             services.AddDbContext<UserContext>(builder =>
             {
-                //builder.UseMySql(connectionstring, serverVersion);
                 builder.UseMySql(connectionstring, ServerVersion.AutoDetect(connectionstring));
             });
             
@@ -35,20 +32,15 @@ namespace User.API.Extension
             services.AddCap(options =>
             {
                 options.UseEntityFramework<UserContext>();
+                /*
                 options.UseRabbitMQ(opt =>
                 {
                     configuration.GetSection("RabbitMQ").Bind(opt);
                 });
-
-                /*
+                */
+                
                 string connstr = configuration.GetValue<string>("kafka");
                 options.UseKafka(connstr);
-                options.UseKafka(opt =>
-                {
-                    //opt.Servers = connstr;
-                    opt.Servers = "192.168.18.107:9092";
-                });
-                */
             });
             
             return services;

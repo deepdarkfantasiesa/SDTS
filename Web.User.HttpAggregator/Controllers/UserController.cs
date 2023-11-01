@@ -16,8 +16,8 @@ namespace Web.User.HttpAggregator.Controllers
         [HttpGet]
         public IActionResult Get([FromQuery]string name)
         {
-            _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
-            return Ok();
+            var res = _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
+            return Ok(res);
         }
     }
 }
