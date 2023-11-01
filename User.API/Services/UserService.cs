@@ -14,7 +14,7 @@ namespace User.API.Services
         }
         public override async Task<CreateUserResult> CreateUser(CreateUserCommand command,ServerCallContext context)
         {
-            await _mediator.Send(new User.API.Application.Commands.CreateUserCommand());
+            await _mediator.Send(new User.API.Application.Commands.CreateUserCommand(command.UserName));
             return new CreateUserResult();
         }
     }

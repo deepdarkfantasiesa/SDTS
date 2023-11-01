@@ -39,6 +39,7 @@ namespace User.API
             using (var scope = app.Services.CreateScope())
             {
                 var dc = scope.ServiceProvider.GetService<UserContext>();
+                //dc.Database.EnsureDeleted();//表结构发生改变时需要这行
                 dc.Database.EnsureCreated();
             }
 

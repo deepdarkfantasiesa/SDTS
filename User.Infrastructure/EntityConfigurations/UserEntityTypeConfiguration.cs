@@ -23,6 +23,8 @@ namespace User.Infrastructure.EntityConfigurations
                 a.Property(p => p.Street).HasMaxLength(50);
                 a.Property(p => p.ZipCode).HasMaxLength(10);
             });
+
+            builder.Property<string>("_name").HasColumnName("Name").IsRequired(false);
         }
     }
 }

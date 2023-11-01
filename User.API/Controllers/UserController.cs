@@ -19,8 +19,10 @@ namespace User.API.Controllers
         }
 
         [HttpPost("CreateUser")]
-        public async Task<IActionResult> Create(CreateUserCommand command)
+        //public async Task<IActionResult> Create(CreateUserCommand command)
+        public async Task<IActionResult> Create(string name)
         {
+            CreateUserCommand command = new CreateUserCommand(name);
             await _mediator.Send(command);
             return Ok();
         }

@@ -15,7 +15,7 @@ namespace User.API.Application.Commands
         public async Task<bool> Handle(CreateUserCommand user, CancellationToken cancellationToken)
         {
             var address = new Address("1", "2", "3", "4", "5");
-            var user1 = new Users(address);
+            var user1 = new Users(address, user.UserName);
 
             _repository.Add(user1);
             await _repository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

@@ -11,6 +11,7 @@ namespace User.Domain.AggregatesModel.UserAggregate
     public class Users:Entity,IAggregateRoot
     {
         public Address Address { get; private set; }
+        private string _name;
 
         public IEnumerable<int> GuardianIDs => guardianID;
         private readonly List<int> guardianID;
@@ -18,8 +19,9 @@ namespace User.Domain.AggregatesModel.UserAggregate
         public IEnumerable<string> EmergencyContacts => emergencyContacts;
         private readonly List<string> emergencyContacts;
 
-        public Users(Address address)
+        public Users(Address address,string? name=null)
         {
+            _name = name;
             Address = address;
             AddDomainEvent(new CreateUserDomainEvent(this));
         }

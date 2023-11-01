@@ -5,7 +5,13 @@ namespace User.API.Application.Commands
 {
     public class CreateUserCommand:IRequest<bool>
     {
-        private readonly Users _user;
+        public string UserName { get; private set; }
+
+        public CreateUserCommand(string name)
+        {
+            UserName = name;
+        }
+
         public CreateUserCommand()
         {
 

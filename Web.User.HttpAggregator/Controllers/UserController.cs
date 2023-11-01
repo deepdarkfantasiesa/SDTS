@@ -4,7 +4,7 @@ using user_rpcservices;
 namespace Web.User.HttpAggregator.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     public class UserController : ControllerBase
     {
         private readonly UserGrpc.UserGrpcClient _userGrpcClient;
@@ -14,9 +14,9 @@ namespace Web.User.HttpAggregator.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery]string name)
         {
-            _userGrpcClient.CreateUser(new CreateUserCommand());
+            _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
             return Ok();
         }
     }
