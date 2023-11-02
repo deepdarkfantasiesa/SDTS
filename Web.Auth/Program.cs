@@ -1,10 +1,9 @@
 
-using User.API.Application.Behaviors;
-using User.API.Extension;
-using User.API.Services;
-using User.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Web.Auth.Extensions;
+using Web.Auth.RepositoriesAndContexts;
 
-namespace User.API
+namespace Web.Auth
 {
     public class Program
     {
@@ -19,30 +18,19 @@ namespace User.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
 
-                cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
-                cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
-            });
-            builder.Services.AddContexts(builder.Configuration);
-            builder.Services.AddRepositories(builder.Configuration);
-            builder.Services.AddQueries(builder.Configuration);
-            builder.Services.AddEventBus(builder.Configuration);
-            builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
+            builder.Services.AddDbOptions(builder.Configuration);
+            builder.Services.AddJWT(builder.Configuration);
             
 
             var app = builder.Build();
 
-
             using (var scope = app.Services.CreateScope())
             {
-                var dc = scope.ServiceProvider.GetService<UserContext>();
+                var dc = scope.ServiceProvider.GetService<IdDbContext>();
                 //dc.Database.EnsureDeleted();//表结构发生改变时需要这行
                 dc.Database.EnsureCreated();
             }
-
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -53,15 +41,11 @@ namespace User.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
-            app.UseRouting();
-            app.UseEndpoints(options =>
-            {
-                options.MapGrpcService<UserService>();
-            });
 
             app.Run();
         }
