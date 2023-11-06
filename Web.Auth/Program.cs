@@ -18,10 +18,14 @@ namespace Web.Auth
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-
+            builder.Services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
+            });
             builder.Services.AddDbOptions(builder.Configuration);
             builder.Services.AddJWT(builder.Configuration);
-            
+            builder.Services.AddOthers(builder.Configuration);
+
 
             var app = builder.Build();
 

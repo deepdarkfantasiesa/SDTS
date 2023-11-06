@@ -1,6 +1,7 @@
 
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Web.Gateway.Middlewares;
 
 namespace Web.Gateway
 {
@@ -17,6 +18,7 @@ namespace Web.Gateway
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddHttpClient();
             builder.Services.AddOcelot(builder.Configuration);
 
             var app = builder.Build();
@@ -34,6 +36,9 @@ namespace Web.Gateway
 
 
             app.MapControllers();
+
+            app.UseMiddleware<JwtSafeMiddleware>();
+
             app.UseOcelot().Wait();
             app.Run();
         }

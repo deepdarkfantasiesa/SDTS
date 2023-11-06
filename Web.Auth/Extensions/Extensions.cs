@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Web.Auth.Options;
@@ -10,6 +12,13 @@ namespace Web.Auth.Extensions
 {
     public static class Extensions
     {
+        public static IServiceCollection AddOthers(this IServiceCollection services, IConfiguration configuration)
+        {
+            var jwtopt = configuration.GetSection("JWT").Get<JWTOptions>();
+            services.AddSingleton(jwtopt);
+            return services;
+        }
+
         public static IServiceCollection AddJWT(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

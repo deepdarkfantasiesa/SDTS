@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using Azure.Core;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Web.Auth.Application.Commands;
@@ -7,7 +9,7 @@ using Web.Auth.RepositoriesAndContexts;
 namespace Web.Auth.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     public class AuthController : ControllerBase
     {
         
@@ -22,10 +24,32 @@ namespace Web.Auth.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register([FromBody]string account, [FromBody]string password)
+        public async Task<IActionResult> Register([FromQuery]string account, [FromQuery] string password)
         {
-            _mediator.Send(new RegisterCommand(account,password));
-            return Ok();
+            var res = await _mediator.Send(new RegisterCommand(account,password));
+            if(res)
+            {
+                return Ok(res);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login([FromQuery] string account, [FromQuery] string password)
+        {
+            var res = await _mediator.Send(new LoginCommand(account, password));
+            return Ok(res);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> auth()
+        {
+            var user = this.User;
+            return Ok("success");
         }
     }
 }
