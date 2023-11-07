@@ -2,7 +2,7 @@
   "Routes": [
     {
       "UpstreamPathTemplate": "/api/{everything}",
-      "UpstreamHttpMethod": ["Get","Post"],
+      "UpstreamHttpMethod": [ "Get", "Post" ],
       "DownstreamPathTemplate": "/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
@@ -11,6 +11,24 @@
           "Port": 7112
         }
       ]
+    },
+    {
+      "UpstreamPathTemplate": "/apiV2/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "DownstreamPathTemplate": "/{everything}",
+      "DownstreamScheme": "http",
+      "ServiceName": "User",//需要获取的服务名
+      "UseServiceDiscovery": true,//启用服务发现
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"//负载均衡为轮询模式
+      }
     }
-  ]
+  ],
+  "GlobalConfiguration": { 
+    "ServiceDiscoveryProvider": {//consul的地址端口配置
+      "Host": "192.168.18.107",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  }
 }

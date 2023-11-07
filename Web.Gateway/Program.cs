@@ -1,6 +1,7 @@
 
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Consul;
 using Web.Gateway.Middlewares;
 
 namespace Web.Gateway
@@ -10,7 +11,7 @@ namespace Web.Gateway
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Configuration.AddJsonFile("ocelot.json");
+            builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -19,7 +20,7 @@ namespace Web.Gateway
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddHttpClient();
-            builder.Services.AddOcelot(builder.Configuration);
+            builder.Services.AddOcelot(builder.Configuration).AddConsul();
 
             var app = builder.Build();
 

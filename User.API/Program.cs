@@ -3,6 +3,8 @@ using User.API.Application.Behaviors;
 using User.API.Extension;
 using User.API.Services;
 using User.Infrastructure;
+using Service.Framework.ConsulRegister;
+using Microsoft.Extensions.Options;
 
 namespace User.API
 {
@@ -31,7 +33,9 @@ namespace User.API
             builder.Services.AddQueries(builder.Configuration);
             builder.Services.AddEventBus(builder.Configuration);
             builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
-            
+
+            builder.Services.Configure<ConsulRegisterOptions>(builder.Configuration.GetSection("ConsulRegisterOptions"));
+            builder.Services.AddConsulRegister();
 
             var app = builder.Build();
 
@@ -50,6 +54,9 @@ namespace User.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.Services.GetService<IConsulRegister>()?.ConsulRegistAsync();
+            app.UseHealthCheckMiddleware("/healthcheck");
 
             app.UseHttpsRedirection();
 
