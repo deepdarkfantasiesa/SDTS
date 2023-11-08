@@ -55,8 +55,7 @@ namespace User.API
                 app.UseSwaggerUI();
             }
 
-            app.Services.GetService<IConsulRegister>()?.ConsulRegistAsync();
-            app.UseHealthCheckMiddleware("/healthcheck");
+            app.UseConsul(app.Lifetime);
 
             app.UseHttpsRedirection();
 

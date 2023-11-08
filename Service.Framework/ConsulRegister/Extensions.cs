@@ -13,7 +13,7 @@ namespace Service.Framework.ConsulRegister
     {
         public static IServiceCollection AddConsulRegister(this IServiceCollection services)
         {
-            services.AddTransient<IConsulRegister, ConsulRegister>();
+            services.AddTransient<IConsulServices, ConsulServices>();
             return services;
         }
 
