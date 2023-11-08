@@ -67,5 +67,22 @@ namespace Service.Framework.ConsulRegister
             }
             return urls;
         }
+
+        public async Task<IEnumerable<string>> RequestServicesV2(string name)
+        {
+            var client = new ConsulClient(options =>
+            {
+                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+            });
+
+            var result = await client.Health.Service(name, null, true);
+            List<string> urls = new List<string>();
+            foreach (var item in result.Response)
+            {
+                //Console.WriteLine($"id:{item.Service.ID},address:{item.Service.Address}:{item.Service.Port}");
+                urls.Add(item.Service.Address + ":" + item.Service.Port);
+            }
+            return urls;
+        }
     }
 }

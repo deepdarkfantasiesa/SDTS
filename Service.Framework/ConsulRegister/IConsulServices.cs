@@ -12,5 +12,7 @@ namespace Service.Framework.ConsulRegister
         public Task ConsulRegistAsync(IHostApplicationLifetime lifetime);
 
         public Task<IEnumerable<string>> RequestServices();
+
+        public Task<IEnumerable<string>> RequestServicesV2(string name);
     }
 }

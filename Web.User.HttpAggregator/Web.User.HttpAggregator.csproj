@@ -13,6 +13,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Service.Framework\Service.Framework.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Protobuf Include="..\User.API\Proto\user.proto" Link="Protos\user.proto" />
   </ItemGroup>
 </Project>
