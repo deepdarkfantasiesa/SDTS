@@ -2,12 +2,18 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
+EXPOSE 5001
+EXPOSE 5002
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["User.API/User.API.csproj", "User.API/"]
+COPY ["Service.Framework/Service.Framework.csproj", "Service.Framework/"]
+COPY ["User.Domain/User.Domain.csproj", "User.Domain/"]
+COPY ["Domain.Abstraction/Domain.Abstraction.csproj", "Domain.Abstraction/"]
+COPY ["Infrastructure.Core/Infrastructure.Core.csproj", "Infrastructure.Core/"]
+COPY ["User.Infrastructure/User.Infrastructure.csproj", "User.Infrastructure/"]
 RUN dotnet restore "User.API/User.API.csproj"
 COPY . .
 WORKDIR "/src/User.API"
@@ -19,4 +25,5 @@ RUN dotnet publish "User.API.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ["User.API/cert.pfx","/app"]
 ENTRYPOINT ["dotnet", "User.API.dll"]
