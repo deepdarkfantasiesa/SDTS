@@ -25,7 +25,7 @@ namespace Web.User.HttpAggregator.Controllers
         {
             Console.WriteLine(name);
             var urls = await _consulServices.RequestServicesV2("User");//服务发现
-            return Ok();
+            return Ok(urls.Append(name));
             //var channel = GrpcChannel.ForAddress("https://192.168.18.107:5020", new GrpcChannelOptions()
             //{
             //    HttpHandler = new SocketsHttpHandler()

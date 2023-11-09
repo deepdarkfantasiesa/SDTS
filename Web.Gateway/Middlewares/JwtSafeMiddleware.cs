@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 
 namespace Web.Gateway.Middlewares
 {
@@ -26,9 +27,11 @@ namespace Web.Gateway.Middlewares
                     return;
                 }
                 //校验auth的正确性
+                var url = _configuration.GetSection("AuthUrl").Value;
+                Console.WriteLine(url);
                 var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Add("Authorization", myToken);
-                var res = await client.GetStringAsync("https://localhost:7284/Auth/auth");//https://localhost:7284 http://localhost:5041
+                var res = await client.GetStringAsync(url + "/Auth/auth");//https://localhost:7284 http://localhost:5041
                 if(res == "success")
                 {
                     await _next.Invoke(context);
