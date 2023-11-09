@@ -57,7 +57,7 @@ namespace User.API
 
             app.UseConsul(app.Lifetime);
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();//如果不禁用这行，http请求都会被重定向到https并报307 Temporary Redirect
 
             app.UseAuthorization();
 

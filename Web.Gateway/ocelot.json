@@ -17,7 +17,7 @@
       "UpstreamHttpMethod": [ "Get", "Post" ],
       "DownstreamPathTemplate": "/{everything}",
       "DownstreamScheme": "http",
-      "ServiceName": "User",//需要获取的服务名
+      "ServiceName": "UserAggre",//需要获取的服务名
       "UseServiceDiscovery": true,//启用服务发现
       "LoadBalancerOptions": {
         "Type": "RoundRobin"//负载均衡为轮询模式

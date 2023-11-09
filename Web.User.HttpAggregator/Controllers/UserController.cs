@@ -23,23 +23,23 @@ namespace Web.User.HttpAggregator.Controllers
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery]string name)
         {
+            Console.WriteLine(name);
             var urls = await _consulServices.RequestServicesV2("User");//服务发现
+            return Ok();
+            //var channel = GrpcChannel.ForAddress("https://192.168.18.107:5020", new GrpcChannelOptions()
+            //{
+            //    HttpHandler = new SocketsHttpHandler()
+            //    {
+            //        SslOptions = new SslClientAuthenticationOptions() 
+            //        { 
+            //            RemoteCertificateValidationCallback = (a, b, c, d) => true 
+            //        }
+            //    }
+            //});
 
-            var channel = GrpcChannel.ForAddress("https://192.168.18.107:5020", new GrpcChannelOptions()
-            {
-                HttpHandler = new SocketsHttpHandler()
-                {
-                    SslOptions = new SslClientAuthenticationOptions() 
-                    { 
-                        RemoteCertificateValidationCallback = (a, b, c, d) => true 
-                    }
-                }
-            });
-            
-            var client = new UserGrpcClient(channel);
-            
-            var res = client.CreateUser(new CreateUserCommand() { UserName = name });
-            return Ok(res);
+            //var client = new UserGrpcClient(channel);
+            //var res = client.CreateUser(new CreateUserCommand() { UserName = name });
+            //return Ok(res);
 
             //var res = _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
             //return Ok(res);

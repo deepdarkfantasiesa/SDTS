@@ -44,7 +44,7 @@ namespace Web.User.HttpAggregator
 
             app.UseConsul(app.Lifetime);
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAuthorization();
 

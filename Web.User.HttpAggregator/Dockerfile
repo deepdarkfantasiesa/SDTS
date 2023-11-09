@@ -8,6 +8,7 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["Web.User.HttpAggregator/Web.User.HttpAggregator.csproj", "Web.User.HttpAggregator/"]
+COPY ["Service.Framework/Service.Framework.csproj", "Service.Framework/"]
 RUN dotnet restore "Web.User.HttpAggregator/Web.User.HttpAggregator.csproj"
 COPY . .
 WORKDIR "/src/Web.User.HttpAggregator"
