@@ -80,7 +80,7 @@ namespace Service.Framework.ConsulRegister
             foreach (var item in result.Response)
             {
                 //Console.WriteLine($"id:{item.Service.ID},address:{item.Service.Address}:{item.Service.Port}");
-                urls.Add(item.Service.Address + ":" + item.Service.Port);
+                urls.Add(item.Service.Address + ":" + (item.Service.Port+10));
             }
             return urls;
         }

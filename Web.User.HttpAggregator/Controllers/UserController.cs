@@ -29,7 +29,8 @@ namespace Web.User.HttpAggregator.Controllers
 
             var url = await roundRobin.Load(urls);
             //return Ok(url);
-            var channel = GrpcChannel.ForAddress("http://"+url, new GrpcChannelOptions()
+            var channel = GrpcChannel.ForAddress("https://"+url, new GrpcChannelOptions()
+            //var channel = GrpcChannel.ForAddress("https://192.168.18.107:5020", new GrpcChannelOptions()
             {
                 HttpHandler = new SocketsHttpHandler()
                 {
