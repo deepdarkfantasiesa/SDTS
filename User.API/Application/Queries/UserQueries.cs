@@ -1,5 +1,9 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using MySqlConnector;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using User.Domain.AggregatesModel.UserAggregate;
 
 namespace User.API.Application.Queries
@@ -7,9 +11,12 @@ namespace User.API.Application.Queries
     public class UserQueries : IUserQueries
     {
         private readonly string _connectionstr;
-        public UserQueries(string connectionstr)
+        private readonly IDistributedCache _distributedCache;
+ 
+        public UserQueries(string connectionstr,IDistributedCache distributedCache)
         {
             _connectionstr = connectionstr;
+            _distributedCache = distributedCache;
         }
 
         public async Task<IEnumerable<User>> GetAllUsers()
@@ -24,12 +31,32 @@ namespace User.API.Application.Queries
 
         public async Task<User> GetUserAsync(int id)
         {
+            //var usercache = await _distributedCache.GetAsync("user_" + id.ToString());
+            //if (usercache != null)
+            //{
+            //    var user = JsonSerializer.Deserialize<User>(usercache);
+            //    return user;
+            //}
+            //else
+            //{
+            //    using (var connection = new MySqlConnection(_connectionstr))
+            //    {
+            //        connection.Open();
+            //        var res = await connection.QueryAsync<dynamic>(@"SELECT * FROM userdb.User where Id=@id", new { id });
+
+            //        var result = res.First();
+            //        User user = new User() { Id = result.Id, Name = result.Address_State, Email = result.Address_ZipCode };
+            //        await _distributedCache.SetStringAsync("user_" + id.ToString(), JsonSerializer.Serialize(user), null);
+            //        return user;
+            //    }
+            //}
+
             using (var connection = new MySqlConnection(_connectionstr))
             {
                 connection.Open();
                 var res = await connection.QueryAsync<dynamic>(@"SELECT * FROM userdb.User where Id=@id", new { id });
                 var result = res.First();
-                User user = new User() { Id = result.Id,Name=result.Address_State,Email=result.Address_ZipCode };
+                User user = new User() { Id = result.Id, Name = result.Address_State, Email = result.Address_ZipCode };
                 return user;
             }
 

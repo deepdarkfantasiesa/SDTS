@@ -3,6 +3,7 @@ using Infrastructure.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using User.API.Application.Behaviors;
@@ -54,6 +55,15 @@ namespace User.API.Extension
             return services;
         }
 
+        public static IServiceCollection AddRedis(this IServiceCollection services,IConfiguration configuration)
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                configuration.GetSection("Redis").Bind(options);
+            });
+            return services;
+        }
+
         public static IServiceCollection AddEventBus(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddCap(options =>
@@ -88,7 +98,10 @@ namespace User.API.Extension
 
         public static IServiceCollection AddQueries(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IUserQueries>(p=>new UserQueries(configuration.GetValue<string>("MySQL")));
+            var provider = services.BuildServiceProvider();
+            var distributedCaches = provider.GetService<IDistributedCache>();
+            services.AddScoped<IUserQueries>(p => new UserQueries(configuration.GetValue<string>("MySQL"), distributedCaches));
+            //services.AddScoped<IUserQueries,UserQueries>();
             return services;
         }
     }

@@ -5,6 +5,8 @@ using User.Domain.AggregatesModel.UserAggregate;
 using Dapper;
 using User.API.Application.Queries;
 using System.Net;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace User.API.Controllers
 {
@@ -34,6 +36,7 @@ namespace User.API.Controllers
         {
             try
             {
+                
                 var res = await userQueries.GetAllUsers();
                 return Ok(res);
             }
@@ -48,12 +51,28 @@ namespace User.API.Controllers
         [HttpGet("GetById")]
         [ProducesResponseType(typeof(string),200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetById([FromServices]IUserQueries userQueries,int userid)
+        public async Task<IActionResult> GetById([FromServices]IUserQueries userQueries, [FromServices] IDistributedCache distributedCache, int userid)
         {
             try
             {
-                var res = await userQueries.GetUserAsync(userid);
-                return Ok(res);
+                //var res = await userQueries.GetUserAsync(userid);
+                //return Ok(res);
+
+                var usercache = await distributedCache.GetStringAsync("GetById:" + userid);
+                if (usercache != null)
+                {
+                    var res = JsonSerializer.Deserialize<User.API.Application.Queries.User>(usercache);
+                    return Ok(res);
+                }
+                else
+                {
+                    var res = await userQueries.GetUserAsync(userid);
+                    var cacheOptions = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1))
+                        .SetSlidingExpiration(TimeSpan.FromSeconds(new Random().Next(10, 20)));
+                    await distributedCache.SetStringAsync("GetById:" + userid, 
+                        JsonSerializer.Serialize<User.API.Application.Queries.User>(res), cacheOptions);
+                    return Ok(res);
+                }
             }
             catch(Exception ex)
             {

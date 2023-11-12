@@ -29,6 +29,7 @@ namespace User.API
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
+            builder.Services.AddRedis(builder.Configuration);
             builder.Services.AddContexts(builder.Configuration);
             builder.Services.AddIntoContainer(builder.Configuration);
             builder.Services.AddRepositories(builder.Configuration);
