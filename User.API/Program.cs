@@ -26,9 +26,11 @@ namespace User.API
                 cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
 
                 cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+                cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
             builder.Services.AddContexts(builder.Configuration);
+            builder.Services.AddIntoContainer(builder.Configuration);
             builder.Services.AddRepositories(builder.Configuration);
             builder.Services.AddQueries(builder.Configuration);
             builder.Services.AddEventBus(builder.Configuration);

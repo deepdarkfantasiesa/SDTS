@@ -2,6 +2,7 @@
 using Service.Framework.ConsulRegister;
 using user_rpcservices;
 using Web.User.HttpAggregator.Extensions;
+using Web.User.HttpAggregator.LoadBalancer;
 
 namespace Web.User.HttpAggregator
 {
@@ -17,6 +18,8 @@ namespace Web.User.HttpAggregator
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddSingleton<IRoundRobin, RoundRobin>();
 
             AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             builder.Services.AddGrpcClient<UserGrpc.UserGrpcClient>(options =>

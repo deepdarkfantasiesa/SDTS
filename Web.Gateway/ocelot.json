@@ -24,9 +24,9 @@
       }
     }
   ],
-  "GlobalConfiguration": { 
-    "ServiceDiscoveryProvider": {//consul的地址端口配置
-      "Host": "192.168.18.107",
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": { //consul的地址端口配置
+      "Host": "host.docker.internal",
       "Port": 8500,
       "Type": "Consul"
     }

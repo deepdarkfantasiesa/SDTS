@@ -1,4 +1,6 @@
-﻿using Infrastructure.Core;
+﻿using FluentValidation;
+using Infrastructure.Core;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +77,12 @@ namespace User.API.Extension
         public static IServiceCollection AddRepositories(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddScoped<IUserRepository, UserRepository>();
+            return services;
+        }
+
+        public static IServiceCollection AddIntoContainer(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddValidatorsFromAssembly(typeof(Program).Assembly);
             return services;
         }
 
