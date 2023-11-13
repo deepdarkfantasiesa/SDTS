@@ -5,6 +5,7 @@ using User.API.Services;
 using User.Infrastructure;
 using Service.Framework.ConsulRegister;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace User.API
 {
@@ -40,6 +41,14 @@ namespace User.API
             builder.Services.Configure<ConsulRegisterOptions>(builder.Configuration.GetSection("ConsulRegisterOptions"));
             builder.Services.AddConsulRegister();
 
+            builder.WebHost.ConfigureKestrel(opt =>
+            {
+                opt.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2AndHttp3);//配置了之后gRPC可用https和http2地址端口调用，而http的会报http2无法完成握手
+                //opt.ListenAnyIP(5000, opt => { opt.Protocols = HttpProtocols.Http1; });
+                //opt.ListenAnyIP(5001, opt => { opt.Protocols = HttpProtocols.Http1; });
+                //opt.ListenAnyIP(5002, opt => { opt.Protocols = HttpProtocols.Http2; });
+            });
+
             var app = builder.Build();
 
 
@@ -57,7 +66,7 @@ namespace User.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            
             app.UseConsul(app.Lifetime);
 
             //app.UseHttpsRedirection();//如果不禁用这行，http请求都会被重定向到https并报307 Temporary Redirect

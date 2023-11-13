@@ -22,15 +22,20 @@ namespace Web.User.HttpAggregator.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery]string name, [FromServices]IRoundRobin roundRobin)
+        public async Task<IActionResult> Get([FromQuery] string name, [FromServices] IRoundRobin roundRobin)
+        {
+            var res = _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
+            return Ok(res);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetByConsul([FromQuery]string name, [FromServices]IRoundRobin roundRobin)
         {
             Console.WriteLine(name);
             var urls = await _consulServices.RequestServicesV2("User");//服务发现
-
             var url = await roundRobin.Load(urls);
             //return Ok(url);
-            var channel = GrpcChannel.ForAddress("https://"+url, new GrpcChannelOptions()
-            //var channel = GrpcChannel.ForAddress("https://192.168.18.107:5020", new GrpcChannelOptions()
+            var channel = GrpcChannel.ForAddress("https://" + url, new GrpcChannelOptions()
             {
                 HttpHandler = new SocketsHttpHandler()
                 {
@@ -43,10 +48,6 @@ namespace Web.User.HttpAggregator.Controllers
             var client = new UserGrpcClient(channel);
             var res = client.CreateUser(new CreateUserCommand() { UserName = name });
             return Ok(res);
-
-            //var res = _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
-            //return Ok(res);
-
         }
     }
 }
