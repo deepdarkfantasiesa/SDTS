@@ -2,6 +2,7 @@
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
 using Service.Framework.ConsulRegister;
+using System;
 using System.Net.Security;
 using user_rpcservices;
 using Web.User.HttpAggregator.LoadBalancer;
@@ -22,20 +23,9 @@ namespace Web.User.HttpAggregator.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] string name, [FromServices] IRoundRobin roundRobin)
+        public async Task<IActionResult> Get([FromQuery] string name)
         {
-            var res = _userGrpcClient.CreateUser(new CreateUserCommand() { UserName = name });
-            return Ok(res);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetByConsul([FromQuery]string name, [FromServices]IRoundRobin roundRobin)
-        {
-            Console.WriteLine(name);
-            var urls = await _consulServices.RequestServicesV2("User");//服务发现
-            var url = await roundRobin.Load(urls);
-            //return Ok(url);
-            var channel = GrpcChannel.ForAddress("https://" + url, new GrpcChannelOptions()
+            var channel = GrpcChannel.ForAddress("https://localhost:5002", new GrpcChannelOptions()
             {
                 HttpHandler = new SocketsHttpHandler()
                 {
@@ -44,6 +34,30 @@ namespace Web.User.HttpAggregator.Controllers
                         RemoteCertificateValidationCallback = (a, b, c, d) => true
                     }
                 }
+            });
+            var client = new UserGrpcClient(channel);
+            var res = client.CreateUser(new CreateUserCommand() { UserName = name });
+            return Ok(res);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetByConsul([FromQuery]string name, [FromServices]IRoundRobin roundRobin)
+        {
+            Console.WriteLine(name);
+            var urls = await _consulServices.RequestServicesV2("User");//服务发现
+            var url = await roundRobin.Load(urls);
+            //return Ok(url);
+
+            var handler = new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (a, b, c, d) => true
+                //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            var channel = GrpcChannel.ForAddress("https://" + url, new GrpcChannelOptions()
+            {
+                HttpHandler = handler
             });
             var client = new UserGrpcClient(channel);
             var res = client.CreateUser(new CreateUserCommand() { UserName = name });

@@ -21,12 +21,12 @@ namespace Web.User.HttpAggregator
 
             builder.Services.AddSingleton<IRoundRobin, RoundRobin>();
 
-            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);//让gPRC支持http
             builder.Services.AddGrpcClient<UserGrpc.UserGrpcClient>(options =>
             {
-                //options.Address = new Uri("http://localhost:5000");
+                options.Address = new Uri("http://localhost:5000");
                 //options.Address = new Uri("https://localhost:5001");
-                options.Address = new Uri("http://localhost:5002");
+                //options.Address = new Uri("http://localhost:5002");
             }).ConfigurePrimaryHttpMessageHandler(provider =>//服务端如果用了证书，则需要这一段
             {
                 var handler = new SocketsHttpHandler();

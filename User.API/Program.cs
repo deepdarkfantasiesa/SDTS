@@ -6,6 +6,7 @@ using User.Infrastructure;
 using Service.Framework.ConsulRegister;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Net;
 
 namespace User.API
 {
@@ -16,7 +17,7 @@ namespace User.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -44,9 +45,19 @@ namespace User.API
             builder.WebHost.ConfigureKestrel(opt =>
             {
                 opt.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2AndHttp3);//配置了之后gRPC可用https和http2地址端口调用，而http的会报http2无法完成握手
-                //opt.ListenAnyIP(5000, opt => { opt.Protocols = HttpProtocols.Http1; });
-                //opt.ListenAnyIP(5001, opt => { opt.Protocols = HttpProtocols.Http1; });
-                //opt.ListenAnyIP(5002, opt => { opt.Protocols = HttpProtocols.Http2; });
+
+                //这里的ip如果写真实的，consul无法健康检查，grpc可以调用；
+                //如果写127.0.0.1consul可以健康检查，grpc可以用https:localhost:5002请求，但是无法用真实ip请求，同时报：Error starting gRPC call. HttpRequestException: The SSL connection could not be established, see inner exception. AuthenticationException: Cannot determine the frame size or a corrupted frame was received.
+                //docker下的host.docker.internal待测
+                opt.Listen(IPAddress.Parse("127.0.0.1"), 5002, listenOptions =>
+                {
+                    listenOptions.UseHttps("./cert.pfx", "MyPassword");
+                    //listenOptions.Protocols=HttpProtocols.Http1AndHttp2;
+                });
+                //opt.Listen(IPAddress.Parse("192.168.18.100"), 5002, listenOptions =>
+                //{
+                //    listenOptions.UseHttps("./cert.pfx", "MyPassword");
+                //});
             });
 
             var app = builder.Build();
