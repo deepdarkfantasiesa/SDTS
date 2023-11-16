@@ -47,6 +47,7 @@ namespace Web.User.HttpAggregator.Controllers
             Console.WriteLine(name);
             var urls = await _consulServices.RequestServicesV2("User");//服务发现
             var url = await roundRobin.Load(urls);
+            await Console.Out.WriteLineAsync(url);
             //return Ok(url);
 
             var handler = new HttpClientHandler()
