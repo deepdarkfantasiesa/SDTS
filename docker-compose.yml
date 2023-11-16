@@ -1,0 +1,99 @@
+version: "3"
+services:
+  userapi_build:
+    image: userservice
+    build:
+      context: ./
+      dockerfile: Dockerfile_UserAPI
+    environment:
+      - ConsulRegisterOptions__Port=5030
+    ports:
+      - 5010:5000
+      - 5020:5001
+      - 5030:5002
+    restart: always
+    container_name: userservice1
+
+  userapi2:
+    image: userservice
+    environment:
+      - ConsulRegisterOptions__Port=5060
+    ports:
+      - 5040:5000
+      - 5050:5001
+      - 5060:5002
+    restart: always
+    container_name: userservice2
+    depends_on:
+      - userapi_build
+      
+  userapi3:
+    image: userservice
+    environment:
+      - ConsulRegisterOptions__Port=5090
+    ports:
+      - 5070:5000
+      - 5080:5001
+      - 5090:5002
+    restart: always
+    container_name: userservice3
+    depends_on:
+      - userapi_build
+
+  useraggre_build:
+    image: useraggre
+    build:
+      context: ./
+      dockerfile: Dockerfile_UserAggre
+    environment:
+      - ConsulRegisterOptions__Port=5100
+    ports:
+      - 5100:5100
+      - 5110:6100
+    restart: always
+    container_name: useraggre1
+    
+  useraggre2:
+    image: useraggre
+    environment:
+      - ConsulRegisterOptions__Port=5120
+    ports:
+      - 5120:5100
+      - 5130:6100
+    restart: always
+    container_name: useraggre2
+    depends_on:
+      - useraggre_build
+    
+  usergateway_build:
+    image: usergateway
+    build:
+      context: ./
+      dockerfile: Dockerfile_UserGateWay
+    container_name: usergateway1
+    ports:
+      - 5200:80
+      - 5210:443
+    restart: always
+     
+  usergateway2:
+    image: usergateway
+    container_name: usergateway2
+    ports:
+      - 5220:80
+      - 5230:443
+    restart: always
+    depends_on:
+      - usergateway_build
+      
+  userauth_build:
+    image: userauth
+    build:
+      context: ./
+      dockerfile: Dockerfile_UserAuth
+    ports:
+      - 5400:80
+      - 5410:443
+    container_name: userauth
+    restart: always
+  

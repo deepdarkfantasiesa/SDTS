@@ -49,11 +49,11 @@ namespace User.API
                 //这里的ip如果写真实的，consul无法健康检查，grpc可以调用；
                 //如果写127.0.0.1consul可以健康检查，grpc可以用https:localhost:5002请求，但是无法用真实ip请求，同时报：Error starting gRPC call. HttpRequestException: The SSL connection could not be established, see inner exception. AuthenticationException: Cannot determine the frame size or a corrupted frame was received.
                 //docker下的host.docker.internal待测
-                opt.Listen(IPAddress.Parse("127.0.0.1"), 5002, listenOptions =>
-                {
-                    listenOptions.UseHttps("./cert.pfx", "MyPassword");
-                    //listenOptions.Protocols=HttpProtocols.Http1AndHttp2;
-                });
+                //opt.Listen(IPAddress.Parse("127.0.0.1"), 5002, listenOptions =>
+                //{
+                //    listenOptions.UseHttps("./cert.pfx", "MyPassword");
+                //    //listenOptions.Protocols=HttpProtocols.Http1AndHttp2;
+                //});
                 //opt.Listen(IPAddress.Parse("192.168.18.100"), 5002, listenOptions =>
                 //{
                 //    listenOptions.UseHttps("./cert.pfx", "MyPassword");
