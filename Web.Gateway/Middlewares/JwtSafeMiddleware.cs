@@ -28,9 +28,13 @@ namespace Web.Gateway.Middlewares
                 }
                 //校验auth的正确性
                 var url = _configuration.GetSection("AuthUrl").Value;
-                Console.WriteLine(url);
+
+                var remoteConnection = context.Request.HttpContext.Connection;
+                var IpAndPort = remoteConnection.RemoteIpAddress + ":" + remoteConnection.RemotePort;
+                Console.WriteLine(IpAndPort);
                 var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Add("Authorization", myToken);
+                client.DefaultRequestHeaders.Add("IpAndPort", IpAndPort);
                 var res = await client.GetStringAsync(url + "/Auth/auth");//https://localhost:7284 http://localhost:5041
                 if(res == "success")
                 {
