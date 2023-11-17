@@ -54,8 +54,8 @@ namespace Web.Auth.SecurityTokenValidators
         {
             try
             {
-                var httpContext = _serviceProvider.GetService<IHttpContextAccessor>().HttpContext;
-                Console.WriteLine(httpContext.Request.Host);
+                var httpContext = _serviceProvider.GetService<IHttpContextAccessor>().HttpContext.Request.HttpContext.Connection;
+                Console.WriteLine(httpContext.RemoteIpAddress + ":" + httpContext.RemotePort);
                 var principal = _tokenHandler.ValidateToken(securityToken, validationParameters, out validatedToken);
                 return principal;
             }
