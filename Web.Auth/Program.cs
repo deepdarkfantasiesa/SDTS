@@ -18,11 +18,9 @@ namespace Web.Auth
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
-            });
+            builder.Services.AddMediatRs(builder.Configuration);
             builder.Services.AddDbOptions(builder.Configuration);
+            
             builder.Services.AddJWT(builder.Configuration);
             builder.Services.AddOthers(builder.Configuration);
 
@@ -43,7 +41,7 @@ namespace Web.Auth
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
