@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using User.API.Application.Behaviors;
 using User.API.Application.Queries;
+using User.API.Filters;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure;
 using User.Infrastructure.Repositories;
@@ -93,6 +94,12 @@ namespace User.API.Extension
         public static IServiceCollection AddIntoContainer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            return services;
+        }
+
+        public static IServiceCollection AddFilters(this IServiceCollection services,IConfiguration configuration)
+        {
+            services.AddTransient<CacheFilter>();
             return services;
         }
 

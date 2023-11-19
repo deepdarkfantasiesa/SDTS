@@ -34,6 +34,7 @@ namespace User.API
             builder.Services.AddRedis(builder.Configuration);
             builder.Services.AddContexts(builder.Configuration);
             builder.Services.AddIntoContainer(builder.Configuration);
+            builder.Services.AddFilters(builder.Configuration);
             builder.Services.AddRepositories(builder.Configuration);
             builder.Services.AddQueries(builder.Configuration);
             builder.Services.AddEventBus(builder.Configuration);
