@@ -20,7 +20,7 @@ namespace User.Infrastructure.EntityConfigurations
                 a.Property(p => p.Country).HasMaxLength(50);
                 a.Property(p => p.State).HasMaxLength(20);
                 a.Property(p => p.City).HasMaxLength(20);
-                a.Property(p => p.Street).HasMaxLength(50);
+                a.Property(p => p.Street).HasMaxLength(30);
                 a.Property(p => p.ZipCode).HasMaxLength(10);
             });
 

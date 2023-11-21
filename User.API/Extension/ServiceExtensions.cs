@@ -32,12 +32,14 @@ namespace User.API.Extension
             services.AddDbContext<UserContext>(builder =>
             {
                 builder.UseMySql(connstr, ServerVersion.AutoDetect(connstr),
-                retryOptions=>{
-                    retryOptions.EnableRetryOnFailure(
+                options=>{
+                    options.EnableRetryOnFailure(
                         maxRetryCount: 3, 
                         maxRetryDelay: TimeSpan.FromSeconds(10), 
                         errorNumbersToAdd: new int[] { 40613 });
+                    options.MigrationsAssembly("User.API");
                 });
+
             });
             
             /*
