@@ -4,12 +4,17 @@ namespace Web.Auth.Application.Commands
 {
     public class LoginCommand:IRequest<string>
     {
-        public string UserName { get; set;}
+        public string Account { get; set;}
         public string Password { get; set;}
-        public LoginCommand(string username, string password)
+        public LoginCommand(string account, string password)
         {
-            UserName= username;
-            Password= password;
+            Account = account;
+            Password = password;
+        }
+
+        public LoginCommand()
+        {
+            
         }
     }
 }

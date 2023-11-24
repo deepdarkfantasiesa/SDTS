@@ -14,40 +14,17 @@ namespace Web.Auth.Controllers
     {
         
         private readonly ILogger<AuthController> _logger;
-        private readonly IMediator _mediator;
 
-        public AuthController(ILogger<AuthController> logger,IMediator mediator)
+        public AuthController(ILogger<AuthController> logger)
         {
-            
             _logger = logger;
-            _mediator = mediator;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register([FromQuery]string account, [FromQuery] string password)
-        {
-            var res = await _mediator.Send(new RegisterCommand(account,password));
-            if(res)
-            {
-                return Ok(res);
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login([FromQuery] string account, [FromQuery] string password)
-        {
-            var res = await _mediator.Send(new LoginCommand(account, password));
-            return Ok(res);
         }
 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> auth()
         {
+            _logger.LogInformation($"{nameof(auth)}");
             var user = this.User;
             return Ok("success");
         }

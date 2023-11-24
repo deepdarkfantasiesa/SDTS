@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Web.Auth.Filters;
 using Web.Auth.Options;
 using Web.Auth.RepositoriesAndContexts;
 using Web.Auth.SecurityTokenValidators;
@@ -18,7 +19,9 @@ namespace Web.Auth.Extensions
         {
             var jwtopt = configuration.GetSection("JWT").Get<JWTOptions>();
             services.AddSingleton(jwtopt);
-            
+
+            services.AddTransient<QueryUserFilter>();
+
             return services;
         }
 

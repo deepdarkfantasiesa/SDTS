@@ -12,18 +12,16 @@ namespace Web.Auth.Application.Commands
         private readonly ILogger _logger;
         private readonly JWTOptions _jwtOptions;
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
         public LoginCommandHandler(ILogger<RegisterCommandHandler> logger, JWTOptions jwtOptions,
-            UserManager<User> userManager, RoleManager<Role> roleManager)
+            UserManager<User> userManager)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _jwtOptions = jwtOptions;
             _logger = logger;
         }
         public async Task<string> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByNameAsync(request.Account);
             if (user == null)
             {
                 return "账号不存在";
