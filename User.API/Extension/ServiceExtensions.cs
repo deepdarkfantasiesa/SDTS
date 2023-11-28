@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using User.API.Application.Behaviors;
 using User.API.Application.Queries;
 using User.API.Filters;
+using User.API.Settings;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure;
 using User.Infrastructure.Repositories;
@@ -60,10 +62,20 @@ namespace User.API.Extension
 
         public static IServiceCollection AddRedis(this IServiceCollection services,IConfiguration configuration)
         {
+            services.Configure<RedisSettings>(configuration);
+            services.AddSingleton<ConnectionMultiplexer>(opt =>
+            {
+                //var connectstr = configuration.GetSection("Redis_Multiplexer").Value;
+                var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
+                var configuration = ConfigurationOptions.Parse(settings.Redis_Multiplexer, true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
+
             services.AddStackExchangeRedisCache(options =>
             {
                 configuration.GetSection("Redis").Bind(options);
             });
+
             return services;
         }
 
