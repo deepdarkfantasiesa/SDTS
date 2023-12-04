@@ -26,7 +26,8 @@
   ],
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": { //consul的地址端口配置
-      "Host": "host.docker.internal",
+      //"Host": "host.docker.internal",badger
+      "Host": "badger",
       "Port": 8500,
       "Type": "Consul"
     }
