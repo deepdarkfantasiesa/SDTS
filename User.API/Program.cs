@@ -7,6 +7,11 @@ using Service.Framework.ConsulRegister;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Net;
+using Service.Framework.ConfigurationCenter;
+using Microsoft.AspNetCore.Http;
+using Google.Protobuf.WellKnownTypes;
+using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace User.API
 {
@@ -15,9 +20,10 @@ namespace User.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureConfigurationCenter();
 
             // Add services to the container.
-            
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

@@ -4,13 +4,15 @@ using Service.Framework.ConsulRegister;
 namespace User.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     public class TestController : ControllerBase
     {
         private readonly IConsulServices _consulServices;
-        public TestController(IConsulServices consulServices)
+        private readonly IConfiguration _configuration;
+        public TestController(IConsulServices consulServices,IConfiguration configuration)
         {
             _consulServices = consulServices;
+            _configuration = configuration;
         }
 
         [HttpGet] 
@@ -22,6 +24,13 @@ namespace User.API.Controllers
                 Console.WriteLine($"address {url}");
             }
             return Ok(urls);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Getcfg(string name)
+        {
+            var res = _configuration.GetSection(name);
+            return Ok(res);
         }
     }
 }
