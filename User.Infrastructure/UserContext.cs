@@ -3,6 +3,7 @@ using Infrastructure.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,19 @@ using System.Text;
 using System.Threading.Tasks;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure.EntityConfigurations;
+using User.Infrastructure.Interceptors;
 
 namespace User.Infrastructure
 {
     public class UserContext:DbContext,IUnitOfWork,ITransaction
     {
-        private readonly string _connectionstring;
         private readonly IMediator _mediator;
-        public UserContext(DbContextOptions<UserContext> options, IMediator mediator) : base(options)
+        private readonly IConfiguration _configuration;
+        public UserContext(DbContextOptions<UserContext> options, IMediator mediator,IConfiguration configuration) : base(options)
         {
             _mediator = mediator;
+            _configuration = configuration;
+            //Console.WriteLine($"context is created ,Id:{this.ContextId.InstanceId}");
         }
 
         public DbSet<Users> Users { get; set; }
@@ -27,6 +31,11 @@ namespace User.Infrastructure
         {
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             base.OnModelCreating(modelBuilder);
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.AddInterceptors(new MasterSlaveShiftInterceptor(_configuration.GetSection("master").Value,_configuration.GetSection("slaves").Value));
+            base.OnConfiguring(optionsBuilder);
         }
 
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)

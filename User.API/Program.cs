@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Google.Protobuf.WellKnownTypes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Service.Framework.ConfigurationCenter;
 
 namespace User.API
 {
@@ -20,7 +21,7 @@ namespace User.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.WebHost.ConfigureConfigurationCenter();
+            builder.Host.ConfigureConfigurationCenter();
 
             // Add services to the container.
 
