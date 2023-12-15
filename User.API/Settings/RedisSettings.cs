@@ -3,5 +3,6 @@
     public class RedisSettings
     {
         public string Redis_Multiplexer {  get; set; }
+
     }
 }

@@ -33,14 +33,20 @@ namespace User.API.Filters
         //执行完controller之后写入缓存
         public async void OnResourceExecuted(ResourceExecutedContext context)
         {
-            if(context.HttpContext.Response.StatusCode == (int)HttpStatusCode.OK)
+            var requestContext = context.HttpContext.Request;
+            var cacheKey = requestContext.Path + requestContext.QueryString;
+            
+            if (context.HttpContext.Response.StatusCode == (int)HttpStatusCode.OK)
             {
-                var requestContext = context.HttpContext.Request;
-                var cacheKey = requestContext.Path + requestContext.QueryString;
                 var result = (context.Result as ObjectResult);
                 var cache = JsonSerializer.Serialize(result.Value);
-                _multiplexer.GetDatabase().StringSetAsync(cacheKey, cache, 
-                    TimeSpan.FromMinutes(1)+ TimeSpan.FromSeconds(new Random().Next(10, 30)));
+                _multiplexer.GetDatabase().StringSetAsync(cacheKey, cache,
+                    TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(new Random().Next(10, 30)));
+            }
+            else if (context.HttpContext.Response.StatusCode == (int)HttpStatusCode.NotFound)
+            {
+                _multiplexer.GetDatabase().StringSetAsync(cacheKey, "NULL",
+                    TimeSpan.FromSeconds(30));
             }
         }
     }

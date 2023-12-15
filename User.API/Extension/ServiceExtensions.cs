@@ -65,16 +65,15 @@ namespace User.API.Extension
             services.Configure<RedisSettings>(configuration);
             services.AddSingleton<ConnectionMultiplexer>(opt =>
             {
-                //var connectstr = configuration.GetSection("Redis_Multiplexer").Value;
                 var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
                 var configuration = ConfigurationOptions.Parse(settings.Redis_Multiplexer, true);
                 return ConnectionMultiplexer.Connect(configuration);
             });
-
-            services.AddStackExchangeRedisCache(options =>
-            {
-                configuration.GetSection("Redis").Bind(options);
-            });
+           
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    configuration.GetSection("Redis").Bind(options);
+            //});
 
             return services;
         }
@@ -121,7 +120,7 @@ namespace User.API.Extension
         {
             var provider = services.BuildServiceProvider();
             var distributedCaches = provider.GetService<IDistributedCache>();
-            services.AddScoped<IUserQueries>(p => new UserQueries(configuration.GetValue<string>("MySQL"), distributedCaches));
+            services.AddScoped<IUserQueries>(p => new UserQueries(configuration.GetValue<string>("MySQL")));
             //services.AddScoped<IUserQueries,UserQueries>();
             return services;
         }

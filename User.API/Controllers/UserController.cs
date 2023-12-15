@@ -54,7 +54,7 @@ namespace User.API.Controllers
         [HttpGet("GetById")]
         [ProducesResponseType(typeof(string),200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetById([FromServices]IUserQueries userQueries, [FromServices] IDistributedCache distributedCache, int userid)
+        public async Task<IActionResult> GetById([FromServices]IUserQueries userQueries, int userid)
         {
             try
             {

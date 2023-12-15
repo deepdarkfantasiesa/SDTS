@@ -11,12 +11,10 @@ namespace User.API.Application.Queries
     public class UserQueries : IUserQueries
     {
         private readonly string _connectionstr;
-        private readonly IDistributedCache _distributedCache;
  
-        public UserQueries(string connectionstr,IDistributedCache distributedCache)
+        public UserQueries(string connectionstr)
         {
             _connectionstr = connectionstr;
-            _distributedCache = distributedCache;
         }
 
         public async Task<IEnumerable<User>> GetAllUsers()
