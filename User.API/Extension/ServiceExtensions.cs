@@ -69,11 +69,6 @@ namespace User.API.Extension
                 var configuration = ConfigurationOptions.Parse(settings.Redis_Multiplexer, true);
                 return ConnectionMultiplexer.Connect(configuration);
             });
-           
-            //services.AddStackExchangeRedisCache(options =>
-            //{
-            //    configuration.GetSection("Redis").Bind(options);
-            //});
 
             return services;
         }

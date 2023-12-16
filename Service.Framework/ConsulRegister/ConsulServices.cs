@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Service.Framework.ConsulRegister
@@ -20,6 +21,8 @@ namespace Service.Framework.ConsulRegister
 
         public async Task ConsulRegistAsync(IHostApplicationLifetime lifetime)
         {
+            await ReSet();
+
             var client = new ConsulClient(options =>
             {
                 options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
@@ -33,7 +36,7 @@ namespace Service.Framework.ConsulRegister
                 Port = Convert.ToInt32(_consulRegisterOptions?.Port),//服务的端口
                 Check = new AgentServiceCheck()
                 {
-                    DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(5),
+                    DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(0),//服务挂掉后多久注销，0是不注销
                     Interval = TimeSpan.FromSeconds(10),    //健康检查的时间间隔
                     HTTP = //健康检查的地址
                     $"http://{_consulRegisterOptions?.Ip}:" +
@@ -83,6 +86,25 @@ namespace Service.Framework.ConsulRegister
                 urls.Add(item.Service.Address + ":" + (item.Service.Port - 1));
             }
             return urls;
+        }
+
+        private async Task ReSet()
+        {
+            var client = new ConsulClient(options =>
+            {
+                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+            });
+
+            var result = client.Catalog.Service(_consulRegisterOptions?.Name, null).Result;//获取当前服务名的所有节点
+
+            var registeredNodes = result.Response.Where(p => p.ServiceAddress == _consulRegisterOptions.Ip);//找出ip相同的
+            if(registeredNodes.Any())
+            {
+                foreach(var node in registeredNodes)
+                {
+                    client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点
+                }
+            }
         }
     }
 }
