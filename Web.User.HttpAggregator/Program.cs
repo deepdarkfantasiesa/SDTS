@@ -3,7 +3,7 @@ using Service.Framework.ConsulRegister;
 using user_rpcservices;
 using Web.User.HttpAggregator.Extensions;
 using Web.User.HttpAggregator.LoadBalancer;
-
+using Service.Framework.ConfigurationCenter;
 namespace Web.User.HttpAggregator
 {
     public class Program
@@ -11,7 +11,7 @@ namespace Web.User.HttpAggregator
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.Host.ConfigureConfigurationCenter();
             // Add services to the container.
 
             builder.Services.AddControllers();

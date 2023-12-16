@@ -3,7 +3,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Web.Gateway.Middlewares;
-
+using Service.Framework.ConfigurationCenter;
 namespace Web.Gateway
 {
     public class Program
@@ -11,6 +11,7 @@ namespace Web.Gateway
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Host.ConfigureConfigurationCenter();
             builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
             // Add services to the container.
 

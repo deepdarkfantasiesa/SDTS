@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Web.Auth.Extensions;
 using Web.Auth.RepositoriesAndContexts;
-
+using Service.Framework.ConfigurationCenter;
 namespace Web.Auth
 {
     public class Program
@@ -10,7 +10,7 @@ namespace Web.Auth
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.Host.ConfigureConfigurationCenter();
             // Add services to the container.
 
             builder.Services.AddControllers();
