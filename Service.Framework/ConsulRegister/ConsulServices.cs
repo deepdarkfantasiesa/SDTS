@@ -75,7 +75,9 @@ namespace Service.Framework.ConsulRegister
         {
             var client = new ConsulClient(options =>
             {
-                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+                //options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+                
+                options.Address = new Uri(loadBalance(_consulRegisterOptions.Address));//consul的地址
             });
 
             var result = await client.Health.Service(name, null, true);
@@ -105,6 +107,18 @@ namespace Service.Framework.ConsulRegister
                     client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点
                 }
             }
+        }
+
+        /// <summary>
+        /// 随机抽取一个consul进行服务注册，没有考虑被抽取到的服务挂掉的情况
+        /// </summary>
+        /// <param name="consul_address"></param>
+        /// <returns></returns>
+        private string loadBalance(string consul_address)
+        {
+            string[] urls = consul_address.Split(",");
+            Random random = new Random();
+            return urls[random.Next(urls.Length)];
         }
     }
 }

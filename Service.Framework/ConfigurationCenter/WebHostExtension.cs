@@ -16,7 +16,8 @@ namespace Service.Framework.ConfigurationCenter
         {
             builder.ConfigureAppConfiguration((hostingContext, config) =>
             {
-                string consul_url = hostingContext.Configuration["Consul_Url"];
+                string consul_urls = hostingContext.Configuration["Consul_Url"];
+                string consul_url = loadBalance(consul_urls);
                 var env = hostingContext.HostingEnvironment;
                 config.AddConsul($"{env.ApplicationName}/appsettings.{env.EnvironmentName}.json",
                     options =>
@@ -30,6 +31,18 @@ namespace Service.Framework.ConfigurationCenter
                 hostingContext.Configuration = config.Build(); // 5、consul中加载的配置信息加载到Configuration对象，然后通过Configuration 对象加载项目中
             });
             return builder;
+        }
+
+        /// <summary>
+        /// 随机抽取一个consul拉取配置，暂时没考虑抽取到的consul挂掉的情况
+        /// </summary>
+        /// <param name="consul_urls"></param>
+        /// <returns></returns>
+        private static string loadBalance(string consul_urls)
+        {
+            string[] urls = consul_urls.Split(",");
+            Random random = new Random();
+            return urls[random.Next(urls.Length)];
         }
     }
 }

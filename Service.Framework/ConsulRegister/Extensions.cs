@@ -21,7 +21,7 @@ namespace Service.Framework.ConsulRegister
         {
             app.Map(checkPath, applicationBuilder => applicationBuilder.Run(async context =>
             {
-                Console.WriteLine("this is healthcheck");
+                //Console.WriteLine("this is healthcheck");
                 context.Response.StatusCode = 200;
                 await context.Response.WriteAsync("OK");
             }));
