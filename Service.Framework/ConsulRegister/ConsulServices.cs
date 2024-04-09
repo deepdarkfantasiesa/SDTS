@@ -25,7 +25,7 @@ namespace Service.Framework.ConsulRegister
 
             var client = new ConsulClient(options =>
             {
-                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+                options.Address = new Uri(loadBalance(_consulRegisterOptions.Address));//consul的地址
             });
 
             var registration = new AgentServiceRegistration()
@@ -75,9 +75,7 @@ namespace Service.Framework.ConsulRegister
         {
             var client = new ConsulClient(options =>
             {
-                //options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
-                
-                options.Address = new Uri(loadBalance(_consulRegisterOptions.Address));//consul的地址
+                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
             });
 
             var result = await client.Health.Service(name, null, true);
@@ -94,19 +92,37 @@ namespace Service.Framework.ConsulRegister
         {
             var client = new ConsulClient(options =>
             {
-                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+                options.Address = new Uri(loadBalance(_consulRegisterOptions.Address));//consul的地址
             });
 
+            //var result = client.Catalog.Service(_consulRegisterOptions?.Name, null).Result;//获取当前服务名的所有节点
             var result = client.Catalog.Service(_consulRegisterOptions?.Name, null).Result;//获取当前服务名的所有节点
+            
+            var registeredNodes = result
+                .Response
+                .Where(p => p.ServiceAddress == _consulRegisterOptions.Ip
+                &&p.ServicePort.ToString() ==_consulRegisterOptions.Port)
+                .ToList();//找出ip和端口相同的
 
-            var registeredNodes = result.Response.Where(p => p.ServiceAddress == _consulRegisterOptions.Ip);//找出ip相同的
-            if(registeredNodes.Any())
+            var urls = getAllConsulAddress(_consulRegisterOptions.Address);
+
+            if (registeredNodes.Any())
             {
                 foreach(var node in registeredNodes)
                 {
-                    client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点
+                    foreach(var url in urls)
+                    {
+                        client.Config.Address = new Uri(url);
+                        client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点
+                    }
+                    //client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点
                 }
             }
+        }
+
+        private string[] getAllConsulAddress(string urls)
+        {
+            return urls.Split(",");
         }
 
         /// <summary>
@@ -118,7 +134,9 @@ namespace Service.Framework.ConsulRegister
         {
             string[] urls = consul_address.Split(",");
             Random random = new Random();
-            return urls[random.Next(urls.Length)];
+            var url = urls[random.Next(urls.Length)];
+            //Console.WriteLine(url);
+            return url;
         }
     }
 }
