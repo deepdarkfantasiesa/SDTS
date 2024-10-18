@@ -1,23 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Hosting;
 using Winton.Extensions.Configuration.Consul;
 
-namespace Service.Framework.ConfigurationCenter
+namespace Service.Framework.ConfigurationCenter.Consul
 {
     public static class WebHostExtension
     {
-
+        /// <summary>
+        /// 配置"配置中心"
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
         public static IHostBuilder ConfigureConfigurationCenter(this IHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((hostingContext, config) =>
             {
                 string consul_urls = hostingContext.Configuration["Consul_Url"];
-                string consul_url = loadBalance(consul_urls);
+                string consul_url = LoadBalance(consul_urls);
                 var env = hostingContext.HostingEnvironment;
                 config.AddConsul($"{env.ApplicationName}/appsettings.{env.EnvironmentName}.json",
                     options =>
@@ -38,7 +36,7 @@ namespace Service.Framework.ConfigurationCenter
         /// </summary>
         /// <param name="consul_urls"></param>
         /// <returns></returns>
-        private static string loadBalance(string consul_urls)
+        private static string LoadBalance(string consul_urls)
         {
             string[] urls = consul_urls.Split(",");
             Random random = new Random();

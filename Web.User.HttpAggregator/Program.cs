@@ -1,9 +1,9 @@
-
-using Service.Framework.ConsulRegister;
 using user_rpcservices;
 using Web.User.HttpAggregator.Extensions;
 using Web.User.HttpAggregator.LoadBalancer;
-using Service.Framework.ConfigurationCenter;
+using Service.Framework.ConfigurationCenter.Consul;
+using Service.Framework.ServiceRegistry.Consul.Configs;
+using Service.Framework.ServiceRegistry.Consul;
 namespace Web.User.HttpAggregator
 {
     public class Program
@@ -35,7 +35,7 @@ namespace Web.User.HttpAggregator
             });
 
 
-            builder.Services.Configure<ConsulRegisterOptions>(builder.Configuration.GetSection("ConsulRegisterOptions"));
+            builder.Services.Configure<ConsulRegisterConfig>(builder.Configuration.GetSection("ConsulRegisterOptions"));
             builder.Services.AddConsulRegister();
 
             var app = builder.Build();

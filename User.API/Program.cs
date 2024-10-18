@@ -3,16 +3,16 @@ using User.API.Application.Behaviors;
 using User.API.Extension;
 using User.API.Services;
 using User.Infrastructure;
-using Service.Framework.ConsulRegister;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Net;
-using Service.Framework.ConfigurationCenter;
 using Microsoft.AspNetCore.Http;
 using Google.Protobuf.WellKnownTypes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
-using Service.Framework.ConfigurationCenter;
+using Service.Framework.ConfigurationCenter.Consul;
+using Service.Framework.ServiceRegistry.Consul.Configs;
+using Service.Framework.ServiceRegistry.Consul;
 
 namespace User.API
 {
@@ -38,17 +38,32 @@ namespace User.API
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
-            builder.Services.AddRedis(builder.Configuration);
-            builder.Services.AddContexts(builder.Configuration);
+
+            //注册缓存
+            builder.Services.AddCaches(builder.Configuration);
+
+            //注册数据库上下文
+            builder.Services.AddDbContexts(builder.Configuration);
             builder.Services.AddIntoContainer(builder.Configuration);
+
+            //注册过滤器
             builder.Services.AddFilters(builder.Configuration);
+
+            //注册仓储
             builder.Services.AddRepositories(builder.Configuration);
             builder.Services.AddQueries(builder.Configuration);
-            builder.Services.AddEventBus(builder.Configuration);
-            builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
 
-            builder.Services.Configure<ConsulRegisterOptions>(builder.Configuration.GetSection("ConsulRegisterOptions"));
-            builder.Services.AddConsulRegister();
+			//注册消息队列
+			builder.Services.AddEventBus(builder.Configuration);
+
+			//注册grpc
+			builder.Services.AddGrpc(options => { options.EnableDetailedErrors = false; });
+
+			//注册配置类
+			builder.Services.AddConfigs(builder.Configuration);
+
+			//注册consul服务发现服务
+			builder.Services.AddConsulRegister();
 
             builder.WebHost.ConfigureKestrel(opt =>
             {

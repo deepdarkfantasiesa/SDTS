@@ -1,14 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Service.Framework.ConsulRegister
+namespace Service.Framework.ServiceRegistry
 {
-    public interface IConsulServices
+    public interface IRegistryService
     {
+
         public Task ConsulRegistAsync(IHostApplicationLifetime lifetime);
 
         public Task<IEnumerable<string>> RequestServices();

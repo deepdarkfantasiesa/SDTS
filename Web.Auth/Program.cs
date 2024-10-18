@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Web.Auth.Extensions;
 using Web.Auth.RepositoriesAndContexts;
-using Service.Framework.ConfigurationCenter;
+using Service.Framework.ConfigurationCenter.Consul;
 namespace Web.Auth
 {
     public class Program

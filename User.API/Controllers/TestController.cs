@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Service.Framework.ConsulRegister;
+using Service.Framework.ServiceRegistry;
 
 namespace User.API.Controllers
 {
@@ -7,9 +7,9 @@ namespace User.API.Controllers
     [Route("[controller]/[action]")]
     public class TestController : ControllerBase
     {
-        private readonly IConsulServices _consulServices;
+        private readonly IRegistryService _consulServices;
         private readonly IConfiguration _configuration;
-        public TestController(IConsulServices consulServices,IConfiguration configuration)
+        public TestController(IRegistryService consulServices,IConfiguration configuration)
         {
             _consulServices = consulServices;
             _configuration = configuration;

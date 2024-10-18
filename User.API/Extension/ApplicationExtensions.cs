@@ -1,4 +1,5 @@
-﻿using Service.Framework.ConsulRegister;
+﻿using Service.Framework.ServiceRegistry;
+using Service.Framework.ServiceRegistry.Consul;
 
 namespace User.API.Extension
 {
@@ -6,7 +7,7 @@ namespace User.API.Extension
     {
         public static IApplicationBuilder UseConsul(this IApplicationBuilder app,IHostApplicationLifetime lifetime)
         {
-            app.ApplicationServices.GetService<IConsulServices>()?.ConsulRegistAsync(lifetime);
+            app.ApplicationServices.GetService<IRegistryService>()?.ConsulRegistAsync(lifetime);
             app.UseHealthCheckMiddleware("/healthcheck");
             return app;
         }

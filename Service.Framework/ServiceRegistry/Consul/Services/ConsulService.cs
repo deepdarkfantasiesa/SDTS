@@ -1,6 +1,8 @@
 ﻿using Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Service.Framework.ServiceRegistry;
+using Service.Framework.ServiceRegistry.Consul.Configs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,12 +11,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Service.Framework.ConsulRegister
+namespace Service.Framework.ServiceRegistry.Consul.Services
 {
-    public class ConsulServices : IConsulServices
+    public class ConsulService : IRegistryService
     {
-        private readonly ConsulRegisterOptions _consulRegisterOptions;
-        public ConsulServices(IOptions<ConsulRegisterOptions> consulRegisterOptions)
+        private readonly ConsulRegisterConfig _consulRegisterOptions;
+        public ConsulService(IOptions<ConsulRegisterConfig> consulRegisterOptions)
         {
             _consulRegisterOptions = consulRegisterOptions.Value;
         }
@@ -66,7 +68,7 @@ namespace Service.Framework.ConsulRegister
             foreach (var item in result.Response)
             {
                 //Console.WriteLine($"id:{item.Service.ID},address:{item.Service.Address}:{item.Service.Port}");
-                urls.Add(item.Service.Address +":"+ item.Service.Port);
+                urls.Add(item.Service.Address + ":" + item.Service.Port);
             }
             return urls;
         }
@@ -97,20 +99,20 @@ namespace Service.Framework.ConsulRegister
 
             //var result = client.Catalog.Service(_consulRegisterOptions?.Name, null).Result;//获取当前服务名的所有节点
             var result = client.Catalog.Service(_consulRegisterOptions?.Name, null).Result;//获取当前服务名的所有节点
-            
+
             var registeredNodes = result
                 .Response
                 .Where(p => p.ServiceAddress == _consulRegisterOptions.Ip
-                &&p.ServicePort.ToString() ==_consulRegisterOptions.Port)
+                && p.ServicePort.ToString() == _consulRegisterOptions.Port)
                 .ToList();//找出ip和端口相同的
 
             var urls = getAllConsulAddress(_consulRegisterOptions.Address);
 
             if (registeredNodes.Any())
             {
-                foreach(var node in registeredNodes)
+                foreach (var node in registeredNodes)
                 {
-                    foreach(var url in urls)
+                    foreach (var url in urls)
                     {
                         client.Config.Address = new Uri(url);
                         client.Agent.ServiceDeregister(node.ServiceID);//注销旧的节点

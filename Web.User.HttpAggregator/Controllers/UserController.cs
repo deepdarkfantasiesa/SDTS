@@ -1,7 +1,7 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
-using Service.Framework.ConsulRegister;
+using Service.Framework.ServiceRegistry;
 using System;
 using System.Net.Security;
 using user_rpcservices;
@@ -15,8 +15,8 @@ namespace Web.User.HttpAggregator.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserGrpc.UserGrpcClient _userGrpcClient;
-        private readonly IConsulServices _consulServices;
-        public UserController(UserGrpc.UserGrpcClient client, IConsulServices consulServices)
+        private readonly IRegistryService _consulServices;
+        public UserController(UserGrpc.UserGrpcClient client, IRegistryService consulServices)
         {
             _userGrpcClient = client;
             _consulServices = consulServices;

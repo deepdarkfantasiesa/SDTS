@@ -3,7 +3,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Web.Gateway.Middlewares;
-using Service.Framework.ConfigurationCenter;
+using Service.Framework.ConfigurationCenter.Consul;
 namespace Web.Gateway
 {
     public class Program
