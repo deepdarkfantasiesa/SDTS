@@ -28,7 +28,10 @@ namespace User.API.Extension
 			var connstr = configuration.GetValue<string>("PgSQL");
 			services.AddDbContext<UserContext>(builder =>
 			{
-				builder.UseNpgsql(connstr);
+				builder.UseNpgsql(connstr, options =>
+				{
+					options.MigrationsAssembly("User.API");
+				});
 			});
 
 			#endregion
@@ -46,18 +49,19 @@ namespace User.API.Extension
 			#region Mysql
 
 			//var connstr = configuration.GetValue<string>("MySQL");
-			//         services.AddDbContext<UserContext>(builder =>
-			//         {
-			//             builder.UseMySql(connstr, ServerVersion.AutoDetect(connstr),
-			//             options=>{
-			//                 options.EnableRetryOnFailure(
-			//                     maxRetryCount: 3, 
-			//                     maxRetryDelay: TimeSpan.FromSeconds(10), 
-			//                     errorNumbersToAdd: new int[] { 40613 });
-			//                 options.MigrationsAssembly("User.API");
-			//             });
+			//services.AddDbContext<UserContext>(builder =>
+			//{
+			//	builder.UseMySql(connstr, ServerVersion.AutoDetect(connstr),
+			//	options =>
+			//	{
+			//		options.EnableRetryOnFailure(
+			//			maxRetryCount: 3,
+			//			maxRetryDelay: TimeSpan.FromSeconds(10),
+			//			errorNumbersToAdd: new int[] { 40613 });
+			//		options.MigrationsAssembly("User.API");
+			//	});
 
-			//         });
+			//});
 
 			#endregion
 
