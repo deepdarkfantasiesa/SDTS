@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
@@ -9,6 +8,8 @@ using User.API.Application.Queries;
 using User.API.Filters;
 using User.API.Settings;
 using User.Infrastructure;
+using User.Infrastructure.ExecutionStrategys;
+using User.Infrastructure.Interceptors;
 using User.Infrastructure.Repositories;
 
 namespace User.API.Extension
@@ -25,13 +26,37 @@ namespace User.API.Extension
 		{
 			#region pgsql
 
+			//获取pgsql连接字符串
 			var connstr = configuration.GetValue<string>("PgSQL");
-			services.AddDbContext<UserContext>(builder =>
+
+			//注册写上下文
+			services.AddDbContextPool<UserContext>(builder =>
 			{
 				builder.UseNpgsql(connstr, options =>
 				{
 					options.MigrationsAssembly("User.API");
 				});
+
+				//删除操作拦截器
+				builder.AddInterceptors(new DeleteInterceptor());
+			});
+
+			//注册读上下文工厂
+			services.AddPooledDbContextFactory<QueryDbContext>(builder =>
+			{
+				builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
+				{
+					npgsqlOptionsAction.ExecutionStrategy(context => new QueryRetryingExecutionStrategy(context, 3, TimeSpan.FromMilliseconds(100)));
+				});
+
+				//默认不跟踪实体
+				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+				//添加查询操作拦截器
+				builder.AddInterceptors(new QueryInterceptor());
+
+				//添加连接操作拦截器
+				builder.AddInterceptors(new ConnectInterceptor());
 			});
 
 			#endregion

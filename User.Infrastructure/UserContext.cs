@@ -27,11 +27,11 @@ namespace User.Infrastructure
 			modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
 			base.OnModelCreating(modelBuilder);
 		}
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			optionsBuilder.AddInterceptors(new MasterSlaveShiftInterceptor(_configuration.GetSection("master").Value, _configuration.GetSection("slaves").Value));
-			base.OnConfiguring(optionsBuilder);
-		}
+		//protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		//{
+		//	optionsBuilder.AddInterceptors(new MasterSlaveShiftInterceptor(_configuration.GetSection("master").Value, _configuration.GetSection("slaves").Value));
+		//	base.OnConfiguring(optionsBuilder);
+		//}
 
 		public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
 		{

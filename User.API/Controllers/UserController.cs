@@ -8,6 +8,8 @@ using System.Net;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using User.API.Filters;
+using User.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace User.API.Controllers
 {
@@ -65,6 +67,31 @@ namespace User.API.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromServices] UserContext dbContext, int id)
+        {
+            //var user = await dbContext.Users
+            //    .Where(p => p.Id == id)
+            //    .SingleOrDefaultAsync();
+
+            //dbContext.Users.Remove(user);
+
+            await dbContext.Users.Where(p => p.Id == id).ExecuteDeleteAsync();
+
+
+			return await dbContext.SaveChangesAsync() > 0 ? Ok() : NotFound();
+        }
+
+        [HttpGet("QueryByDbContext")]
+        public async Task<IActionResult> QueryByDbContext([FromServices]IDbContextFactory<QueryDbContext> dbContextFactory)
+        {
+            using (var queryContext=await dbContextFactory.CreateDbContextAsync())
+            {
+                var users = await queryContext.Users.ToListAsync();
+                return Ok(users);
+			}
         }
     }
 }
