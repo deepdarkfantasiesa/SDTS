@@ -96,13 +96,13 @@ namespace User.API.Controllers
         }
 
         [HttpGet("TestRedisContext")]
-        public async Task<IActionResult> TestRedisContext([FromServices]RedisContext redisContext)
+        public async Task<IActionResult> TestRedisContext([FromServices]RedisContext redisContext, [FromQuery] string cacheKey)
         {
-            var cacheData = await redisContext.GetStringAsync<string>("");
+            var cacheData = await redisContext.GetStringAsync<string>(cacheKey);
             return Ok(cacheData);
 		}
 
-        [HttpGet("TestRedisConnectionPool")]
+		[HttpGet("TestRedisConnectionPool")]
         public async Task<IActionResult> TestRedisConnectionPool([FromServices] RedisConnectionPool redisConnectionPool)
         {
             using (var redisConnection= redisConnectionPool.GetConnection())
