@@ -1,5 +1,7 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using System.Collections.Concurrent;
+using User.Infrastructure.Settings;
 
 namespace User.Infrastructure.Caches.Redis
 {
@@ -24,6 +26,11 @@ namespace User.Infrastructure.Caches.Redis
 		private readonly string _connectionString;
 
 		/// <summary>
+		/// redis配置类
+		/// </summary>
+		private readonly RedisSettings _redisSettings;
+
+		/// <summary>
 		/// 最新连接实例数
 		/// </summary>
 		public int CurrentConnectionCount 
@@ -39,16 +46,20 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		/// <param name="connectionString">连接字符串</param>
 		/// <param name="maxSize">最大实例数</param>
-		public RedisConnectionPool(string connectionString, int maxSize)
+		public RedisConnectionPool(IOptions<RedisSettings> redisSettings, int maxSize)
 		{
 			_connections = new ConcurrentBag<IConnectionMultiplexer>();
 			_maxSize = maxSize;
-			_connectionString = connectionString;
+			//_connectionString = connectionString;
+			_redisSettings = redisSettings.Value;
 
 			// 初始化连接池
 			for (int i = 0; i < maxSize; i++)
 			{
-				_connections.Add(ConnectionMultiplexer.Connect(connectionString));
+				_connections.Add(ConnectionMultiplexer.Connect(_redisSettings.ConnectionString, options =>
+				{
+					options.DefaultDatabase=_redisSettings.DefaultDbNumber; 
+				}));
 			}
 		}
 
@@ -65,7 +76,30 @@ namespace User.Infrastructure.Caches.Redis
 			}
 
 			// 如果没有可用连接，则创建新连接
-			connection = ConnectionMultiplexer.Connect(_connectionString);
+			connection = ConnectionMultiplexer.Connect(_connectionString, options =>
+			{
+				options.DefaultDatabase = _redisSettings.DefaultDbNumber;
+			});
+			return new PooledConnection(this, connection);
+		}
+
+		/// <summary>
+		/// 异步获取连接实例
+		/// </summary>
+		/// <returns></returns>
+		public async Task<PooledConnection> GetConnectionAsync()
+		{
+			//尝试从redis连接实例集合中获取实例
+			if (_connections.TryTake(out var connection))
+			{
+				return new PooledConnection(this, connection);
+			}
+
+			// 如果没有可用连接，则创建新连接
+			connection = await ConnectionMultiplexer.ConnectAsync(_connectionString, options =>
+			{
+				options.DefaultDatabase = _redisSettings.DefaultDbNumber;
+			});
 			return new PooledConnection(this, connection);
 		}
 

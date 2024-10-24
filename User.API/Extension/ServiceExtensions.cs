@@ -1,21 +1,22 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
 using User.API.Application.Queries;
 using User.API.Filters;
-using User.API.Settings;
 using User.Infrastructure;
 using User.Infrastructure.Caches.Redis;
 using User.Infrastructure.ExecutionStrategys;
 using User.Infrastructure.Interceptors;
 using User.Infrastructure.Repositories;
+using User.Infrastructure.Settings;
 
 namespace User.API.Extension
 {
-	public static class ServiceExtensions
+    public static class ServiceExtensions
 	{
 		/// <summary>
 		/// 注册数据库上下文
@@ -115,19 +116,24 @@ namespace User.API.Extension
 		{
 			#region redis
 
-			services.Configure<RedisSettings>(configuration);
+			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings"));
 			services.AddSingleton<ConnectionMultiplexer>(opt =>
 			{
 				var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
-				var configuration = ConfigurationOptions.Parse(settings.Redis_Multiplexer, true);
+				var configuration = ConfigurationOptions.Parse(settings.ConnectionString, true);
 				return ConnectionMultiplexer.Connect(configuration);
 			});
 
+			//注册连接池
 			services.AddSingleton<RedisConnectionPool>(opt =>
 			{
-				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
-				return new RedisConnectionPool(redisSettings.Redis_Multiplexer, 50);
+				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>();
+
+				return new RedisConnectionPool(redisSettings, 50);
 			});
+
+			//注册操作上下文
+			services.AddSingleton<RedisContext>();
 
 			#endregion
 
