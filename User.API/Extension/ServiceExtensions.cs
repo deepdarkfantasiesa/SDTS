@@ -8,6 +8,7 @@ using User.API.Application.Queries;
 using User.API.Filters;
 using User.API.Settings;
 using User.Infrastructure;
+using User.Infrastructure.Caches.Redis;
 using User.Infrastructure.ExecutionStrategys;
 using User.Infrastructure.Interceptors;
 using User.Infrastructure.Repositories;
@@ -120,6 +121,12 @@ namespace User.API.Extension
 				var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
 				var configuration = ConfigurationOptions.Parse(settings.Redis_Multiplexer, true);
 				return ConnectionMultiplexer.Connect(configuration);
+			});
+
+			services.AddSingleton<RedisConnectionPool>(opt =>
+			{
+				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
+				return new RedisConnectionPool(redisSettings.Redis_Multiplexer, 50);
 			});
 
 			#endregion

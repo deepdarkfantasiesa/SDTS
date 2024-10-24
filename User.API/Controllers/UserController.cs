@@ -10,6 +10,7 @@ using System.Text.Json;
 using User.API.Filters;
 using User.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using User.Infrastructure.Caches.Redis;
 
 namespace User.API.Controllers
 {
@@ -92,6 +93,34 @@ namespace User.API.Controllers
                 var users = await queryContext.Users.ToListAsync();
                 return Ok(users);
 			}
+        }
+
+        [HttpGet("RedisTest")]
+        public async Task<IActionResult> RedisTest([FromServices] RedisConnectionPool redisConnectionPool)
+        {
+            using (var redisConnection= redisConnectionPool.GetConnection())
+            {
+                var connection = redisConnection.Connection;
+                Console.WriteLine(redisConnectionPool.CurrentConnectionCount);
+            }
+            
+            return Ok();
+        }
+
+        [HttpGet("Test")]
+        public async Task<IActionResult> Test([FromQuery] int parrelNum)
+        {
+            List<Task> tasks = new List<Task>();
+            for(int i = 0; i < parrelNum; i++)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    HttpClient client = new HttpClient();
+                    await client.GetAsync("http://localhost:5002/User/RedisTest/RedisTest");
+                }));
+			}
+            await Task.WhenAll(tasks);
+            return Ok();
         }
     }
 }
