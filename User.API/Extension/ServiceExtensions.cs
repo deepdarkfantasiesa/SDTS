@@ -48,6 +48,7 @@ namespace User.API.Extension
 			{
 				builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
 				{
+					//添加重试策略
 					npgsqlOptionsAction.ExecutionStrategy(context => new QueryRetryingExecutionStrategy(context, 3, TimeSpan.FromMilliseconds(100)));
 				});
 
@@ -129,7 +130,7 @@ namespace User.API.Extension
 			{
 				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>();
 
-				return new RedisConnectionPool(redisSettings, 50);
+				return new RedisConnectionPool(redisSettings);
 			});
 
 			//注册操作上下文

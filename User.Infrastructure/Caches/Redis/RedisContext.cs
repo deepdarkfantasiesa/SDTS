@@ -42,13 +42,9 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null)
 		{
-			using (var pooledConnection = await _connectionPool.GetConnectionAsync())
-			{
-				var connection = pooledConnection.Connection;
-				var db = connection.GetDatabase(databaseNumber != null ? databaseNumber.Value : _redisSettings.DefaultDbNumber);
-				var cacheData = await db.StringGetAsync(cacheKey);
-				return Deserialize<T>(cacheData);
-			}
+			var db = _connectionPool.GetReadOnlyDatabase(_redisSettings.DefaultDbNumber);
+			var cacheData = await db.StringGetAsync(cacheKey);
+			return Deserialize<T>(cacheData);
 		}
 
 		#endregion

@@ -102,18 +102,6 @@ namespace User.API.Controllers
             return Ok(cacheData);
 		}
 
-		[HttpGet("TestRedisConnectionPool")]
-        public async Task<IActionResult> TestRedisConnectionPool([FromServices] RedisConnectionPool redisConnectionPool)
-        {
-            using (var redisConnection= redisConnectionPool.GetConnection())
-            {
-                var connection = redisConnection.Connection;
-                Console.WriteLine(redisConnectionPool.CurrentConnectionCount);
-            }
-            
-            return Ok();
-        }
-
         [HttpGet("Test")]
         public async Task<IActionResult> Test([FromQuery] int parrelNum)
         {
@@ -123,8 +111,9 @@ namespace User.API.Controllers
                 tasks.Add(Task.Run(async () =>
                 {
                     HttpClient client = new HttpClient();
-                    await client.GetAsync("http://localhost:5002/User/RedisTest/RedisTest");
-                }));
+					//await client.GetAsync("http://localhost:5002/User/TestRedisConnectionPool/TestRedisConnectionPool");
+					await client.GetAsync("http://localhost:5002/User/TestRedisContext/TestRedisContext?cacheKey=CHGateway:Administrator:2");
+				}));
 			}
             await Task.WhenAll(tasks);
             return Ok();
