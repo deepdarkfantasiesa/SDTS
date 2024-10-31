@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
+using System.Net;
 using User.Infrastructure.Settings;
 
 namespace User.Infrastructure.Caches.Redis
@@ -48,7 +49,7 @@ namespace User.Infrastructure.Caches.Redis
 			_redisSettings = redisSettings.Value;
 			_connectionString = _redisSettings.ConnectionString;
 
-			for (int i = 0; i < _redisSettings.InstanceCount; i++)
+			for(int i = 0; i < _redisSettings.InstanceCount; i++)
 			{
 				#region 写实例
 
@@ -58,7 +59,7 @@ namespace User.Infrastructure.Caches.Redis
 					options.Password = _redisSettings.Password;
 				});
 
-				//writeConnection.ConfigurationChanged += HandleMasterFailover;
+				writeConnection.ConfigurationChanged += HandleMasterFailover;
 
 				_writeConnections.Add(writeConnection);
 
@@ -69,7 +70,7 @@ namespace User.Infrastructure.Caches.Redis
 				//获取从库的终结点
 				var slaveEndPoints = writeConnection.GetEndPoints().Where(endpoint => writeConnection.GetServer(endpoint).IsReplica).ToArray();
 
-				foreach (var slaveEndPoint in slaveEndPoints)
+				foreach(var slaveEndPoint in slaveEndPoints)
 				{
 					var readOnlyConnection = ConnectionMultiplexer.Connect(new ConfigurationOptions
 					{
@@ -148,7 +149,7 @@ namespace User.Infrastructure.Caches.Redis
 		public IDatabase GetDatabase(bool useReplica = false, int dbNum = 0)
 		{
 			var random = new Random();
-			if (useReplica == true && _activeReadOnlyConnections.Count > 0)
+			if(useReplica == true && _activeReadOnlyConnections.Count > 0)
 			{
 				var readOnlyConnection = GetConnection(_activeReadOnlyConnections);
 				return readOnlyConnection.GetDatabase(dbNum);
@@ -178,6 +179,35 @@ namespace User.Infrastructure.Caches.Redis
 
 		#region 连接实例事件
 
+		private async void HandleMasterFailover(object sender, EndPointEventArgs e)
+		{
+			var connection = sender as ConnectionMultiplexer;
+			if(connection != null)
+			{
+				//筛选出主库
+				var masterServers = connection.GetServers().Where(p => p.IsReplica == false).ToList();
+				foreach(var masterServer in masterServers)
+				{
+					//校验主库终结点是否在从库集合中
+					var isExist = _activeReadOnlyConnections.Exists(masterServer.EndPoint);
+					if(isExist == true)
+					{
+						//重新初始化
+						
+						break;
+					}
+
+					isExist = _failedReadOnlyConnections.Exists(masterServer.EndPoint);
+					if(isExist == true)
+					{
+						//重新初始化
+						break;
+					}
+					//await masterServer.ReplicaOfAsync(masterServer.EndPoint);
+				}
+			}
+		}
+
 		/// <summary>
 		/// 从库重新连接事件
 		/// </summary>
@@ -185,7 +215,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="e"></param>
 		private void ReadOnlyConnectionRestoredEvent(object sender, ConnectionFailedEventArgs e)
 		{
-			if (e.ConnectionType == ConnectionType.Interactive)
+			if(e.ConnectionType == ConnectionType.Interactive)
 			{
 				var activeConnection = sender as ConnectionMultiplexer;
 				if(activeConnection != null)
@@ -196,7 +226,7 @@ namespace User.Infrastructure.Caches.Redis
 				}
 			}
 
-			if (e.ConnectionType == ConnectionType.Subscription)
+			if(e.ConnectionType == ConnectionType.Subscription)
 			{
 
 			}
@@ -209,11 +239,11 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="e"></param>
 		private void ReadOnlyConnectionFailedEvent(object sender, ConnectionFailedEventArgs e)
 		{
-			if (e.ConnectionType == ConnectionType.Interactive)
+			if(e.ConnectionType == ConnectionType.Interactive)
 			{
 				// 移除连接失败的实例
 				var failedConnection = sender as ConnectionMultiplexer;
-				if (failedConnection != null)
+				if(failedConnection != null)
 				{
 					Console.WriteLine($"{e.ConnectionType} {e.EndPoint} is ConnectionFailed at {DateTime.Now}");
 					Func<ConnectionMultiplexer, bool> predicate = connection => connection.GetEndPoints().Contains(e.EndPoint);
@@ -221,7 +251,7 @@ namespace User.Infrastructure.Caches.Redis
 				}
 			}
 
-			if (e.ConnectionType == ConnectionType.Subscription)
+			if(e.ConnectionType == ConnectionType.Subscription)
 			{
 
 			}
@@ -236,9 +266,9 @@ namespace User.Infrastructure.Caches.Redis
 		private void TransferConnectionsByCondition(ConcurrentBag<ConnectionMultiplexer> sourceConnectionBag, ConcurrentBag<ConnectionMultiplexer> targetConnectionBag, Func<ConnectionMultiplexer, bool> predicate)
 		{
 			var temporaryBag = new ConcurrentBag<ConnectionMultiplexer>();
-			foreach (var sourceConnection in sourceConnectionBag)
+			foreach(var sourceConnection in sourceConnectionBag)
 			{
-				if (!predicate(sourceConnection))
+				if(!predicate(sourceConnection))
 				{
 					temporaryBag.Add(sourceConnection);
 				}
@@ -248,17 +278,33 @@ namespace User.Infrastructure.Caches.Redis
 				}
 			}
 
-			while (!sourceConnectionBag.IsEmpty)
+			while(!sourceConnectionBag.IsEmpty)
 			{
 				sourceConnectionBag.TryTake(out _);
 			}
 
-			foreach (var connection in temporaryBag)
+			foreach(var connection in temporaryBag)
 			{
 				sourceConnectionBag.Add(connection);
 			}
 		}
 
 		#endregion
+
+	}
+
+	public static class ConcurrentBagExtensions
+	{
+		public static bool Exists(this ConcurrentBag<ConnectionMultiplexer> connections, EndPoint endPoint)
+		{
+			foreach(var connection in connections)
+			{
+				if(connection.GetEndPoints().Contains(endPoint) == true)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 }
