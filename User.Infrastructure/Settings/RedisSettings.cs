@@ -25,5 +25,14 @@
 		/// </summary>
 		public int InstanceCount {  get; set; }
 
+        public List<RedisConfigEndPoint> EndPoints {  get; set; }
 	}
+
+
+    public class RedisConfigEndPoint
+	{
+        public string Host {  get; set; }
+
+        public int Port { get; set; }
+    }
 }

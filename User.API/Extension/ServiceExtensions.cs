@@ -133,6 +133,13 @@ namespace User.API.Extension
 				return new RedisConnectionPool(redisSettings);
 			});
 
+			services.AddSingleton<RedisConnectionPoolV2>(opt =>
+			{
+				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>();
+
+				return new RedisConnectionPoolV2(redisSettings);
+			});
+
 			//注册操作上下文
 			services.AddSingleton<RedisContext>();
 

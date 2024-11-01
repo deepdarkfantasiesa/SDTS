@@ -3,6 +3,7 @@ using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Net;
 using User.Infrastructure.Settings;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace User.Infrastructure.Caches.Redis
 {
@@ -12,9 +13,14 @@ namespace User.Infrastructure.Caches.Redis
 	public class RedisConnectionPool
 	{
 		/// <summary>
-		/// 写连接实例集合
+		/// 写连接实例集合（激活）
 		/// </summary>
-		private readonly ConcurrentBag<ConnectionMultiplexer> _writeConnections;
+		private readonly ConcurrentBag<ConnectionMultiplexer> _activeWriteConnections;
+
+		/// <summary>
+		/// 写连接实例集合（失效）
+		/// </summary>
+		private readonly ConcurrentBag<ConnectionMultiplexer> _failedWriteConnections;
 
 		/// <summary>
 		/// 只读连接实例集合（激活）
@@ -43,12 +49,115 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="maxSize">最大实例数</param>
 		public RedisConnectionPool(IOptions<RedisSettings> redisSettings)
 		{
+			_failedWriteConnections = new ConcurrentBag<ConnectionMultiplexer>();
 			_failedReadOnlyConnections = new ConcurrentBag<ConnectionMultiplexer>();
 			_activeReadOnlyConnections = new ConcurrentBag<ConnectionMultiplexer>();
-			_writeConnections = new ConcurrentBag<ConnectionMultiplexer>();
+			_activeWriteConnections = new ConcurrentBag<ConnectionMultiplexer>();
 			_redisSettings = redisSettings.Value;
 			_connectionString = _redisSettings.ConnectionString;
 
+			InitConnectionPool();
+		}
+
+		#region 对外操作
+
+		/// <summary>
+		/// 获取从redis的数据库
+		/// </summary>
+		/// <param name="useReplica">是否使用从库</param>
+		/// <param name="dbNum">数据库编号</param>
+		/// <returns></returns>
+		public IDatabase GetDatabase(bool useReplica = false, int dbNum = 0)
+		{
+			var random = new Random();
+			if(useReplica == true && _activeReadOnlyConnections.Count > 0)
+			{
+				var readOnlyConnection = GetConnection(_activeReadOnlyConnections);
+				return readOnlyConnection.GetDatabase(dbNum);
+			}
+			else
+			{
+				var writeConnection = GetConnection(_activeWriteConnections);
+				return writeConnection.GetDatabase(dbNum);
+			}
+		}
+
+		/// <summary>
+		/// 获取redis连接实例
+		/// </summary>
+		/// <param name="connectionBag">redis连接实例集合</param>
+		/// <returns></returns>
+		private ConnectionMultiplexer GetConnection(ConcurrentBag<ConnectionMultiplexer> connectionBag)
+		{
+			var random = new Random();
+			var connections = connectionBag.ToList();
+			var randomIndex = random.Next(connections.Count);
+			var connection = connections[randomIndex];
+			return connection;
+		}
+
+		#endregion
+
+		#region 初始化
+
+		/// <summary>
+		/// 重新异步初始化连接池
+		/// </summary>
+		/// <returns></returns>
+		private async Task InitConnectionPoolAsync()
+		{
+			for(int i = 0; i < _redisSettings.InstanceCount; i++)
+			{
+				#region 写实例
+
+				var writeConnection = await ConnectionMultiplexer.ConnectAsync(_redisSettings.ConnectionString, options =>
+				{
+					options.DefaultDatabase = _redisSettings.DefaultDbNumber;
+					options.Password = _redisSettings.Password;
+					options.AllowAdmin = true;
+				});
+
+				writeConnection.ConfigurationChanged += HandleMasterFailoverEvent;
+				writeConnection.ConnectionFailed += WriteConnectionFailedEvent;
+				writeConnection.ConnectionRestored += WriteConnectionRestoredEvent;
+
+				_activeWriteConnections.Add(writeConnection);
+
+				#endregion
+
+				#region 只读实例
+
+				//获取从库的终结点
+				var slaveEndPoints = writeConnection.GetEndPoints().Where(endpoint => writeConnection.GetServer(endpoint).IsReplica).ToArray();
+
+				foreach(var slaveEndPoint in slaveEndPoints)
+				{
+					var readOnlyConnection = await ConnectionMultiplexer.ConnectAsync(new ConfigurationOptions
+					{
+						EndPoints = { slaveEndPoint },
+						AllowAdmin = true,
+						Password = _redisSettings.Password,
+						DefaultDatabase = _redisSettings.DefaultDbNumber
+					});
+
+					//订阅从库断开连接事件
+					readOnlyConnection.ConnectionFailed += ReadOnlyConnectionFailedEvent;
+
+					//订阅从库重新连接事件
+					readOnlyConnection.ConnectionRestored += ReadOnlyConnectionRestoredEvent;
+
+					_activeReadOnlyConnections.Add(readOnlyConnection);
+				}
+				#endregion
+			}
+		}
+
+		/// <summary>
+		/// 重新初始化连接池
+		/// </summary>
+		/// <returns></returns>
+		private void InitConnectionPool()
+		{
 			for(int i = 0; i < _redisSettings.InstanceCount; i++)
 			{
 				#region 写实例
@@ -57,11 +166,14 @@ namespace User.Infrastructure.Caches.Redis
 				{
 					options.DefaultDatabase = _redisSettings.DefaultDbNumber;
 					options.Password = _redisSettings.Password;
+					options.AllowAdmin = true;
 				});
 
-				writeConnection.ConfigurationChanged += HandleMasterFailover;
+				writeConnection.ConfigurationChanged += HandleMasterFailoverEvent;
+				writeConnection.ConnectionFailed += WriteConnectionFailedEvent;
+				writeConnection.ConnectionRestored += WriteConnectionRestoredEvent;
 
-				_writeConnections.Add(writeConnection);
+				_activeWriteConnections.Add(writeConnection);
 
 				#endregion
 
@@ -90,102 +202,82 @@ namespace User.Infrastructure.Caches.Redis
 				}
 				#endregion
 			}
+		}
 
-			#region
-			////实例化
-			//for (int i = 0; i < _redisSettings.InstanceCount; i++)
+		/// <summary>
+		/// 初始化所有连接集合
+		/// </summary>
+		/// <returns></returns>
+		private async Task InitConnectionBag()
+		{
+			if(_activeReadOnlyConnections.Count != 0)
+			{
+				foreach(ConnectionMultiplexer activeReadOnlyConnection in _activeReadOnlyConnections)
+				{
+					activeReadOnlyConnection.ConnectionFailed -= ReadOnlyConnectionFailedEvent;
+					activeReadOnlyConnection.ConnectionFailed -= ReadOnlyConnectionRestoredEvent;
+					await activeReadOnlyConnection.DisposeAsync();
+				}
+				_activeReadOnlyConnections.Clear();
+			}
+
+			if(_failedReadOnlyConnections.Count != 0)
+			{
+				foreach(ConnectionMultiplexer failedReadOnlyConnection in _failedReadOnlyConnections)
+				{
+					failedReadOnlyConnection.ConnectionFailed -= ReadOnlyConnectionFailedEvent;
+					failedReadOnlyConnection.ConnectionFailed -= ReadOnlyConnectionRestoredEvent;
+					await failedReadOnlyConnection.DisposeAsync();
+				}
+				_failedReadOnlyConnections.Clear();
+			}
+
+			//if(_activeWriteConnections.Count != 0)
 			//{
-			//	#region 可读可写的实例
-
-			//	var connection = ConnectionMultiplexer.Connect(_redisSettings.ConnectionString, options =>
+			//	foreach(ConnectionMultiplexer writeConnection in _activeWriteConnections)
 			//	{
-			//		options.DefaultDatabase = _redisSettings.DefaultDbNumber;
-			//		options.Password = _redisSettings.Password;
-			//	});
-
-			//	connection.ConnectionFailed += (sender, arges) =>
-			//	{
-			//		Console.WriteLine($"{arges.EndPoint} is ConnectionFailed");
-			//		foreach (var readOnlyConnection in _readOnlyConnections)
-			//		{
-			//			readOnlyConnection.DisposeAsync();
-			//		}
-			//		_readOnlyConnections.Clear();
-			//	};
-			//	_writeConnections.Add(connection);
-
-			//	#endregion
-
-			//	#region 只读实例
-
-			//	var slaveEndPoints = connection.GetEndPoints().Where(endpoint => connection.GetServer(endpoint).IsReplica).ToArray();
-			//	// 初始化连接池
-			//	foreach (var slaveEndPoint in slaveEndPoints)
-			//	{
-			//		var readOnlyConnection = ConnectionMultiplexer.Connect(new ConfigurationOptions
-			//		{
-			//			EndPoints = { slaveEndPoint },
-			//			AllowAdmin = true,
-			//			Password = _redisSettings.Password,
-			//			DefaultDatabase = _redisSettings.DefaultDbNumber
-			//		});
-
-			//		_readOnlyConnections.Add(readOnlyConnection);
+			//		writeConnection.ConfigurationChanged -= HandleMasterFailoverEvent;
+			//		await writeConnection.DisposeAsync();
 			//	}
-
-			//	#endregion
+			//	_activeWriteConnections.Clear();
 			//}
-			#endregion
 		}
 
-		#region 对外操作
-
-		/// <summary>
-		/// 获取从redis的数据库
-		/// </summary>
-		/// <param name="useReplica">是否使用从库</param>
-		/// <param name="dbNum">数据库编号</param>
-		/// <returns></returns>
-		public IDatabase GetDatabase(bool useReplica = false, int dbNum = 0)
-		{
-			var random = new Random();
-			if(useReplica == true && _activeReadOnlyConnections.Count > 0)
-			{
-				var readOnlyConnection = GetConnection(_activeReadOnlyConnections);
-				return readOnlyConnection.GetDatabase(dbNum);
-			}
-			else
-			{
-				var writeConnection = GetConnection(_writeConnections);
-				return writeConnection.GetDatabase(dbNum);
-			}
-		}
-
-		/// <summary>
-		/// 获取redis连接实例
-		/// </summary>
-		/// <param name="connectionBag">redis连接实例集合</param>
-		/// <returns></returns>
-		private ConnectionMultiplexer GetConnection(ConcurrentBag<ConnectionMultiplexer> connectionBag)
-		{
-			var random = new Random();
-			var connections = connectionBag.ToList();
-			var randomIndex = random.Next(connections.Count);
-			var connection = connections[randomIndex];
-			return connection;
-		}
 
 		#endregion
 
 		#region 连接实例事件
 
-		private async void HandleMasterFailover(object sender, EndPointEventArgs e)
+		private async Task ChangeRole(EndPoint masterEndPoint)
+		{
+			foreach(var failedWriteConnection in _failedWriteConnections)
+			{
+				failedWriteConnection.ConfigurationChanged -= HandleMasterFailoverEvent;
+				var servers = failedWriteConnection.GetServers();
+				var failedServers = servers.Where(p => p.IsReplica == false && p.IsConnected == false).ToList();
+				//foreach(var failedServer in failedServers)
+				//{
+				//	await failedServer.ReplicaOfAsync(masterEndPoint);
+				//}
+				failedWriteConnection.ConnectionFailed += ReadOnlyConnectionFailedEvent;
+				failedWriteConnection.ConnectionRestored += ReadOnlyConnectionRestoredEvent;
+			}
+		}
+
+		private async void HandleMasterFailoverEventV2(object sender, EndPointEventArgs e)
+		{
+			var connection = sender as ConnectionMultiplexer;
+			var currentConnection = connection.GetServers().Where(p => p.EndPoint == e.EndPoint).FirstOrDefault();
+			currentConnection.ConfigRewrite();
+		}
+
+		private async void HandleMasterFailoverEvent(object sender, EndPointEventArgs e)
 		{
 			var connection = sender as ConnectionMultiplexer;
 			if(connection != null)
 			{
 				//筛选出主库
-				var masterServers = connection.GetServers().Where(p => p.IsReplica == false).ToList();
+				var masterServers = connection.GetServers().Where(p => p.IsReplica == false && p.IsConnected == true).ToList();
 				foreach(var masterServer in masterServers)
 				{
 					//校验主库终结点是否在从库集合中
@@ -193,7 +285,10 @@ namespace User.Infrastructure.Caches.Redis
 					if(isExist == true)
 					{
 						//重新初始化
-						
+						//await ChangeRole(masterServer.EndPoint);
+						await InitConnectionBag();
+						await InitConnectionPoolAsync();
+
 						break;
 					}
 
@@ -201,11 +296,40 @@ namespace User.Infrastructure.Caches.Redis
 					if(isExist == true)
 					{
 						//重新初始化
+						//await ChangeRole(masterServer.EndPoint);
+						await InitConnectionBag();
+						await InitConnectionPoolAsync();
+
 						break;
 					}
-					//await masterServer.ReplicaOfAsync(masterServer.EndPoint);
 				}
 			}
+		}
+
+		/// <summary>
+		/// 写库重新连接事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void WriteConnectionRestoredEvent(object sender, ConnectionFailedEventArgs e)
+		{
+			var connection = sender as ConnectionMultiplexer;
+			if(connection != null)
+			{
+				var server = connection.GetServers().Where(p => p.EndPoint == e.EndPoint).FirstOrDefault();
+				server.ConfigRewrite();
+			}
+		}
+
+		/// <summary>
+		/// 写库断开连接事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void WriteConnectionFailedEvent(object sender, ConnectionFailedEventArgs e)
+		{
+			Func<ConnectionMultiplexer, bool> predicate = connection => connection.GetEndPoints().Contains(e.EndPoint);
+			TransferConnectionsByCondition(_activeWriteConnections, _failedWriteConnections, predicate);
 		}
 
 		/// <summary>
@@ -305,6 +429,22 @@ namespace User.Infrastructure.Caches.Redis
 				}
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// 异步初始化连接集合
+		/// </summary>
+		/// <param name="connections"></param>
+		public static async Task InitAsync(this ConcurrentBag<ConnectionMultiplexer> connections)
+		{
+			if(connections.Count != 0)
+			{
+				foreach (var connection in connections)
+				{
+					await connection.DisposeAsync();
+				}
+				connections.Clear();
+			}
 		}
 	}
 }

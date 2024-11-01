@@ -20,13 +20,16 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		private readonly RedisSettings _redisSettings;
 
+		private readonly RedisConnectionPoolV2 _connectionPoolV2;
+
 		/// <summary>
 		/// redis上下文
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
-		public RedisContext(RedisConnectionPool connectionPool, IOptions<RedisSettings> redisSettings)
+		public RedisContext(RedisConnectionPool connectionPool,RedisConnectionPoolV2 connectionPoolV2, IOptions<RedisSettings> redisSettings)
 		{
+			_connectionPoolV2 = connectionPoolV2;
 			_connectionPool = connectionPool;
 			_redisSettings = redisSettings.Value;
 		}
