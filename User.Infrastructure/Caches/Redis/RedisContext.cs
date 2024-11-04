@@ -27,10 +27,9 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
-		public RedisContext(RedisConnectionPool connectionPool,RedisConnectionPoolV2 connectionPoolV2, IOptions<RedisSettings> redisSettings)
+		public RedisContext(RedisConnectionPoolV2 connectionPoolV2, IOptions<RedisSettings> redisSettings)
 		{
 			_connectionPoolV2 = connectionPoolV2;
-			_connectionPool = connectionPool;
 			_redisSettings = redisSettings.Value;
 		}
 
@@ -45,7 +44,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null)
 		{
-			var db = _connectionPool.GetDatabase(true, _redisSettings.DefaultDbNumber);
+			var db = _connectionPoolV2.GetDatabase(true, _redisSettings.DefaultDbNumber);
 			var cacheData = await db.StringGetAsync(cacheKey);
 			return Deserialize<T>(cacheData);
 		}
