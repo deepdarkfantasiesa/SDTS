@@ -1,13 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
 using User.API.Application.Queries;
 using User.API.Filters;
 using User.Infrastructure;
+using User.Infrastructure.Caches;
 using User.Infrastructure.Caches.Redis;
 using User.Infrastructure.ExecutionStrategys;
 using User.Infrastructure.Interceptors;
@@ -16,7 +16,7 @@ using User.Infrastructure.Settings;
 
 namespace User.API.Extension
 {
-    public static class ServiceExtensions
+	public static class ServiceExtensions
 	{
 		/// <summary>
 		/// 注册数据库上下文
@@ -133,15 +133,8 @@ namespace User.API.Extension
 				return new RedisConnectionPool(redisSettings);
 			});
 
-			services.AddSingleton<RedisConnectionPoolV2>(opt =>
-			{
-				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>();
-
-				return new RedisConnectionPoolV2(redisSettings);
-			});
-
 			//注册操作上下文
-			services.AddSingleton<RedisContext>();
+			services.AddSingleton<ICacheImpl, RedisContext>();
 
 			#endregion
 

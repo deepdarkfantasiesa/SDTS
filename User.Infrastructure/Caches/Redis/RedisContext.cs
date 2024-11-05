@@ -8,7 +8,7 @@ namespace User.Infrastructure.Caches.Redis
 	/// <summary>
 	/// redis上下文
 	/// </summary>
-	public class RedisContext
+	public class RedisContext: ICacheImpl
 	{
 		/// <summary>
 		/// redis连接池
@@ -20,16 +20,14 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		private readonly RedisSettings _redisSettings;
 
-		private readonly RedisConnectionPoolV2 _connectionPoolV2;
-
 		/// <summary>
 		/// redis上下文
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
-		public RedisContext(RedisConnectionPoolV2 connectionPoolV2, IOptions<RedisSettings> redisSettings)
+		public RedisContext(RedisConnectionPool connectionPool, IOptions<RedisSettings> redisSettings)
 		{
-			_connectionPoolV2 = connectionPoolV2;
+			_connectionPool = connectionPool;
 			_redisSettings = redisSettings.Value;
 		}
 
@@ -44,8 +42,8 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null)
 		{
-			var db = _connectionPoolV2.GetDatabase(true, _redisSettings.DefaultDbNumber);
-			var cacheData = await db.StringGetAsync(cacheKey);
+			var db = _connectionPool.GetDatabase(_redisSettings.DefaultDbNumber);
+			var cacheData = await db.StringGetAsync(cacheKey,flags:CommandFlags.PreferReplica);
 			return Deserialize<T>(cacheData);
 		}
 

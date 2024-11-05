@@ -11,6 +11,7 @@ using User.API.Filters;
 using User.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using User.Infrastructure.Caches.Redis;
+using User.Infrastructure.Caches;
 
 namespace User.API.Controllers
 {
@@ -96,9 +97,9 @@ namespace User.API.Controllers
         }
 
         [HttpGet("TestRedisContext")]
-        public async Task<IActionResult> TestRedisContext([FromServices]RedisContext redisContext, [FromQuery] string cacheKey)
+        public async Task<IActionResult> TestRedisContext([FromServices]ICacheImpl _cacheImpl, [FromQuery] string cacheKey)
         {
-            var cacheData = await redisContext.GetStringAsync<string>(cacheKey);
+            var cacheData = await _cacheImpl.GetStringAsync<string>(cacheKey);
             return Ok(cacheData);
 		}
 
