@@ -18,10 +18,11 @@ namespace User.API.Controllers
         [HttpGet] 
         public async Task<IActionResult> GetServices() 
         {
-            var urls = await _consulServices.RequestServices();
-            foreach (var url in urls)
+			//var urls = await _consulServices.RequestServices();
+			var urls = await _consulServices.Discover("pgsql");
+			foreach (var url in urls.Response)
             {
-                Console.WriteLine($"address {url}");
+                Console.WriteLine($"address {url.Service.Address} port {url.Service.Port}");
             }
             return Ok(urls);
         }

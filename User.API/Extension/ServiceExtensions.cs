@@ -182,6 +182,9 @@ namespace User.API.Extension
 			//注册consul服务发现配置类
 			services.Configure<ConsulRegisterConfig>(configuration.GetSection("ConsulRegisterOptions"));
 
+			//注册后台任务轮询配置类
+			services.Configure<BackgroundHostSettings>(configuration.GetSection("BackgroundHostOptions"));
+
 			return services;
 		}
 

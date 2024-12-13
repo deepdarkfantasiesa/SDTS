@@ -18,17 +18,27 @@ namespace User.Infrastructure.Caches.Redis
 		/// <summary>
 		/// redis配置类
 		/// </summary>
-		private readonly RedisSettings _redisSettings;
+		private RedisSettings _redisSettings;
 
 		/// <summary>
 		/// redis上下文
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
-		public RedisContext(RedisConnectionPool connectionPool, IOptions<RedisSettings> redisSettings)
+		public RedisContext(RedisConnectionPool connectionPool, IOptionsMonitor<RedisSettings> redisSettings)
 		{
 			_connectionPool = connectionPool;
-			_redisSettings = redisSettings.Value;
+			redisSettings.OnChange(RedisSettingChange);
+			_redisSettings = redisSettings.CurrentValue;
+		}
+
+		/// <summary>
+		/// RedisSettings配置内容变更触发函数
+		/// </summary>
+		/// <param name="redisSettings"></param>
+		private async void RedisSettingChange(RedisSettings redisSettings)
+		{
+			_redisSettings = redisSettings;
 		}
 
 		#region redis相关的操作方法
@@ -42,9 +52,32 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null)
 		{
-			var db = _connectionPool.GetDatabase(_redisSettings.DefaultDbNumber);
+			if (databaseNumber == null)
+				databaseNumber = _redisSettings.DefaultDbNumber;
+
+			var db = _connectionPool.GetDatabase(databaseNumber.Value);
 			var cacheData = await db.StringGetAsync(cacheKey,flags:CommandFlags.PreferReplica);
 			return Deserialize<T>(cacheData);
+		}
+
+		/// <summary>
+		/// 向redis插入string类型的数据
+		/// </summary>
+		/// <param name="cacheKey">缓存键</param>
+		/// <param name="value">缓存值</param>
+		/// <param name="expirationTime">过期时间</param>
+		/// <param name="databaseNumber">数据库编号</param>
+		/// <returns></returns>
+		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null)
+		{
+			if (expirationTime == null)
+				expirationTime = TimeSpan.FromSeconds(30);
+			if (databaseNumber == null)
+				databaseNumber = _redisSettings.DefaultDbNumber;
+
+			var db = _connectionPool.GetDatabase(databaseNumber.Value);
+			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
+			return await db.StringSetAsync(cacheKey, redisValue, expirationTime);
 		}
 
 		#endregion

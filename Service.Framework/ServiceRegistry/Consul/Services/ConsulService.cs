@@ -58,9 +58,13 @@ namespace Service.Framework.ServiceRegistry.Consul.Services
 
         public async Task<IEnumerable<string>> RequestServices()
         {
-            var client = new ConsulClient(options =>
+            var addresses = _consulRegisterOptions.Address.Split(",");
+			Random random = new Random();
+            var index = random.Next(addresses.Length);
+
+			var client = new ConsulClient(options =>
             {
-                options.Address = new Uri(_consulRegisterOptions.Address);//consul的地址
+                options.Address = new Uri(addresses[index]);//consul的地址
             });
 
             var result = await client.Health.Service(_consulRegisterOptions?.Name, null, true);
@@ -73,7 +77,28 @@ namespace Service.Framework.ServiceRegistry.Consul.Services
             return urls;
         }
 
-        public async Task<IEnumerable<string>> RequestServicesV2(string name)
+		/// <summary>
+		/// 从服务发现中心获取指定名称的服务url
+		/// </summary>
+		/// <param name="serviceName">服务名称</param>
+		/// <returns></returns>
+		public async Task<QueryResult<ServiceEntry[]>> Discover(string serviceName)
+        {
+			var addresses = _consulRegisterOptions.Address.Split(",");
+			Random random = new Random();
+			var index = random.Next(addresses.Length);
+
+			var client = new ConsulClient(options =>
+			{
+				options.Address = new Uri(addresses[index]);//consul的地址
+			});
+
+			var result = await client.Health.Service(serviceName, null, true);
+			return result;
+		}
+
+
+		public async Task<IEnumerable<string>> RequestServicesV2(string name)
         {
             var client = new ConsulClient(options =>
             {

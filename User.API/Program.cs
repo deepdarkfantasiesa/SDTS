@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Service.Framework.ConfigurationCenter.Consul;
 using Service.Framework.ServiceRegistry.Consul;
 using User.API.Application.Behaviors;
+using User.API.BackgroundHosts;
 using User.API.Extension;
 using User.API.Services;
 using User.Infrastructure;
@@ -57,6 +58,9 @@ namespace User.API
 
 			//注册consul服务发现服务
 			builder.Services.AddConsulRegister();
+
+			//注册同步数据后台服务
+			builder.Services.AddHostedService<SyncHealthServiceHost>();
 
 			builder.WebHost.ConfigureKestrel(opt =>
 			{
