@@ -13,7 +13,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <summary>
 		/// redis配置类
 		/// </summary>
-		private readonly RedisSettings _redisSettings;
+		private RedisSettings _redisSettings;
 
 		/// <summary>
 		/// 连接实例集合
@@ -23,12 +23,20 @@ namespace User.Infrastructure.Caches.Redis
 		/// <summary>
 		/// redis连接池
 		/// </summary>
-		/// <param name="options"></param>
-		public RedisConnectionPool(IOptions<RedisSettings> options)
+		/// <param name="redisSettings">redis配置模块</param>
+		public RedisConnectionPool(IOptionsMonitor<RedisSettings> redisSettings)
 		{
-			_redisSettings = options.Value;
+			_redisSettings = redisSettings.CurrentValue;
+			redisSettings.OnChange(OnChangeSettings);
 			_connections = new ConcurrentBag<ConnectionMultiplexer>();
 			InitConnectionPool();
+		}
+
+		private async void OnChangeSettings(RedisSettings redisSettings)
+		{
+			if (_redisSettings.Equals(redisSettings)) return;
+			Console.WriteLine("RedisSettingsChanged");
+			_redisSettings = redisSettings;
 		}
 
 		/// <summary>

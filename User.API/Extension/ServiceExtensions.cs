@@ -128,7 +128,7 @@ namespace User.API.Extension
 			//注册连接池
 			services.AddSingleton<RedisConnectionPool>(opt =>
 			{
-				var redisSettings = opt.GetRequiredService<IOptions<RedisSettings>>();
+				var redisSettings = opt.GetRequiredService<IOptionsMonitor<RedisSettings>>();
 
 				return new RedisConnectionPool(redisSettings);
 			});
