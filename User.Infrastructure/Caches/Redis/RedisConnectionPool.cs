@@ -32,11 +32,16 @@ namespace User.Infrastructure.Caches.Redis
 			InitConnectionPool();
 		}
 
+		/// <summary>
+		/// 配置类监听函数
+		/// </summary>
+		/// <param name="redisSettings"></param>
 		private async void OnChangeSettings(RedisSettings redisSettings)
 		{
 			if (_redisSettings.Equals(redisSettings)) return;
 			Console.WriteLine("RedisSettingsChanged");
 			_redisSettings = redisSettings;
+			InitConnectionPool();
 		}
 
 		/// <summary>
@@ -45,6 +50,15 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		private void InitConnectionPool()
 		{
+			if(_connections.Count > 0)
+			{
+				foreach (var connection in _connections)
+				{
+					connection.Dispose();
+				}
+				_connections.Clear();
+			}
+
 			for(int i = 0; i < _redisSettings.InstanceCount; i++)
 			{
 				var connection = ConnectionMultiplexer.Connect(new ConfigurationOptions
