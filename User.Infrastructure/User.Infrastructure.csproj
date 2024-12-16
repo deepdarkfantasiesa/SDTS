@@ -19,7 +19,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain.Abstraction\Domain.Abstraction.csproj" />
     <ProjectReference Include="..\Infrastructure.Core\Infrastructure.Core.csproj" />
+    <ProjectReference Include="..\Service.Framework\Service.Framework.csproj" />
     <ProjectReference Include="..\User.Domain\User.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Caches\Models\" />
   </ItemGroup>
 
 </Project>

@@ -62,7 +62,7 @@ namespace User.API.Extension
 				var cache = serviceProvider.GetRequiredService<ICacheImpl>();
 
 				//添加连接操作拦截器
-				builder.AddInterceptors(new ConnectInterceptor(cache));
+				builder.AddInterceptors(new ConnectInterceptor(cache, serviceProvider));
 			});
 
 			#endregion

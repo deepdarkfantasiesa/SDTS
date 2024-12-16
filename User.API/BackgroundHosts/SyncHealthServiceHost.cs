@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry;
 using User.Infrastructure.Caches;
-using User.Infrastructure.Caches.Models;
 using User.Infrastructure.Settings;
 
 namespace User.API.BackgroundHosts
@@ -79,17 +78,11 @@ namespace User.API.BackgroundHosts
 			using (var scope = _serviceProvider.CreateAsyncScope())
 			{
 				var registryService = scope.ServiceProvider.GetService<IRegistryService>();
-				var discoverServices = await registryService.Discover("pgsql");
-				var rdbConfigs = new List<RelationDatabaseModel>();
-				foreach (var discoverService in discoverServices.Response)
-				{
-					rdbConfigs.Add(new RelationDatabaseModel
-					{
-						Address = discoverService.Service.Address,
-						Port = discoverService.Service.Port,
-						Tag = discoverService.Service.Tags
-					});
-				}
+
+				//从服务发现中心获取指定名称的关系型数据库配置
+				var rdbConfigs = await registryService.DiscoverRDB("pgsql");
+
+				//写入缓存
 				await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
 			}
 		}

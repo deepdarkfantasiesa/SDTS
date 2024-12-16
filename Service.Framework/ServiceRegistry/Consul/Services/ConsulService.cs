@@ -1,15 +1,8 @@
 ﻿using Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Service.Framework.ServiceRegistry;
+using Service.Framework.Models;
 using Service.Framework.ServiceRegistry.Consul.Configs;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Service.Framework.ServiceRegistry.Consul.Services
 {
@@ -97,6 +90,37 @@ namespace Service.Framework.ServiceRegistry.Consul.Services
 			return result;
 		}
 
+		/// <summary>
+		/// 发现关系数据配置
+		/// </summary>
+		/// <param name="serviceName">服务名称</param>
+		/// <returns></returns>
+		public async Task<IEnumerable<RelationalDatabaseModel>> DiscoverRDB(string serviceName)
+		{
+			var addresses = _consulRegisterOptions.Address.Split(",");
+			Random random = new Random();
+			var index = random.Next(addresses.Length);
+
+			var client = new ConsulClient(options =>
+			{
+				options.Address = new Uri(addresses[index]);//consul的地址
+			});
+
+			var services = await client.Health.Service(serviceName, null, true);
+
+			var rdbConfigs = new List<RelationalDatabaseModel>();
+			foreach (var response in services.Response)
+			{
+				rdbConfigs.Add(new RelationalDatabaseModel
+				{
+					Address = response.Service.Address,
+					Port = response.Service.Port,
+					Tag = response.Service.Tags
+				});
+			}
+
+			return rdbConfigs;
+		}
 
 		public async Task<IEnumerable<string>> RequestServicesV2(string name)
         {

@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Service.Framework.Models;
+using Service.Framework.ServiceRegistry;
 using System.Data.Common;
 using User.Infrastructure.Caches;
-using User.Infrastructure.Caches.Models;
 
 namespace User.Infrastructure.Interceptors
 {
@@ -16,12 +18,19 @@ namespace User.Infrastructure.Interceptors
 		private readonly ICacheImpl _cache;
 
 		/// <summary>
+		/// 
+		/// </summary>
+		private readonly ServiceProvider _serviceProvider;
+
+		/// <summary>
 		/// 连接拦截器
 		/// </summary>
 		/// <param name="cache">缓存实现类</param>
-		public ConnectInterceptor(ICacheImpl cache)
+		/// <param name="serviceProvider"></param>
+		public ConnectInterceptor(ICacheImpl cache, ServiceProvider serviceProvider)
 		{
 			_cache = cache;
+			_serviceProvider = serviceProvider;
 		}
 
 		/// <summary>
@@ -73,9 +82,9 @@ namespace User.Infrastructure.Interceptors
 		public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
 		{
 			//从缓存中获取数据库实例的信息
-			var rdbCaches = await _cache.GetStringAsync<List<RelationDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
+			var rdbCaches = await _cache.GetStringAsync<List<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
 
-			RelationDatabaseModel replicaConfig = null;
+			RelationalDatabaseModel replicaConfig = null;
 			if (rdbCaches != null && rdbCaches.Count > 0)
 			{
 				replicaConfig = TryGetReplicaConfig(rdbCaches);
@@ -83,7 +92,20 @@ namespace User.Infrastructure.Interceptors
 			else
 			{
 				//从服务发现中心获取
+				var serviceCenter = _serviceProvider.GetRequiredService<IRegistryService>();
+				var rdbConfigs = await serviceCenter.DiscoverRDB("pgsql");
 
+				if (rdbConfigs != null && rdbConfigs.ToList().Count > 0) 
+					replicaConfig = TryGetReplicaConfig(rdbConfigs);
+
+				if (replicaConfig == null)
+				{
+					//TODO：如果服务发现中心还是没有则手动实例化
+					replicaConfig = new RelationalDatabaseModel
+					{
+
+					};
+				}
 			}
 
 			if (!connection.ConnectionString.Contains($"{replicaConfig.Address}") || !connection.ConnectionString.Contains($"{replicaConfig.Port}"))
@@ -97,7 +119,7 @@ namespace User.Infrastructure.Interceptors
 		/// </summary>
 		/// <param name="rdbs"></param>
 		/// <returns></returns>
-		private RelationDatabaseModel TryGetReplicaConfig(List<RelationDatabaseModel> rdbs)
+		private RelationalDatabaseModel TryGetReplicaConfig(IEnumerable<RelationalDatabaseModel> rdbs)
 		{
 			var radom = new Random();
 
