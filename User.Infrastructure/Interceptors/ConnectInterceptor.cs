@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Data.Common;
+using User.Infrastructure.Caches;
+using User.Infrastructure.Caches.Models;
 
 namespace User.Infrastructure.Interceptors
 {
@@ -8,6 +10,20 @@ namespace User.Infrastructure.Interceptors
 	/// </summary>
 	public class ConnectInterceptor : DbConnectionInterceptor
 	{
+		/// <summary>
+		/// 缓存实现类
+		/// </summary>
+		private readonly ICacheImpl _cache;
+
+		/// <summary>
+		/// 连接拦截器
+		/// </summary>
+		/// <param name="cache">缓存实现类</param>
+		public ConnectInterceptor(ICacheImpl cache)
+		{
+			_cache = cache;
+		}
+
 		/// <summary>
 		/// 连接创建前（池化注册不会每次获取时运行）
 		/// </summary>
@@ -54,10 +70,52 @@ namespace User.Infrastructure.Interceptors
 		/// <param name="result"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public override ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
+		public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
 		{
-			//Console.WriteLine("this is ConnectionOpeningAsync");
-			return base.ConnectionOpeningAsync(connection, eventData, result, cancellationToken);
+			//从缓存中获取数据库实例的信息
+			var rdbCaches = await _cache.GetStringAsync<List<RelationDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
+
+			RelationDatabaseModel replicaConfig = null;
+			if (rdbCaches != null && rdbCaches.Count > 0)
+			{
+				replicaConfig = TryGetReplicaConfig(rdbCaches);
+			}
+			else
+			{
+				//从服务发现中心获取
+
+			}
+
+			if (!connection.ConnectionString.Contains($"{replicaConfig.Address}") || !connection.ConnectionString.Contains($"{replicaConfig.Port}"))
+				connection.ConnectionString = $"Host={replicaConfig.Address}:{replicaConfig.Port};Database=postgres;Username=postgres;Password=postgres";
+
+			return await base.ConnectionOpeningAsync(connection, eventData, result, cancellationToken);
+		}
+
+		/// <summary>
+		/// 尝试获取从库的配置
+		/// </summary>
+		/// <param name="rdbs"></param>
+		/// <returns></returns>
+		private RelationDatabaseModel TryGetReplicaConfig(List<RelationDatabaseModel> rdbs)
+		{
+			var radom = new Random();
+
+			var replicaRdbs = rdbs.Where(p => p.Tag.Contains("replica")).ToList();
+			if (replicaRdbs != null && replicaRdbs.Count > 0)
+			{
+				var replicaRdb = replicaRdbs[radom.Next(replicaRdbs.Count)];
+				return replicaRdb;
+			}
+
+			var masterRdbs = rdbs.Where(p => p.Tag.Contains("master")).ToList();
+			if (masterRdbs != null && masterRdbs.Count > 0) 
+			{
+				var masterRdb = masterRdbs[radom.Next(masterRdbs.Count)];
+				return masterRdb;
+			}
+
+			return null;
 		}
 	}
 }

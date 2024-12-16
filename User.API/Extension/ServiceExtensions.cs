@@ -58,8 +58,11 @@ namespace User.API.Extension
 				//添加查询操作拦截器
 				builder.AddInterceptors(new QueryInterceptor());
 
+				var serviceProvider = services.BuildServiceProvider();
+				var cache = serviceProvider.GetRequiredService<ICacheImpl>();
+
 				//添加连接操作拦截器
-				builder.AddInterceptors(new ConnectInterceptor());
+				builder.AddInterceptors(new ConnectInterceptor(cache));
 			});
 
 			#endregion
