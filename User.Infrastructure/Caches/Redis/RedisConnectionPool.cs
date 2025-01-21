@@ -117,5 +117,16 @@ namespace User.Infrastructure.Caches.Redis
 			throw new Exception("redis连接实例为空");
 		}
 
+		/// <summary>
+		/// 获取所有redis连接实例
+		/// </summary>
+		/// <returns></returns>
+		/// <exception cref="Exception"></exception>
+		public IEnumerable<ConnectionMultiplexer> GetAllConnections()
+		{
+			if (_connections.Count == 0)
+				throw new Exception("连接池中没有连接实例");
+			return _connections.AsEnumerable();
+		}
 	}
 }

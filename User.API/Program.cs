@@ -36,6 +36,9 @@ namespace User.API
 			//注册缓存
 			builder.Services.AddCaches(builder.Configuration);
 
+			//注册分布式锁
+			builder.Services.AddDistributedLock(builder.Configuration);
+
 			//注册数据库上下文
 			builder.Services.AddDbContexts(builder.Configuration);
 			builder.Services.AddIntoContainer(builder.Configuration);

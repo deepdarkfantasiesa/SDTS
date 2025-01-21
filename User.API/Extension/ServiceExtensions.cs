@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
 using User.API.Application.Queries;
@@ -140,6 +142,28 @@ namespace User.API.Extension
 			services.AddSingleton<ICacheImpl, RedisContext>();
 
 			#endregion
+
+			return services;
+		}
+
+		/// <summary>
+		/// 注册分布式锁
+		/// </summary>
+		/// <param name="services"></param>
+		/// <returns></returns>
+		public static IServiceCollection AddDistributedLock(this IServiceCollection services,IConfiguration configuration)
+		{
+			var provider = services.BuildServiceProvider();
+			var connectionPool = provider.GetService<RedisConnectionPool>() ?? throw new ArgumentNullException("请先注册redis连接池");
+
+			var connections = connectionPool.GetAllConnections();
+			var redLockConnections = new List<RedLockMultiplexer>();
+			foreach(var connection in connections)
+			{
+				redLockConnections.Add(connection);
+			}
+
+			RedLockFactory.Create(redLockConnections);
 
 			return services;
 		}
