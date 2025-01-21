@@ -65,6 +65,8 @@ namespace User.API
 			//注册同步数据后台服务
 			builder.Services.AddHostedService<SyncHealthServiceHost>();
 
+			builder.Services.AddHostedService<SyncInMemoryCacheHost>();
+
 			builder.WebHost.ConfigureKestrel(opt =>
 			{
 				opt.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2AndHttp3);//配置了之后gRPC可用https和http2地址端口调用，而http的会报http2无法完成握手

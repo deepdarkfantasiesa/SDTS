@@ -24,8 +24,4 @@
     <ProjectReference Include="..\User.Domain\User.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Caches\Models\" />
-  </ItemGroup>
-
 </Project>

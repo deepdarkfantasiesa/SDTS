@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 using User.Infrastructure.Settings;
 
 namespace User.Infrastructure.Caches.Redis
@@ -68,16 +69,44 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
 		/// <returns></returns>
-		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null)
+		public async Task<bool> SetStringAsync<T>(string cacheKey, T value, TimeSpan? expirationTime, int? databaseNumber)
 		{
-			if (expirationTime == null)
-				expirationTime = TimeSpan.FromSeconds(30);
-			if (databaseNumber == null)
-				databaseNumber = _redisSettings.DefaultDbNumber;
+			if (expirationTime == null) expirationTime = TimeSpan.FromSeconds(30);
 
-			var db = _connectionPool.GetDatabase(databaseNumber.Value);
+			var db = _connectionPool.GetDatabase(databaseNumber);
 			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
-			return await db.StringSetAsync(cacheKey, redisValue, expirationTime);
+			var result = await db.StringSetAsync(cacheKey, redisValue, expirationTime);
+			if (result == false || expirationTime < TimeSpan.FromSeconds(20)) return result;
+			await SyncInMemoryCacheAsync<T>(CacheKeyPrefix.SyncInMemoryCache, CommondType.Create, cacheKey, value, expirationTime / 2);
+			return true;
+		}
+
+		/// <summary>
+		/// 向redis管道发布消息
+		/// </summary>
+		/// <param name="channel">管道名称</param>
+		/// <param name="databaseNumber">默认数据库</param>
+		///<param name="value">值</param>
+		/// <returns></returns>
+		public async Task PublishAsync(string channel, object value, int? databaseNumber = null)
+		{
+			var db = _connectionPool.GetDatabase(databaseNumber);
+			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
+			
+			await db.PublishAsync(channel, redisValue);
+		}
+
+		/// <summary>
+		/// 订阅redis的管道
+		/// </summary>
+		/// <param name="channel">管道名称</param>
+		/// <param name="handler">消费消息时的任务</param>
+		/// <returns></returns>
+		public async Task SubscribeAsync(string channel, Action<RedisChannel, RedisValue> handler)
+		{
+			var connection = _connectionPool.GetConnection();
+			var subscriber = connection.GetSubscriber();
+			await subscriber.SubscribeAsync(channel, handler);
 		}
 
 		#endregion
@@ -99,6 +128,32 @@ namespace User.Infrastructure.Caches.Redis
 			else
 			{
 				return default(T);
+			}
+		}
+
+		/// <summary>
+		/// 通过redis的pub/sub通知其他服务实例同步本地缓存
+		/// </summary>
+		/// <param name="type">消息类型</param>
+		/// <param name="cacheKey">缓存键</param>
+		/// <param name="data">缓存数据</param>
+		/// <param name="channel">管道名称</param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		private async Task SyncInMemoryCacheAsync<T>(string channel, CommondType type, string cacheKey, T data, TimeSpan? expirationTime = null)
+		{
+			BaseCommand<T> command = null;
+			switch (type)
+			{
+				case CommondType.Create:
+					if (data == null || expirationTime == null) throw new ArgumentNullException("数据和过期时间不能为空");
+					command = new CreateCommand<T>() { CacheKey = cacheKey, Data = data, ExpirationTime = expirationTime.Value, DataType = typeof(T).FullName };
+					await PublishAsync(channel, command);
+					break;
+				case CommondType.Delete:
+					command = new DeleteCommand<T>() { CacheKey = cacheKey };
+					await PublishAsync(channel, command);
+					break;
 			}
 		}
 

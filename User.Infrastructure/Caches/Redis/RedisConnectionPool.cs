@@ -101,17 +101,18 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		/// <param name="dbNum">数据库编号</param>
 		/// <returns></returns>
-		public IDatabase GetDatabase(int dbNum = 0)
+		public IDatabase GetDatabase(int? dbNum)
 		{
-			if(_connections.Count == 1)
+			if (dbNum == null) dbNum = _redisSettings.DefaultDbNumber;
+			if (_connections.Count == 1)
 			{
 				var connection = _connections.First();
-				return connection.GetDatabase(dbNum);
+				return connection.GetDatabase(dbNum.Value);
 			}
 			else if(_connections.Count >1) 
 			{
 				var connection = GetConnection();
-				return connection.GetDatabase(dbNum);
+				return connection.GetDatabase(dbNum.Value);
 			}
 
 			throw new Exception("redis连接实例为空");

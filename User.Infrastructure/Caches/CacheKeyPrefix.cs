@@ -24,5 +24,19 @@ namespace User.Infrastructure.Caches
 		public const string PgSqlsConfig = BackgroundHost + "PgSqlsConfig";
 
 		#endregion
+
+		#region 通道
+
+		/// <summary>
+		/// 管道固定前缀
+		/// </summary>
+		private const string Channel = "Channel:";
+
+		/// <summary>
+		/// 同步内存缓存管道
+		/// </summary>
+		public const string SyncInMemoryCache = Channel + "SyncInMemoryCache";
+
+		#endregion
 	}
 }

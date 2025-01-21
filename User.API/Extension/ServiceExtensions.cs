@@ -143,6 +143,12 @@ namespace User.API.Extension
 
 			#endregion
 
+			#region 内存缓存
+
+			services.AddMemoryCache();
+
+			#endregion
+
 			return services;
 		}
 

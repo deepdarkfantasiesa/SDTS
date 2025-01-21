@@ -12,6 +12,9 @@ using User.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using User.Infrastructure.Caches.Redis;
 using User.Infrastructure.Caches;
+using Microsoft.Extensions.Caching.Memory;
+using Service.Framework.Models;
+using MongoDB.Bson.IO;
 
 namespace User.API.Controllers
 {
@@ -103,7 +106,42 @@ namespace User.API.Controllers
             return Ok(cacheData);
 		}
 
-        [HttpGet("Test")]
+        [HttpGet("TestRedisPub")]
+        public async Task<IActionResult> TestRedisPub([FromServices] ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery]string value)
+        {
+            await _cacheImpl.PublishAsync(cacheKey, value);
+            return Ok(null);
+		}
+
+        [HttpGet("TestInMemoryCace")]
+        public async Task<IActionResult> TestInMemoryCace(IMemoryCache memoryCache)
+        {
+            var data =  memoryCache.Get<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
+            return Ok(data);
+		}
+
+        [HttpPost("TestPublish")]
+        public async Task<IActionResult> TestSyncInMemoryCache1([FromServices] ICacheImpl cacheImpl, string key, string value)
+        {
+            var result = await cacheImpl.SetStringAsync<string>(key, value);
+            return Ok(result);
+		}
+
+		[HttpGet("TestPublish")]
+		public async Task<IActionResult> TestSyncInMemoryCache2(IMemoryCache memoryCache, string key)
+		{
+			var data = memoryCache.Get<string>(key);
+			return Ok(data);
+		}
+
+		[HttpGet("TestPublishRedis")]
+		public async Task<IActionResult> TestSyncInMemoryCache2(ICacheImpl cacheImpl, string key)
+		{
+			var data = await cacheImpl.GetStringAsync<string>(key);
+			return Ok(data);
+		}
+
+		[HttpGet("Test")]
         public async Task<IActionResult> Test([FromQuery] int parrelNum)
         {
             List<Task> tasks = new List<Task>();

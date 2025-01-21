@@ -1,4 +1,6 @@
-﻿namespace User.Infrastructure.Caches
+﻿using StackExchange.Redis;
+
+namespace User.Infrastructure.Caches
 {
 	/// <summary>
 	/// 缓存操作接口
@@ -22,6 +24,23 @@
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
 		/// <returns></returns>
-		Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null);
+		Task<bool> SetStringAsync<T>(string cacheKey, T value, TimeSpan? expirationTime = null, int? databaseNumber = null);
+
+		/// <summary>
+		/// 向redis管道发布消息
+		/// </summary>
+		/// <param name="channel">管道名称</param>
+		/// <param name="databaseNumber">默认数据库</param>
+		///<param name="value">值</param>
+		/// <returns></returns>
+		Task PublishAsync(string channel, object value, int? databaseNumber = null);
+
+		/// <summary>
+		/// 订阅redis的管道
+		/// </summary>
+		/// <param name="channel">管道名称</param>
+		/// <param name="handler">任务</param>
+		/// <returns></returns>
+		Task SubscribeAsync(string channel, Action<RedisChannel, RedisValue> handler);
 	}
 }
