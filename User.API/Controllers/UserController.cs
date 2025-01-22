@@ -100,9 +100,9 @@ namespace User.API.Controllers
         }
 
         [HttpGet("TestRedisContext")]
-        public async Task<IActionResult> TestRedisContext([FromServices]ICacheImpl _cacheImpl, [FromQuery] string cacheKey)
+        public async Task<IActionResult> TestRedisContext([FromServices]ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery]bool preferInMemory)
         {
-            var cacheData = await _cacheImpl.GetStringAsync<string>(cacheKey);
+            var cacheData = await _cacheImpl.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(cacheKey, preferLocal: preferInMemory);
             return Ok(cacheData);
 		}
 
@@ -123,7 +123,7 @@ namespace User.API.Controllers
         [HttpPost("TestPublish")]
         public async Task<IActionResult> TestSyncInMemoryCache1([FromServices] ICacheImpl cacheImpl, string key, string value)
         {
-            var result = await cacheImpl.SetStringAsync(key, value);
+            var result = await cacheImpl.SetStringAsync(key, value, publish: true);
             return Ok(result);
 		}
 

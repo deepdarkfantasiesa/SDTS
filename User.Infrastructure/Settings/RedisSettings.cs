@@ -6,6 +6,11 @@
 	public class RedisSettings : IEquatable<RedisSettings>
 	{
 		/// <summary>
+		/// 默认过期时间（秒）
+		/// </summary>
+		public int DefaultExpirationTime { get; set; }
+
+		/// <summary>
 		/// 连接字符串
 		/// </summary>
 		public string ConnectionString { get; set; }

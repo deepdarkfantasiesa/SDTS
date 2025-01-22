@@ -13,8 +13,9 @@ namespace User.Infrastructure.Caches
 		/// <typeparam name="T">返回的类型</typeparam>
 		/// <param name="cacheKey">缓存键</param>
 		/// <param name="databaseNumber">数据库编号</param>
+		/// <param name="preferLocal">优先查本地缓存</param>
 		/// <returns></returns>
-		Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null);
+		Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null, bool preferLocal = false);
 
 		/// <summary>
 		/// 向redis插入string类型的数据
@@ -23,8 +24,9 @@ namespace User.Infrastructure.Caches
 		/// <param name="value">缓存值</param>
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
+		/// <param name="publish">是否发布到通道</param>
 		/// <returns></returns>
-		Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null);
+		Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null, bool publish = false);
 
 		/// <summary>
 		/// 向redis管道发布消息

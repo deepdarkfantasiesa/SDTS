@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
@@ -22,15 +23,22 @@ namespace User.Infrastructure.Caches.Redis
 		private RedisSettings _redisSettings;
 
 		/// <summary>
+		/// 内存缓存
+		/// </summary>
+		private readonly IMemoryCache _memoryCache;
+
+		/// <summary>
 		/// redis上下文
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
-		public RedisContext(RedisConnectionPool connectionPool, IOptionsMonitor<RedisSettings> redisSettings)
+		/// <param name="memoryCache">内存缓存</param>
+		public RedisContext(RedisConnectionPool connectionPool, IOptionsMonitor<RedisSettings> redisSettings, IMemoryCache memoryCache)
 		{
 			_connectionPool = connectionPool;
 			redisSettings.OnChange(RedisSettingChange);
 			_redisSettings = redisSettings.CurrentValue;
+			_memoryCache = memoryCache;
 		}
 
 		/// <summary>
@@ -50,13 +58,16 @@ namespace User.Infrastructure.Caches.Redis
 		/// <typeparam name="T">返回的类型</typeparam>
 		/// <param name="cacheKey">缓存键</param>
 		/// <param name="databaseNumber">数据库编号</param>
+		/// <param name="preferLocal">优先查本地缓存</param>
 		/// <returns></returns>
-		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber = null)
+		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber, bool preferLocal = false)
 		{
-			if (databaseNumber == null)
-				databaseNumber = _redisSettings.DefaultDbNumber;
+			if(preferLocal && _memoryCache.TryGetValue(cacheKey, out T cache))
+			{
+				return cache;
+			}
 
-			var db = _connectionPool.GetDatabase(databaseNumber.Value);
+			var db = _connectionPool.GetDatabase(databaseNumber);
 			var cacheData = await db.StringGetAsync(cacheKey,flags:CommandFlags.PreferReplica);
 			return Deserialize<T>(cacheData);
 		}
@@ -68,15 +79,19 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="value">缓存值</param>
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
+		/// <param name="publish">是否发布到通道</param>
 		/// <returns></returns>
-		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime, int? databaseNumber)
+		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime, int? databaseNumber, bool publish = false)
 		{
-			if (expirationTime == null) expirationTime = TimeSpan.FromSeconds(30);
+			if(expirationTime == null) expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
 
+			//写入redis
 			var db = _connectionPool.GetDatabase(databaseNumber);
 			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
 			var result = await db.StringSetAsync(cacheKey, redisValue, expirationTime);
-			if (result == false || expirationTime < TimeSpan.FromSeconds(20)) return result;
+
+			//判断是否发布缓存到channel
+			if(publish == false || result == false || expirationTime < TimeSpan.FromSeconds(20)) return result;
 			await SyncInMemoryCacheAsync(CacheKeyPrefix.SyncInMemoryCache, CommondType.Create, cacheKey, value, expirationTime / 2);
 			return true;
 		}

@@ -82,7 +82,7 @@ namespace User.Infrastructure.Interceptors
 		public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
 		{
 			//从缓存中获取数据库实例的信息
-			var rdbCaches = await _cache.GetStringAsync<List<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
+			var rdbCaches = await _cache.GetStringAsync<List<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: true);
 
 			RelationalDatabaseModel replicaConfig = null;
 			if (rdbCaches != null && rdbCaches.Count > 0)
