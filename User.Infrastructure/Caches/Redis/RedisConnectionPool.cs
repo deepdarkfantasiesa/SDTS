@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
 using User.Infrastructure.Settings;
@@ -21,11 +22,18 @@ namespace User.Infrastructure.Caches.Redis
 		private readonly ConcurrentBag<ConnectionMultiplexer> _connections;
 
 		/// <summary>
+		/// 内存缓存
+		/// </summary>
+		private readonly IMemoryCache _memoryCache;
+
+		/// <summary>
 		/// redis连接池
 		/// </summary>
 		/// <param name="redisSettings">redis配置模块</param>
-		public RedisConnectionPool(IOptionsMonitor<RedisSettings> redisSettings)
+		/// <param name="memoryCache">内存缓存</param>
+		public RedisConnectionPool(IOptionsMonitor<RedisSettings> redisSettings, IMemoryCache memoryCache)
 		{
+			_memoryCache = memoryCache;
 			_redisSettings = redisSettings.CurrentValue;
 			redisSettings.OnChange(OnChangeSettings);
 			_connections = new ConcurrentBag<ConnectionMultiplexer>();
@@ -38,7 +46,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="redisSettings"></param>
 		private async void OnChangeSettings(RedisSettings redisSettings)
 		{
-			if (_redisSettings.Equals(redisSettings)) return;
+			if(_redisSettings.Equals(redisSettings)) return;
 			Console.WriteLine("RedisSettingsChanged");
 			_redisSettings = redisSettings;
 			InitConnectionPool();
@@ -52,7 +60,7 @@ namespace User.Infrastructure.Caches.Redis
 		{
 			if(_connections.Count > 0)
 			{
-				foreach (var connection in _connections)
+				foreach(var connection in _connections)
 				{
 					connection.Dispose();
 				}
@@ -73,10 +81,13 @@ namespace User.Infrastructure.Caches.Redis
 						{_redisSettings.EndPoints[5].Host,_redisSettings.EndPoints[5].Port },
 					},
 					Password = _redisSettings.Password,
-					DefaultDatabase = _redisSettings.DefaultDbNumber
+					DefaultDatabase = _redisSettings.DefaultDbNumber,
+					HeartbeatConsistencyChecks = true,
 					//,ServiceName = "local-master"
 					//,Proxy=Proxy.Envoyproxy
 				});
+				//订阅连接失败后触发的事件
+				connection.ConnectionFailed += ConnectionFailed;
 
 				_connections.Add(connection);
 			}
@@ -103,13 +114,13 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		public IDatabase GetDatabase(int? dbNum)
 		{
-			if (dbNum == null) dbNum = _redisSettings.DefaultDbNumber;
-			if (_connections.Count == 1)
+			if(dbNum == null) dbNum = _redisSettings.DefaultDbNumber;
+			if(_connections.Count == 1)
 			{
 				var connection = _connections.First();
 				return connection.GetDatabase(dbNum.Value);
 			}
-			else if(_connections.Count >1) 
+			else if(_connections.Count > 1)
 			{
 				var connection = GetConnection();
 				return connection.GetDatabase(dbNum.Value);
@@ -125,9 +136,28 @@ namespace User.Infrastructure.Caches.Redis
 		/// <exception cref="Exception"></exception>
 		public IEnumerable<ConnectionMultiplexer> GetAllConnections()
 		{
-			if (_connections.Count == 0)
+			if(_connections.Count == 0)
 				throw new Exception("连接池中没有连接实例");
 			return _connections.AsEnumerable();
 		}
+
+		#region 事件
+
+		/// <summary>
+		/// 连接失败时触发的事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private async void ConnectionFailed(object sender, ConnectionFailedEventArgs e)
+		{
+			//清除内存缓存
+			if(_memoryCache is MemoryCache cache)
+			{
+				cache.Clear();
+				//Console.WriteLine("clear all InMemoryCache");
+			}
+		}
+
+		#endregion
 	}
 }

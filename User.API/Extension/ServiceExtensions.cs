@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
@@ -121,6 +122,12 @@ namespace User.API.Extension
 		/// <returns></returns>
 		public static IServiceCollection AddCaches(this IServiceCollection services, IConfiguration configuration)
 		{
+			#region 内存缓存
+
+			services.AddMemoryCache();
+
+			#endregion
+
 			#region redis
 
 			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings-Cluster"));
@@ -135,18 +142,13 @@ namespace User.API.Extension
 			services.AddSingleton<RedisConnectionPool>(opt =>
 			{
 				var redisSettings = opt.GetRequiredService<IOptionsMonitor<RedisSettings>>();
+				var memoryCache = opt.GetRequiredService<IMemoryCache>();
 
-				return new RedisConnectionPool(redisSettings);
+				return new RedisConnectionPool(redisSettings, memoryCache);
 			});
 
 			//注册操作上下文
 			services.AddSingleton<ICacheImpl, RedisContext>();
-
-			#endregion
-
-			#region 内存缓存
-
-			services.AddMemoryCache();
 
 			#endregion
 

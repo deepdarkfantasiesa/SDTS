@@ -76,15 +76,22 @@ namespace User.API.BackgroundHosts
 		/// <param name="state"></param>
 		private async void SyncPgSqlTask(object state)
 		{
-			using (var scope = _serviceProvider.CreateAsyncScope())
+			try
 			{
-				var registryService = scope.ServiceProvider.GetService<IRegistryService>();
+				using(var scope = _serviceProvider.CreateAsyncScope())
+				{
+					var registryService = scope.ServiceProvider.GetService<IRegistryService>();
 
-				//从服务发现中心获取指定名称的关系型数据库配置
-				var rdbConfigs = await registryService.DiscoverRDB("pgsql");
+					//从服务发现中心获取指定名称的关系型数据库配置
+					var rdbConfigs = await registryService.DiscoverRDB("pgsql");
 
-				//写入缓存
-				await _cacheImpl.SetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
+					//写入缓存
+					await _cacheImpl.SetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"{ex.Message}");
 			}
 		}
 	}
