@@ -24,7 +24,7 @@ namespace User.Infrastructure.Caches
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
 		/// <returns></returns>
-		Task<bool> SetStringAsync<T>(string cacheKey, T value, TimeSpan? expirationTime = null, int? databaseNumber = null);
+		Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime = null, int? databaseNumber = null);
 
 		/// <summary>
 		/// 向redis管道发布消息

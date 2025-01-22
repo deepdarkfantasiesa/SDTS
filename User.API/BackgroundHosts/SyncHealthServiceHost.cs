@@ -86,7 +86,7 @@ namespace User.API.BackgroundHosts
 					var rdbConfigs = await registryService.DiscoverRDB("pgsql");
 
 					//写入缓存
-					await _cacheImpl.SetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
+					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
 				}
 			}
 			catch (Exception ex)

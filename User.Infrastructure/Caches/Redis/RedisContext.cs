@@ -69,7 +69,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="expirationTime">过期时间</param>
 		/// <param name="databaseNumber">数据库编号</param>
 		/// <returns></returns>
-		public async Task<bool> SetStringAsync<T>(string cacheKey, T value, TimeSpan? expirationTime, int? databaseNumber)
+		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime, int? databaseNumber)
 		{
 			if (expirationTime == null) expirationTime = TimeSpan.FromSeconds(30);
 
@@ -77,7 +77,7 @@ namespace User.Infrastructure.Caches.Redis
 			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
 			var result = await db.StringSetAsync(cacheKey, redisValue, expirationTime);
 			if (result == false || expirationTime < TimeSpan.FromSeconds(20)) return result;
-			await SyncInMemoryCacheAsync<T>(CacheKeyPrefix.SyncInMemoryCache, CommondType.Create, cacheKey, value, expirationTime / 2);
+			await SyncInMemoryCacheAsync(CacheKeyPrefix.SyncInMemoryCache, CommondType.Create, cacheKey, value, expirationTime / 2);
 			return true;
 		}
 
@@ -140,18 +140,18 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="channel">管道名称</param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task SyncInMemoryCacheAsync<T>(string channel, CommondType type, string cacheKey, T data, TimeSpan? expirationTime = null)
+		private async Task SyncInMemoryCacheAsync(string channel, CommondType type, string cacheKey, object data, TimeSpan? expirationTime = null)
 		{
-			BaseCommand<T> command = null;
+			BaseCommand<object> command = null;
 			switch (type)
 			{
 				case CommondType.Create:
 					if (data == null || expirationTime == null) throw new ArgumentNullException("数据和过期时间不能为空");
-					command = new CreateCommand<T>() { CacheKey = cacheKey, Data = data, ExpirationTime = expirationTime.Value, DataType = typeof(T).FullName };
+					command = new CreateCommand<object>() { CacheKey = cacheKey, Data = data, ExpirationTime = expirationTime.Value, DataType = data.GetType().FullName };
 					await PublishAsync(channel, command);
 					break;
 				case CommondType.Delete:
-					command = new DeleteCommand<T>() { CacheKey = cacheKey };
+					command = new DeleteCommand<object>() { CacheKey = cacheKey };
 					await PublishAsync(channel, command);
 					break;
 			}
