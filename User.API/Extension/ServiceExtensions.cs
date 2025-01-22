@@ -150,6 +150,12 @@ namespace User.API.Extension
 			//注册操作上下文
 			services.AddSingleton<ICacheImpl, RedisContext>();
 
+			//注册管道消息处理类
+			services.AddSingleton<IChannelMessageHandler, ChannelMessageHandler>();
+
+			//注册订阅reids管道后台任务
+			services.AddHostedService<SubscribeRedisChannelHost>();
+
 			#endregion
 
 			return services;
@@ -273,9 +279,6 @@ namespace User.API.Extension
 		{
 			//注册同步数据后台服务
 			services.AddHostedService<SyncHealthServiceHost>();
-
-			//注册监听同步内存缓存管道的后台服务
-			services.AddHostedService<SyncInMemoryCacheHost>();
 
 			return services;
 		}
