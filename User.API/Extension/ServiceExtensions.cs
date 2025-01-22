@@ -7,6 +7,7 @@ using RedLockNet.SERedis.Configuration;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
 using User.API.Application.Queries;
+using User.API.BackgroundHosts;
 using User.API.Filters;
 using User.Infrastructure;
 using User.Infrastructure.Caches;
@@ -157,7 +158,7 @@ namespace User.API.Extension
 		/// </summary>
 		/// <param name="services"></param>
 		/// <returns></returns>
-		public static IServiceCollection AddDistributedLock(this IServiceCollection services,IConfiguration configuration)
+		public static IServiceCollection AddDistributedLock(this IServiceCollection services, IConfiguration configuration)
 		{
 			var provider = services.BuildServiceProvider();
 			var connectionPool = provider.GetService<RedisConnectionPool>() ?? throw new ArgumentNullException("请先注册redis连接池");
@@ -257,6 +258,23 @@ namespace User.API.Extension
 			var distributedCaches = provider.GetService<IDistributedCache>();
 			services.AddScoped<IUserQueries>(p => new UserQueries(configuration.GetValue<string>("MySQL")));
 			//services.AddScoped<IUserQueries,UserQueries>();
+			return services;
+		}
+
+		/// <summary>
+		/// 注册后台任务
+		/// </summary>
+		/// <param name="services"></param>
+		/// <param name="configuration"></param>
+		/// <returns></returns>
+		public static IServiceCollection AddBackgroundHosts(this IServiceCollection services,IConfiguration configuration)
+		{
+			//注册同步数据后台服务
+			services.AddHostedService<SyncHealthServiceHost>();
+
+			//注册监听同步内存缓存管道的后台服务
+			services.AddHostedService<SyncInMemoryCacheHost>();
+
 			return services;
 		}
 	}

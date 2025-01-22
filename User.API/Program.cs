@@ -62,10 +62,8 @@ namespace User.API
 			//注册consul服务发现服务
 			builder.Services.AddConsulRegister();
 
-			//注册同步数据后台服务
-			builder.Services.AddHostedService<SyncHealthServiceHost>();
-
-			builder.Services.AddHostedService<SyncInMemoryCacheHost>();
+			//注册后台任务
+			builder.Services.AddBackgroundHosts(builder.Configuration);
 
 			builder.WebHost.ConfigureKestrel(opt =>
 			{
