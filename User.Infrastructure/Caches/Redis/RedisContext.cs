@@ -28,26 +28,22 @@ namespace User.Infrastructure.Caches.Redis
 		private readonly IMemoryCache _memoryCache;
 
 		/// <summary>
+		/// 事务集合
+		/// </summary>
+		private readonly Dictionary<int, ITransaction> transactions;
+
+		/// <summary>
 		/// redis上下文
 		/// </summary>
 		/// <param name="connectionPool">redis连接池</param>
 		/// <param name="redisSettings">redis配置类</param>
 		/// <param name="memoryCache">内存缓存</param>
-		public RedisContext(RedisConnectionPool connectionPool, IOptionsMonitor<RedisSettings> redisSettings, IMemoryCache memoryCache)
+		public RedisContext(RedisConnectionPool connectionPool, IOptionsSnapshot<RedisSettings> redisSettings, IMemoryCache memoryCache)
 		{
 			_connectionPool = connectionPool;
-			redisSettings.OnChange(RedisSettingChange);
-			_redisSettings = redisSettings.CurrentValue;
+			_redisSettings = redisSettings.Value;
 			_memoryCache = memoryCache;
-		}
-
-		/// <summary>
-		/// RedisSettings配置内容变更触发函数
-		/// </summary>
-		/// <param name="redisSettings"></param>
-		private async void RedisSettingChange(RedisSettings redisSettings)
-		{
-			_redisSettings = redisSettings;
+			transactions = new Dictionary<int, ITransaction>();
 		}
 
 		#region redis相关的操作方法
@@ -57,18 +53,18 @@ namespace User.Infrastructure.Caches.Redis
 		/// </summary>
 		/// <typeparam name="T">返回的类型</typeparam>
 		/// <param name="cacheKey">缓存键</param>
-		/// <param name="databaseNumber">数据库编号</param>
+		/// <param name="dbNum">数据库编号</param>
 		/// <param name="preferLocal">优先查本地缓存</param>
 		/// <returns></returns>
-		public async Task<T> GetStringAsync<T>(string cacheKey, int? databaseNumber, bool preferLocal = false)
+		public async Task<T> GetStringAsync<T>(string cacheKey, int dbNum = -1, bool preferLocal = false)
 		{
 			if(preferLocal && _memoryCache.TryGetValue(cacheKey, out T cache))
 			{
 				return cache;
 			}
 
-			var db = _connectionPool.GetDatabase(databaseNumber);
-			var cacheData = await db.StringGetAsync(cacheKey,flags:CommandFlags.PreferReplica);
+			var db = _connectionPool.GetDatabase(dbNum);
+			var cacheData = await db.StringGetAsync(cacheKey, flags: CommandFlags.PreferReplica);
 			return Deserialize<T>(cacheData);
 		}
 
@@ -78,37 +74,50 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="cacheKey">缓存键</param>
 		/// <param name="value">缓存值</param>
 		/// <param name="expirationTime">过期时间</param>
-		/// <param name="databaseNumber">数据库编号</param>
-		/// <param name="publish">是否发布到通道</param>
+		/// <param name="dbNum">数据库编号</param>
 		/// <returns></returns>
-		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime, int? databaseNumber, bool publish = false)
+		public async Task<bool> SetStringAsync(string cacheKey, object value, TimeSpan? expirationTime, int dbNum = -1)
 		{
 			if(expirationTime == null) expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
+			var redisValue = Serialize(value);
+			var transaction = GetTransaction(dbNum);
 
-			//写入redis
-			var db = _connectionPool.GetDatabase(databaseNumber);
-			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
-			var result = await db.StringSetAsync(cacheKey, redisValue, expirationTime);
+			bool result = false;
+			if(transaction == null)
+			{
+				var db = _connectionPool.GetDatabase(dbNum);
+				result = await db.StringSetAsync(cacheKey, redisValue, expirationTime);
+			}
+			else
+			{
+				transaction.StringSetAsync(cacheKey, redisValue, expirationTime);
+			}
 
-			//判断是否发布缓存到channel
-			if(publish == false || result == false || expirationTime < TimeSpan.FromSeconds(20)) return result;
-			await SyncInMemoryCacheAsync(CacheKeyPrefix.SyncInMemoryCache, CommondType.Create, cacheKey, value, expirationTime / 2);
-			return true;
+			return result;
 		}
 
 		/// <summary>
 		/// 向redis管道发布消息
 		/// </summary>
 		/// <param name="channel">管道名称</param>
-		/// <param name="databaseNumber">默认数据库</param>
+		/// <param name="dbNum">数据库</param>
 		///<param name="value">值</param>
 		/// <returns></returns>
-		public async Task PublishAsync(string channel, object value, int? databaseNumber = null)
+		public async Task PublishAsync(string channel, object value, int dbNum = -1)
 		{
-			var db = _connectionPool.GetDatabase(databaseNumber);
-			var redisValue = System.Text.Json.JsonSerializer.Serialize(value);
-			
-			await db.PublishAsync(channel, redisValue);
+			var redisValue = Serialize(value);
+			var transaction = GetTransaction(dbNum);
+			//var db = _connectionPool.GetDatabase(dbNum);
+			//await db.PublishAsync(channel, redisValue);
+			if(transaction == null)
+			{
+				var db = _connectionPool.GetDatabase(dbNum);
+				await db.PublishAsync(channel, redisValue);
+			}
+			else
+			{
+				transaction.PublishAsync(channel, redisValue);
+			}
 		}
 
 		/// <summary>
@@ -124,9 +133,78 @@ namespace User.Infrastructure.Caches.Redis
 			await subscriber.SubscribeAsync(channel, handler);
 		}
 
+		/// <summary>
+		/// 开启事务
+		/// </summary>
+		/// <param name="dbNum">数据库编号</param>
+		/// <returns></returns>
+		public ITransaction BeginTransaction(int dbNum = -1)
+		{
+			var transaction = GetTransaction(dbNum);
+
+			if(transaction == null)
+			{
+				dbNum = dbNum == -1 ? _redisSettings.DefaultDbNumber : dbNum;
+				var db = _connectionPool.GetDatabase(dbNum);
+				var currentTransaction = db.CreateTransaction();
+				transactions.Add(dbNum, currentTransaction);
+				transaction = currentTransaction;
+			}
+
+			return transaction;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="transaction"></param>
+		/// <returns></returns>
+		public async Task<bool> CommitTransactionAsync(ITransaction transaction)
+		{
+			return await transaction.ExecuteAsync();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="databaseNumber"></param>
+		/// <returns></returns>
+		public ITransaction? GetTransaction(int databaseNumber = -1)
+		{
+			var defaultDbNumber = databaseNumber == -1 ? _redisSettings.DefaultDbNumber : databaseNumber;
+
+			var transaction = transactions
+				.Where(p => p.Key == defaultDbNumber)
+				.Select(p => p.Value)
+				.FirstOrDefault();
+
+			return transaction;
+		}
+
+		public async Task<bool> Test(string cacheKey, object value, TimeSpan? expirationTime, int dbNum = -1)
+		{
+			var redisValue = Serialize(value);
+			dbNum = dbNum == -1 ? _redisSettings.DefaultDbNumber : dbNum;
+			var db = _connectionPool.GetDatabase(dbNum);
+			var currentTransaction = db.CreateTransaction();
+			var result = await currentTransaction.StringSetAsync(cacheKey, redisValue, expirationTime);
+			var res = await currentTransaction.PublishAsync("testccc", redisValue);
+			return true;
+		}
+
 		#endregion
 
 		#region 私有方法
+
+		/// <summary>
+		/// 序列化
+		/// </summary>
+		/// <param name="value">待序列化的值</param>
+		/// <returns></returns>
+		private string Serialize(object value)
+		{
+			return System.Text.Json.JsonSerializer.Serialize(value); ;
+		}
 
 		/// <summary>
 		/// 反序列化
@@ -136,7 +214,7 @@ namespace User.Infrastructure.Caches.Redis
 		/// <returns></returns>
 		private T Deserialize<T>(RedisValue cacheData)
 		{
-			if (cacheData.HasValue)
+			if(cacheData.HasValue)
 			{
 				return JsonConvert.DeserializeObject<T>(cacheData);
 			}
@@ -158,10 +236,10 @@ namespace User.Infrastructure.Caches.Redis
 		private async Task SyncInMemoryCacheAsync(string channel, CommondType type, string cacheKey, object data, TimeSpan? expirationTime = null)
 		{
 			BaseCommand<object> command = null;
-			switch (type)
+			switch(type)
 			{
 				case CommondType.Create:
-					if (data == null || expirationTime == null) throw new ArgumentNullException("数据和过期时间不能为空");
+					if(data == null || expirationTime == null) throw new ArgumentNullException("数据和过期时间不能为空");
 					command = new CreateCommand<object>() { CacheKey = cacheKey, Data = data, ExpirationTime = expirationTime.Value, DataType = data.GetType().FullName };
 					await PublishAsync(channel, command);
 					break;

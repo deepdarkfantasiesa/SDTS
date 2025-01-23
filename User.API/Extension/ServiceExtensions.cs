@@ -130,7 +130,7 @@ namespace User.API.Extension
 
 			#region redis
 
-			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings-Cluster"));
+			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings"));
 			services.AddSingleton<ConnectionMultiplexer>(opt =>
 			{
 				var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
@@ -148,7 +148,7 @@ namespace User.API.Extension
 			});
 
 			//注册操作上下文
-			services.AddSingleton<ICacheImpl, RedisContext>();
+			services.AddScoped<ICacheImpl, RedisContext>();
 
 			//注册管道消息处理类
 			services.AddSingleton<IChannelMessageHandler, ChannelMessageHandler>();

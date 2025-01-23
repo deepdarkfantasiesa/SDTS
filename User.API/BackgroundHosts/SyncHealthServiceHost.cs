@@ -2,6 +2,7 @@
 using Service.Framework.Models;
 using Service.Framework.ServiceRegistry;
 using User.Infrastructure.Caches;
+using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 using User.Infrastructure.Settings;
 
 namespace User.API.BackgroundHosts
@@ -17,11 +18,6 @@ namespace User.API.BackgroundHosts
 		private BackgroundHostSettings _bgHostSettings { get; set; }
 
 		/// <summary>
-		/// 缓存实现类
-		/// </summary>
-		private readonly ICacheImpl _cacheImpl;
-
-		/// <summary>
 		/// 同步pgsql定时器
 		/// </summary>
 		private Timer _syncPgSqltimer;
@@ -34,12 +30,10 @@ namespace User.API.BackgroundHosts
 		/// <summary>
 		/// 从服务发现中心同步健康服务后台任务
 		/// </summary>
-		/// <param name="cacheImpl">缓存实现类</param>
 		/// <param name="bgHostSettings">后台任务轮询配置模块</param>
 		/// <param name="serviceProvider"></param>
-		public SyncHealthServiceHost(ICacheImpl cacheImpl, IOptionsMonitor<BackgroundHostSettings> bgHostSettings, IServiceProvider serviceProvider)
+		public SyncHealthServiceHost(IOptionsMonitor<BackgroundHostSettings> bgHostSettings, IServiceProvider serviceProvider)
 		{
-			_cacheImpl = cacheImpl;
 			bgHostSettings.OnChange(OnConfigurationChange);
 			_bgHostSettings = bgHostSettings.CurrentValue;
 			_serviceProvider = serviceProvider;
@@ -80,13 +74,24 @@ namespace User.API.BackgroundHosts
 			{
 				using(var scope = _serviceProvider.CreateAsyncScope())
 				{
-					var registryService = scope.ServiceProvider.GetService<IRegistryService>();
+					var registryService = scope.ServiceProvider.GetService<IRegistryService>() ?? throw new ArgumentNullException("服务发现类为空");
+
+					var _cacheImpl = scope.ServiceProvider.GetService<ICacheImpl>() ?? throw new ArgumentNullException("缓存操作类为空");
 
 					//从服务发现中心获取指定名称的关系型数据库配置
 					var rdbConfigs = await registryService.DiscoverRDB("pgsql");
 
+					var transaction = _cacheImpl.BeginTransaction();
+
 					//写入缓存
-					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20), publish: true);
+					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
+
+					var command = new CreateCommand<object>() { CacheKey = CacheKeyPrefix.PgSqlsConfig, Data = rdbConfigs, ExpirationTime = TimeSpan.FromSeconds(10), DataType = rdbConfigs.GetType().FullName };
+
+					await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
+
+					await _cacheImpl.CommitTransactionAsync(transaction);
+					//await _cacheImpl.Test(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
 				}
 			}
 			catch (Exception ex)

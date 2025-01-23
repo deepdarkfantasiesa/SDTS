@@ -123,7 +123,7 @@ namespace User.API.Controllers
         [HttpPost("TestPublish")]
         public async Task<IActionResult> TestSyncInMemoryCache1([FromServices] ICacheImpl cacheImpl, string key, string value)
         {
-            var result = await cacheImpl.SetStringAsync(key, value, publish: true);
+            var result = await cacheImpl.SetStringAsync(key, value);
             return Ok(result);
 		}
 
