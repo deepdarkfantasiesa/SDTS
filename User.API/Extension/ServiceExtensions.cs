@@ -130,7 +130,7 @@ namespace User.API.Extension
 
 			#region redis
 
-			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings"));
+			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings-Cluster"));
 			services.AddSingleton<ConnectionMultiplexer>(opt =>
 			{
 				var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;

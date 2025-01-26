@@ -113,10 +113,10 @@ namespace User.API.Controllers
             return Ok(null);
 		}
 
-        [HttpGet("TestInMemoryCace")]
-        public async Task<IActionResult> TestInMemoryCace(IMemoryCache memoryCache)
+        [HttpGet("TestCache")]
+        public async Task<IActionResult> TestCache(ICacheImpl cache)
         {
-            var data =  memoryCache.Get<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig);
+            var data = await cache.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: true);
             return Ok(data);
 		}
 

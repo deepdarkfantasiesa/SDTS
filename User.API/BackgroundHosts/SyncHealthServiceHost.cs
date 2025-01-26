@@ -81,17 +81,19 @@ namespace User.API.BackgroundHosts
 					//从服务发现中心获取指定名称的关系型数据库配置
 					var rdbConfigs = await registryService.DiscoverRDB("pgsql");
 
+					//开启redis事务
 					var transaction = _cacheImpl.BeginTransaction();
 
-					//写入缓存
+					//向redis事务的命令队列插入"写入缓存"命令
 					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
 
 					var command = new CreateCommand<object>() { CacheKey = CacheKeyPrefix.PgSqlsConfig, Data = rdbConfigs, ExpirationTime = TimeSpan.FromSeconds(10), DataType = rdbConfigs.GetType().FullName };
 
+					//向redis事务的命令队列插入"发布生成缓存消息"命令
 					await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
 
+					//执行redis事务命令队列
 					await _cacheImpl.CommitTransactionAsync(transaction);
-					//await _cacheImpl.Test(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
 				}
 			}
 			catch (Exception ex)

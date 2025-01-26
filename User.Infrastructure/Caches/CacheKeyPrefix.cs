@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace User.Infrastructure.Caches
+﻿namespace User.Infrastructure.Caches
 {
 	/// <summary>
 	/// 缓存键的前缀
 	/// </summary>
 	public class CacheKeyPrefix
 	{
+		private const string ServiceName = "{UserService}:";
+
 		#region 后台任务
 
 		/// <summary>
 		/// 后台任务缓存键前缀
 		/// </summary>
-		private const string BackgroundHost = "BackgroundHost:";
+		private const string BackgroundHost = ServiceName + "BackgroundHost:";
 
 		/// <summary>
 		/// pgsql的连接配置
@@ -30,7 +26,7 @@ namespace User.Infrastructure.Caches
 		/// <summary>
 		/// 管道固定前缀
 		/// </summary>
-		private const string Channel = "Channel:";
+		private const string Channel = ServiceName + "Channel:";
 
 		/// <summary>
 		/// 同步内存缓存管道
