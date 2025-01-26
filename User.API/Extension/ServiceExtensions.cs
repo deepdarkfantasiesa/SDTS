@@ -5,8 +5,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
+using Service.Framework.ServiceRegistry;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
+using User.API.Application.Behaviors;
 using User.API.Application.Queries;
 using User.API.BackgroundHosts;
 using User.API.Filters;
@@ -22,6 +24,26 @@ namespace User.API.Extension
 {
 	public static class ServiceExtensions
 	{
+		/// <summary>
+		/// 注册中介者
+		/// </summary>
+		/// <param name="services"></param>
+		/// <param name="configuration"></param>
+		/// <returns></returns>
+		public static IServiceCollection AddMediatR(this IServiceCollection services,IConfiguration configuration)
+		{
+			services.AddMediatR(cfg =>
+			{
+				cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
+
+				cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+				cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+				cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
+			});
+
+			return services;
+		}
+
 		/// <summary>
 		/// 注册数据库上下文
 		/// </summary>
@@ -63,10 +85,11 @@ namespace User.API.Extension
 				builder.AddInterceptors(new QueryInterceptor());
 
 				var serviceProvider = services.BuildServiceProvider();
-				var cache = serviceProvider.GetRequiredService<ICacheImpl>();
+				var cache = serviceProvider.GetRequiredService<ICacheImpl>() ?? throw new ArgumentNullException("缓存实现类未注册");
+				var serviceCenter = serviceProvider.GetRequiredService<IRegistryService>()??throw new ArgumentNullException("服务中心类未注册");
 
 				//添加连接操作拦截器
-				builder.AddInterceptors(new ConnectInterceptor(cache, serviceProvider));
+				builder.AddInterceptors(new ConnectInterceptor(cache, serviceCenter));
 			});
 
 			#endregion
@@ -242,7 +265,13 @@ namespace User.API.Extension
 			return services;
 		}
 
-		public static IServiceCollection AddIntoContainer(this IServiceCollection services, IConfiguration configuration)
+		/// <summary>
+		/// 注册命令验证者
+		/// </summary>
+		/// <param name="services"></param>
+		/// <param name="configuration"></param>
+		/// <returns></returns>
+		public static IServiceCollection AddFluentValidation(this IServiceCollection services, IConfiguration configuration)
 		{
 			services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 			return services;
@@ -260,6 +289,12 @@ namespace User.API.Extension
 			return services;
 		}
 
+		/// <summary>
+		/// 注册查询
+		/// </summary>
+		/// <param name="services"></param>
+		/// <param name="configuration"></param>
+		/// <returns></returns>
 		public static IServiceCollection AddQueries(this IServiceCollection services, IConfiguration configuration)
 		{
 			var provider = services.BuildServiceProvider();

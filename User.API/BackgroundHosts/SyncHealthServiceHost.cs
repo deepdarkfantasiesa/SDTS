@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using Service.Framework.Models;
 using Service.Framework.ServiceRegistry;
 using User.Infrastructure.Caches;
 using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
@@ -10,7 +9,7 @@ namespace User.API.BackgroundHosts
 	/// <summary>
 	/// 从服务发现中心同步健康服务后台任务
 	/// </summary>
-	public class SyncHealthServiceHost : BackgroundService
+	public class SyncHealthServiceHost: BackgroundService
 	{
 		/// <summary>
 		/// 后台任务轮询配置类
@@ -45,7 +44,7 @@ namespace User.API.BackgroundHosts
 		/// <param name="bgHostSettings"></param>
 		private async void OnConfigurationChange(BackgroundHostSettings bgHostSettings)
 		{
-			if (_bgHostSettings.Equals(bgHostSettings)) return;
+			if(_bgHostSettings.Equals(bgHostSettings)) return;
 			Console.WriteLine("BackgroundHostSettings Changed");
 			_bgHostSettings = bgHostSettings;
 			_syncPgSqltimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(_bgHostSettings.SyncPgSql));
@@ -96,7 +95,7 @@ namespace User.API.BackgroundHosts
 					await _cacheImpl.CommitTransactionAsync(transaction);
 				}
 			}
-			catch (Exception ex)
+			catch(Exception ex)
 			{
 				Console.WriteLine($"{ex.Message}");
 			}

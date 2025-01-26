@@ -18,19 +18,19 @@ namespace User.Infrastructure.Interceptors
 		private readonly ICacheImpl _cache;
 
 		/// <summary>
-		/// 
+		/// 服务中心
 		/// </summary>
-		private readonly ServiceProvider _serviceProvider;
+		private readonly IRegistryService _serviceCenter;
 
 		/// <summary>
 		/// 连接拦截器
 		/// </summary>
 		/// <param name="cache">缓存实现类</param>
-		/// <param name="serviceProvider"></param>
-		public ConnectInterceptor(ICacheImpl cache, ServiceProvider serviceProvider)
+		/// <param name="serviceCenter">服务中心</param>
+		public ConnectInterceptor(ICacheImpl cache, IRegistryService serviceCenter)
 		{
 			_cache = cache;
-			_serviceProvider = serviceProvider;
+			_serviceCenter = serviceCenter;
 		}
 
 		/// <summary>
@@ -92,8 +92,7 @@ namespace User.Infrastructure.Interceptors
 			else
 			{
 				//从服务发现中心获取
-				var serviceCenter = _serviceProvider.GetRequiredService<IRegistryService>();
-				var rdbConfigs = await serviceCenter.DiscoverRDB("pgsql");
+				var rdbConfigs = await _serviceCenter.DiscoverRDB("pgsql");
 
 				if (rdbConfigs != null && rdbConfigs.ToList().Count > 0) 
 					replicaConfig = TryGetReplicaConfig(rdbConfigs);

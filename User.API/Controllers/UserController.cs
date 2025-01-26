@@ -15,6 +15,7 @@ using User.Infrastructure.Caches;
 using Microsoft.Extensions.Caching.Memory;
 using Service.Framework.Models;
 using MongoDB.Bson.IO;
+using StackExchange.Redis;
 
 namespace User.API.Controllers
 {
@@ -90,23 +91,42 @@ namespace User.API.Controllers
         }
 
         [HttpGet("QueryByDbContext")]
-        public async Task<IActionResult> QueryByDbContext([FromServices]IDbContextFactory<QueryDbContext> dbContextFactory)
+        public async Task<IActionResult> QueryByDbContext([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory,[FromServices] UserContext dbContext)
         {
-            using (var queryContext=await dbContextFactory.CreateDbContextAsync())
+            if(useReplica.HasValue && useReplica.Value == true)
             {
-                var users = await queryContext.Users.ToListAsync();
+				using(var queryContext = await dbContextFactory.CreateDbContextAsync())
+				{
+					var users = await queryContext.Users.ToListAsync();
+					return Ok(users);
+				}
+			}
+            else
+            {
+                var users = await dbContext.Users.ToListAsync();
                 return Ok(users);
 			}
         }
 
-        [HttpGet("TestRedisContext")]
+        [HttpGet("RedisContext")]
         public async Task<IActionResult> TestRedisContext([FromServices]ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery]bool preferInMemory)
         {
             var cacheData = await _cacheImpl.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(cacheKey, preferLocal: preferInMemory);
             return Ok(cacheData);
 		}
 
-        [HttpGet("TestRedisPub")]
+		[HttpPost("RedisContext")]
+		public async Task<IActionResult> TestRedisContext([FromServices] ICacheImpl _cacheImpl, [FromServices]ConnectionMultiplexer connection)
+		{
+            var db = connection.GetDatabase();
+			var trans = db.CreateTransaction();
+			var db1 = connection.GetDatabase(1);
+			var trans1 = db1.CreateTransaction();
+			await _cacheImpl.CommitTransactionAsync(trans);
+			return Ok();
+		}
+
+		[HttpGet("TestRedisPub")]
         public async Task<IActionResult> TestRedisPub([FromServices] ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery]string value)
         {
             await _cacheImpl.PublishAsync(cacheKey, value);
@@ -114,9 +134,9 @@ namespace User.API.Controllers
 		}
 
         [HttpGet("TestCache")]
-        public async Task<IActionResult> TestCache(ICacheImpl cache)
+        public async Task<IActionResult> TestCache(ICacheImpl cache, [FromQuery] bool preferLocal)
         {
-            var data = await cache.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: true);
+            var data = await cache.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: preferLocal);
             return Ok(data);
 		}
 

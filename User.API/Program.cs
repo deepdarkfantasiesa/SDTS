@@ -1,9 +1,6 @@
-
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Service.Framework.ConfigurationCenter.Consul;
 using Service.Framework.ServiceRegistry.Consul;
-using User.API.Application.Behaviors;
-using User.API.BackgroundHosts;
 using User.API.Extension;
 using User.API.Services;
 using User.Infrastructure;
@@ -24,14 +21,8 @@ namespace User.API
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
-			builder.Services.AddMediatR(cfg =>
-			{
-				cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
-
-				cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
-				cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
-				cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
-			});
+			//注册中介者
+			builder.Services.AddMediatR(builder.Configuration);
 
 			//注册缓存
 			builder.Services.AddCaches(builder.Configuration);
@@ -39,15 +30,22 @@ namespace User.API
 			//注册分布式锁
 			builder.Services.AddDistributedLock(builder.Configuration);
 
+			//注册consul服务发现服务
+			builder.Services.AddConsulRegister();
+
 			//注册数据库上下文
 			builder.Services.AddDbContexts(builder.Configuration);
-			builder.Services.AddIntoContainer(builder.Configuration);
+
+			//注册命令验证者
+			builder.Services.AddFluentValidation(builder.Configuration);
 
 			//注册过滤器
 			builder.Services.AddFilters(builder.Configuration);
 
 			//注册仓储
 			builder.Services.AddRepositories(builder.Configuration);
+
+			//注册查询
 			builder.Services.AddQueries(builder.Configuration);
 
 			//注册消息队列
@@ -58,9 +56,6 @@ namespace User.API
 
 			//注册配置类
 			builder.Services.AddConfigs(builder.Configuration);
-
-			//注册consul服务发现服务
-			builder.Services.AddConsulRegister();
 
 			//注册后台任务
 			builder.Services.AddBackgroundHosts(builder.Configuration);
@@ -86,7 +81,7 @@ namespace User.API
 			var app = builder.Build();
 
 
-			using (var scope = app.Services.CreateScope())
+			using(var scope = app.Services.CreateScope())
 			{
 				var dc = scope.ServiceProvider.GetService<UserContext>();
 				//dc.Database.EnsureDeleted();//表结构发生改变时需要这行
@@ -95,7 +90,7 @@ namespace User.API
 
 
 			// Configure the HTTP request pipeline.
-			if (app.Environment.IsDevelopment())
+			if(app.Environment.IsDevelopment())
 			{
 				app.UseSwagger();
 				app.UseSwaggerUI();
