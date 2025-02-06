@@ -5,7 +5,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
-using Service.Framework.ServiceRegistry;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using StackExchange.Redis;
 using User.API.Application.Behaviors;
@@ -30,7 +29,7 @@ namespace User.API.Extension
 		/// <param name="services"></param>
 		/// <param name="configuration"></param>
 		/// <returns></returns>
-		public static IServiceCollection AddMediatR(this IServiceCollection services,IConfiguration configuration)
+		public static IServiceCollection AddMediatR(this IServiceCollection services, IConfiguration configuration)
 		{
 			services.AddMediatR(cfg =>
 			{
@@ -57,20 +56,31 @@ namespace User.API.Extension
 			//获取pgsql连接字符串
 			var connstr = configuration.GetValue<string>("PgSQL");
 
+			//注册查询操作拦截器
+			services.AddSingleton<QueryInterceptor>();
+
+			//注册连接操作拦截器
+			services.AddScoped<ConnectInterceptor>();
+
+			//注册删除操作拦截器
+			services.AddSingleton<DeleteInterceptor>();
+
 			//注册写上下文
-			services.AddDbContextPool<UserContext>(builder =>
+			services.AddDbContextPool<UserContext>((serviceProvider, builder) =>
 			{
 				builder.UseNpgsql(connstr, options =>
 				{
 					options.MigrationsAssembly("User.API");
 				});
 
-				//删除操作拦截器
-				builder.AddInterceptors(new DeleteInterceptor());
+				var deleteInterceptor = serviceProvider.GetRequiredService<DeleteInterceptor>();
+
+				//添加删除操作拦截器
+				builder.AddInterceptors(deleteInterceptor);
 			});
 
 			//注册读上下文工厂
-			services.AddPooledDbContextFactory<QueryDbContext>(builder =>
+			services.AddPooledDbContextFactory<QueryDbContext>(async (serviceProvider, builder) =>
 			{
 				builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
 				{
@@ -81,15 +91,18 @@ namespace User.API.Extension
 				//默认不跟踪实体
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
+				var queryInterceptor = serviceProvider.GetService<QueryInterceptor>() ?? throw new ArgumentNullException("获取查询操作拦截器失败");
+
 				//添加查询操作拦截器
-				builder.AddInterceptors(new QueryInterceptor());
+				builder.AddInterceptors(queryInterceptor);
 
-				var serviceProvider = services.BuildServiceProvider();
-				var cache = serviceProvider.GetRequiredService<ICacheImpl>() ?? throw new ArgumentNullException("缓存实现类未注册");
-				var serviceCenter = serviceProvider.GetRequiredService<IRegistryService>()??throw new ArgumentNullException("服务中心类未注册");
+				await using(var scope = serviceProvider.CreateAsyncScope())
+				{
+					var connectInterceptor = scope.ServiceProvider.GetService<ConnectInterceptor>() ?? throw new ArgumentNullException("获取连接操作拦截器失败");
 
-				//添加连接操作拦截器
-				builder.AddInterceptors(new ConnectInterceptor(cache, serviceCenter));
+					//添加连接操作拦截器
+					builder.AddInterceptors(connectInterceptor);
+				}
 			});
 
 			#endregion
@@ -310,7 +323,7 @@ namespace User.API.Extension
 		/// <param name="services"></param>
 		/// <param name="configuration"></param>
 		/// <returns></returns>
-		public static IServiceCollection AddBackgroundHosts(this IServiceCollection services,IConfiguration configuration)
+		public static IServiceCollection AddBackgroundHosts(this IServiceCollection services, IConfiguration configuration)
 		{
 			//注册同步数据后台服务
 			services.AddHostedService<SyncHealthServiceHost>();
