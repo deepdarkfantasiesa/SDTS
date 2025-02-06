@@ -166,22 +166,17 @@ namespace User.API.Extension
 
 			#region redis
 
+			//注册redis配置类
 			services.Configure<RedisSettings>(configuration.GetSection("RedisSettings-Cluster"));
-			services.AddSingleton<ConnectionMultiplexer>(opt =>
-			{
-				var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
-				var configuration = ConfigurationOptions.Parse(settings.ConnectionString, true);
-				return ConnectionMultiplexer.Connect(configuration);
-			});
+			//services.AddSingleton<ConnectionMultiplexer>(opt =>
+			//{
+			//	var settings = opt.GetRequiredService<IOptions<RedisSettings>>().Value;
+			//	var configuration = ConfigurationOptions.Parse(settings.ConnectionString, true);
+			//	return ConnectionMultiplexer.Connect(configuration);
+			//});
 
-			//注册连接池
-			services.AddSingleton<RedisConnectionPool>(opt =>
-			{
-				var redisSettings = opt.GetRequiredService<IOptionsMonitor<RedisSettings>>();
-				var memoryCache = opt.GetRequiredService<IMemoryCache>();
-
-				return new RedisConnectionPool(redisSettings, memoryCache);
-			});
+			//注册redis连接池
+			services.AddSingleton<RedisConnectionPool>();
 
 			//注册操作上下文
 			services.AddScoped<ICacheImpl, RedisContext>();
@@ -204,17 +199,22 @@ namespace User.API.Extension
 		/// <returns></returns>
 		public static IServiceCollection AddDistributedLock(this IServiceCollection services, IConfiguration configuration)
 		{
-			var provider = services.BuildServiceProvider();
-			var connectionPool = provider.GetService<RedisConnectionPool>() ?? throw new ArgumentNullException("请先注册redis连接池");
-
-			var connections = connectionPool.GetAllConnections();
-			var redLockConnections = new List<RedLockMultiplexer>();
-			foreach(var connection in connections)
+			services.AddSingleton<RedLockFactory>(sp =>
 			{
-				redLockConnections.Add(connection);
-			}
+				//获取redis连接池
+				var connectionPool = sp.GetRequiredService<RedisConnectionPool>();
 
-			RedLockFactory.Create(redLockConnections);
+				//获取所有redis连接实例
+				var connections = connectionPool.GetAllConnections();
+
+				var redLockConnections = new List<RedLockMultiplexer>();
+				foreach(var connection in connections)
+				{
+					redLockConnections.Add(connection);
+				}
+
+				return RedLockFactory.Create(redLockConnections);
+			});
 
 			return services;
 		}
@@ -298,7 +298,7 @@ namespace User.API.Extension
 		/// <returns></returns>
 		public static IServiceCollection AddFilters(this IServiceCollection services, IConfiguration configuration)
 		{
-			services.AddTransient<CacheFilter>();
+			//services.AddTransient<CacheFilter>();
 			return services;
 		}
 
