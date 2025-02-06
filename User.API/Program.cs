@@ -80,6 +80,12 @@ namespace User.API
 
 			var app = builder.Build();
 
+			// 在使用路由、终结点、中间件之前，添加此中间件
+			app.Use(async (context, next) =>
+			{
+				context.Request.EnableBuffering();
+				await next();
+			});
 
 			using(var scope = app.Services.CreateScope())
 			{
