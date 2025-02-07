@@ -181,12 +181,12 @@ namespace User.API.Controllers
 
 		public record LockDto1
 		{
-			public string Name { get; set; }
+			public string? Name { get; set; }
 		}
 
-		[HttpPost("TestDistributedLock")]
-		[DistributedLockFilter(source: ParameterSource.Body, timeout: 10, lockProperties: [nameof(lockDto.Age)])]
-		public async Task<IActionResult> TestDistributedLock([FromBody]lockDto dto, [FromQuery] LockDto1 dto1)
+		[HttpPost("TestDistributedLock/{name}")]
+		[DistributedLockFilter(source: ParameterSource.Header, timeout: 100, lockProperties: [nameof(lockDto.Age)])]
+		public async Task<IActionResult> TestDistributedLock([FromBody] lockDto dto, [FromQuery] LockDto1 dto1, [FromHeader] int age)
 		{
 			return Ok();
 		}

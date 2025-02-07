@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using RedLockNet.SERedis;
 using System.ComponentModel;
@@ -29,13 +28,12 @@ namespace User.API.Filters
 		/// <summary>
 		/// 分布式锁过滤器实现类
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
 		private class DistributedLockFilterImpl: IAsyncActionFilter
 		{
 			/// <summary>
 			/// 红锁
 			/// </summary>
-			private readonly RedLockFactory _redLock;
+			private readonly RedLockFactory _redLockFactory;
 
 			/// <summary>
 			/// 锁的属性
@@ -47,19 +45,36 @@ namespace User.API.Filters
 			/// </summary>
 			private readonly int _timeout;
 
+			/// <summary>
+			/// 来源
+			/// </summary>
 			private readonly ParameterSource _source;
 
-			public DistributedLockFilterImpl(ParameterSource source, int timeout, string[] lockProperties, RedLockFactory redLock)
+			/// <summary>
+			/// 应用程序名称
+			/// </summary>
+			private readonly string applicationName;
+
+			/// <summary>
+			/// 分布式锁过滤器实现类
+			/// </summary>
+			/// <param name="source">待锁属性来源</param>
+			/// <param name="timeout">过期时间</param>
+			/// <param name="lockProperties">待锁属性</param>
+			/// <param name="redLockFactory">红锁</param>
+			/// <param name="hostEnvironment"></param>
+			public DistributedLockFilterImpl(ParameterSource source, int timeout, string[] lockProperties, RedLockFactory redLockFactory, IHostEnvironment hostEnvironment)
 			{
-				_lockProperties = lockProperties.OrderDescending().ToArray();
+				_lockProperties = Array.ConvertAll(lockProperties.OrderDescending().ToArray(), p => p.ToLower());
 				_timeout = timeout;
-				_redLock = redLock;
+				_redLockFactory = redLockFactory;
 				_source = source;
+				applicationName = hostEnvironment.ApplicationName;
 			}
 
 			public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 			{
-				var lockKey = new StringBuilder("DistributedLock");
+				var lockKey = new StringBuilder(applicationName);
 				foreach(var lockProperty in _lockProperties)
 				{
 					string value = "";
@@ -80,12 +95,12 @@ namespace User.API.Filters
 						default:
 							throw new NotSupportedException($"不支持的参数来源：{_source}");
 					}
-					if(value == "")
+					if(string.IsNullOrEmpty(value))
 						throw new ArgumentNullException($"加锁失败，待锁属性{lockProperty}不存在");
 					lockKey.Append($":{lockProperty}={value}");
 				}
 
-				using(var redLock = await _redLock.CreateLockAsync(lockKey.ToString(), TimeSpan.FromSeconds(_timeout)))
+				using(var redLock = await _redLockFactory.CreateLockAsync(lockKey.ToString(), TimeSpan.FromSeconds(_timeout)))
 				{
 					if(redLock.IsAcquired)
 					{
@@ -101,9 +116,15 @@ namespace User.API.Filters
 						};
 					}
 				}
-
 			}
 
+			/// <summary>
+			/// 从请求体重获取属性值
+			/// </summary>
+			/// <param name="property">属性名称</param>
+			/// <param name="body">请求体</param>
+			/// <returns></returns>
+			/// <exception cref="ArgumentException"></exception>
 			private async Task<string> GetValueFromBody(string property, Stream body)
 			{
 				// 将请求体的位置重置为起始点
@@ -111,7 +132,7 @@ namespace User.API.Filters
 
 				using var reader = new StreamReader(body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
 				var bodyText = await reader.ReadToEndAsync();
-				using var jsonDoc = JsonDocument.Parse(bodyText);
+				using var jsonDoc = JsonDocument.Parse(bodyText.ToLower());
 				if(jsonDoc.RootElement.TryGetProperty(property, out var propertyValue))
 				{
 					return propertyValue.ToString();
@@ -153,10 +174,10 @@ namespace User.API.Filters
 		[Description("请求头")]
 		Header,
 
-		/// <summary>
-		/// 表单
-		/// </summary>
-		[Description("表单")]
-		Form
+		///// <summary>
+		///// 表单
+		///// </summary>
+		//[Description("表单")]
+		//Form
 	}
 }
