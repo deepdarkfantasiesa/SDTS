@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Abstraction
+﻿namespace Domain.Abstraction
 {
-    public interface IAggregateRoot
-    {
-    }
+    /// <summary>
+    /// 聚合根
+    /// </summary>
+    public interface IAggregateRoot { }
 }
