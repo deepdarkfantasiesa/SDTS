@@ -1,0 +1,33 @@
+﻿using Domain.Abstraction;
+using User.Infrastructure.QueryContext;
+
+namespace User.API.Application.Queries.User
+{
+    /// <summary>
+    /// 通过id查询用户
+    /// </summary>
+    /// <param name="_dbContext"></param>
+    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext):IQueryHandler<GetUserByIdQuery, UserResponse>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<UserResponse?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        {
+            return await _dbContext
+                .FirstOrDefaultAsync<UserResponse>
+                (@"SELECT 
+                        u.""Id"",
+                        u.""Name"" 
+                       FROM ""User"" AS u 
+                        WHERE u.""Id""=@Id",
+                new
+                {
+                    Id = request.Id
+                });
+        }
+    }
+}

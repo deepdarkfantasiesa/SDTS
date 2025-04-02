@@ -1,7 +1,9 @@
-﻿using Dapper;
+﻿using Azure.Core;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using MySqlConnector;
+using Npgsql;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using User.Domain.AggregatesModel.UserAggregate;
@@ -17,7 +19,7 @@ namespace User.API.Application.Queries
             _connectionstr = connectionstr;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsers()
+        public async Task<IEnumerable<UserViewModel>> GetAllUsers()
         {
             using (var connection = new MySqlConnection(_connectionstr))
             {
@@ -27,30 +29,33 @@ namespace User.API.Application.Queries
             }
         }
 
-        public async Task<User> GetUserAsync(int id)
+        public async Task<UserViewModel> GetUserAsync(int id)
         {
-            using (var connection = new MySqlConnection(_connectionstr))
+            using (var connection = new NpgsqlConnection(_connectionstr))
             {
                 connection.Open();
                 var res = await connection
-                    .QueryAsync<dynamic>(@"SELECT * FROM userdb.User where Id=@id", new { id });
-                var result = res.First();
-                User user = new User()
+                    .QueryAsync<UserViewModel>(@"SELECT 
+                        u.""Id"",
+                        u.""Name"" 
+                       FROM ""User"" AS u 
+                        WHERE u.""Id""=@Id",
+                new
                 {
-                    Id = result.Id,
-                    Name = result.Address_State,
-                    Email = result.Address_ZipCode
-                };
-                return user;
+                    Id = id
+                });
+                var result = res.First();
+
+                return result;
             }
         }
 
-        private IEnumerable<User> MapToUser(dynamic dusers)
+        private IEnumerable<UserViewModel> MapToUser(dynamic dusers)
         {
-            List<User> users = new List<User>();
+            List<UserViewModel> users = new List<UserViewModel>();
             foreach (var item in dusers)
             {
-                User user = new User()
+                UserViewModel user = new UserViewModel()
                 {
                     Id = item.Id,
                     Name = item.Address_Street,

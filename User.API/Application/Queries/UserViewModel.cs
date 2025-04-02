@@ -1,6 +1,6 @@
 ﻿namespace User.API.Application.Queries
 {
-    public class User
+    public class UserViewModel
     {
         public int Id { get; set; }
 

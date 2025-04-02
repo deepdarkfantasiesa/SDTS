@@ -1,9 +1,4 @@
 ﻿using Domain.Abstraction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using User.Domain.Events;
 
 namespace User.Domain.AggregatesModel.UserAggregate
@@ -12,6 +7,8 @@ namespace User.Domain.AggregatesModel.UserAggregate
     {
         public Address Address { get; private set; }
         private string _name;
+
+        public string Name => _name;
 
         public IEnumerable<int> GuardianIDs => guardianID;
         private readonly List<int> guardianID;
