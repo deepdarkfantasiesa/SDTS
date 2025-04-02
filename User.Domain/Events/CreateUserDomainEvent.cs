@@ -1,14 +1,9 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Abstraction;
 using User.Domain.AggregatesModel.UserAggregate;
 
 namespace User.Domain.Events
 {
-    public class CreateUserDomainEvent: INotification
+    public class CreateUserDomainEvent : IDomainEvent
     {
         public Users User { get; private set; }
         public CreateUserDomainEvent(Users user)

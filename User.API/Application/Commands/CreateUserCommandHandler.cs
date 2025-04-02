@@ -1,11 +1,10 @@
-﻿using Infrastructure.Core;
-using MediatR;
+﻿using Domain.Abstraction;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure.Repositories;
 
 namespace User.API.Application.Commands
 {
-    public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand,bool>
+    public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, bool>
     {
         private readonly IUserRepository _repository;
         public CreateUserCommandHandler(IUserRepository repository)

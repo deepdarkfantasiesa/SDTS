@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System.Runtime.Serialization;
-using User.Domain.AggregatesModel.UserAggregate;
+﻿using Domain.Abstraction;
 
 namespace User.API.Application.Commands
 {
-    public class CreateUserCommand:IRequest<bool>
+    public class CreateUserCommand : ICommand<bool>
     {
         //[DataMember]
         public string UserName { get; private set; }

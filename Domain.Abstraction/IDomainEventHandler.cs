@@ -1,7 +1,12 @@
-﻿namespace Domain.Abstraction
+﻿using MediatR;
+
+namespace Domain.Abstraction
 {
     /// <summary>
     /// 领域事件处理者
     /// </summary>
-    public interface IDomainEventHandler : IDomainEvent { }
+    public interface IDomainEventHandler<TRequest> : INotificationHandler<TRequest>
+        where TRequest : IDomainEvent
+    {
+    }
 }
