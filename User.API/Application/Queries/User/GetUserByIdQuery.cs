@@ -1,4 +1,4 @@
-﻿using Domain.Abstraction;
+﻿using Infrastructure.Core;
 
 namespace User.API.Application.Queries.User
 {
@@ -8,5 +8,10 @@ namespace User.API.Application.Queries.User
     public class GetUserByIdQuery : IQuery<UserResponse>
     {
         public int Id { get; set; }
+        public CacheLevelEnum PreferCacheLevel { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
+        public string? CacheKey { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
+        public TimeSpan? CacheDuration { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
+        public Func<CacheKeyContext, string>? Generator { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
+        public CacheKeyContext? KeyContext { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
     }
 }

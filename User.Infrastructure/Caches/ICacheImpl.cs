@@ -15,7 +15,7 @@ namespace User.Infrastructure.Caches
 		/// <param name="dbNum">数据库编号</param>
 		/// <param name="preferLocal">优先查本地缓存</param>
 		/// <returns></returns>
-		Task<T> GetStringAsync<T>(string key, int dbNum = -1, bool preferLocal = false);
+		Task<QueryCacheResult<T>> GetStringAsync<T>(string key, int dbNum = -1, bool preferLocal = false);
 
 		/// <summary>
 		/// 向redis中插入string类型的数据

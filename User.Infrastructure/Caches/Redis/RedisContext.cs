@@ -55,16 +55,32 @@ namespace User.Infrastructure.Caches.Redis
 		/// <param name="dbNum">数据库编号</param>
 		/// <param name="preferLocal">优先查本地缓存</param>
 		/// <returns></returns>
-		public async Task<T> GetStringAsync<T>(string key, int dbNum = -1, bool preferLocal = false)
+		public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, int dbNum = -1, bool preferLocal = false)
 		{
-			if(preferLocal && _memoryCache.TryGetValue(key, out T localCache))
+            if (preferLocal && _memoryCache.TryGetValue(key, out T localCache))
 			{
-				return localCache;
+				return new QueryCacheResult<T>
+				{
+					IsHit = true,
+					Value = localCache
+				};
 			}
 
 			var db = _connectionPool.GetDatabase(dbNum);
 			var redisCache = await db.StringGetAsync(key, flags: CommandFlags.PreferReplica);
-			return Deserialize<T>(redisCache);
+			if (redisCache == default)
+			{
+				return new QueryCacheResult<T>
+				{
+					IsHit = false,
+					Value = default(T)
+				};
+			}
+			return new QueryCacheResult<T>
+			{
+				IsHit = true,
+				Value = Deserialize<T>(redisCache)
+			};
 		}
 
 		/// <summary>

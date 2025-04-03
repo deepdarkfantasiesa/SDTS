@@ -32,9 +32,9 @@ namespace User.API.Extension
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
-
                 cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+                cfg.AddOpenBehavior(typeof(QueryBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
 

@@ -1,15 +1,17 @@
 ﻿using FluentValidation;
+using Infrastructure.Core;
 using MediatR;
+using System.Text;
 using User.API.Application.Commands;
 using User.API.Application.Queries.User;
 
 namespace User.API.Application.Validations
 {
-    public class CreateUserCommandValidator:AbstractValidator<CreateUserCommand>
+    public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     {
         private readonly ISender _sender;
 
-        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger,ISender sender)
+        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger, ISender sender)
         {
             _sender = sender;
 
@@ -28,8 +30,31 @@ namespace User.API.Application.Validations
         /// <returns></returns>
         private async Task<bool> UniqueCheck(string UserName, CancellationToken cancellationToken)
         {
-            var res = await _sender.Send(new CheckUserExistsByQuery() { UserName = UserName }, cancellationToken);
+            var res = await _sender.Send(new CheckUserExistsByQuery()
+            {
+                UserName = UserName,
+                PreferCacheLevel = CacheLevelEnum.Memory,
+                Generator = Check,
+                KeyContext = new CacheKeyContext
+                {
+                    { "Name",UserName}
+                }
+            }, cancellationToken);
             return res != true;
+        }
+
+        private string Check(CacheKeyContext keyContexts)
+        {
+            if (keyContexts.Count == 0)
+                throw new ArgumentNullException("缓存键上下文为空");
+
+            StringBuilder cacheKeyBuilder = new StringBuilder();
+
+            foreach (var kvp in keyContexts)
+            {
+                cacheKeyBuilder.Append($"{kvp.Key}={kvp.Value}");
+            }
+            return cacheKeyBuilder.ToString();
         }
     }
 }

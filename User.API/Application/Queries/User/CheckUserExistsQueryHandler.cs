@@ -1,4 +1,4 @@
-﻿using Domain.Abstraction;
+﻿using Infrastructure.Core;
 using User.Infrastructure.QueryContext;
 
 namespace User.API.Application.Queries.User

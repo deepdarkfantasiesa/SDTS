@@ -1,4 +1,4 @@
-﻿using Domain.Abstraction;
+﻿using Infrastructure.Core;
 using User.Infrastructure.QueryContext;
 
 namespace User.API.Application.Queries.User
@@ -7,7 +7,7 @@ namespace User.API.Application.Queries.User
     /// 通过id查询用户
     /// </summary>
     /// <param name="_dbContext"></param>
-    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext):IQueryHandler<GetUserByIdQuery, UserResponse>
+    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext) : IQueryHandler<GetUserByIdQuery, UserResponse>
     {
         /// <summary>
         /// 

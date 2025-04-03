@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Domain.Abstraction
+namespace Infrastructure.Core
 {
     /// <summary>
     /// 查询处理者
