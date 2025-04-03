@@ -128,7 +128,7 @@ namespace User.Infrastructure.QueryContext
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> ToListAsync<T>(string sql, object param = null)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null)
         {
             ValidateSql(sql);
             return await _connection.QueryAsync<T>(sql, param);
@@ -141,7 +141,7 @@ namespace User.Infrastructure.QueryContext
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
         /// <returns></returns>
-        public async Task<T?> FirstOrDefaultAsync<T>(string sql, object param = null)
+        public async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
         {
             ValidateSql(sql);
             return await _connection.QueryFirstOrDefaultAsync<T>(sql, param);

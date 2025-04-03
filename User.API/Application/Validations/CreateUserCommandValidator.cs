@@ -1,15 +1,35 @@
 ﻿using FluentValidation;
+using MediatR;
 using User.API.Application.Commands;
+using User.API.Application.Queries.User;
 
 namespace User.API.Application.Validations
 {
     public class CreateUserCommandValidator:AbstractValidator<CreateUserCommand>
     {
-        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger)
+        private readonly ISender _sender;
+
+        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger,ISender sender)
         {
-            RuleFor(c => c.UserName).NotEmpty().WithMessage("username is empty");
-            RuleFor(c => c.UserName).MaximumLength(6).WithMessage("username is longer than 6");
-            RuleFor(c => c.UserName).MinimumLength(3).WithMessage("username is shorter than 3");
+            _sender = sender;
+
+            RuleFor(c => c.UserName)
+                .NotEmpty().WithMessage("username is empty")
+                .MaximumLength(6).WithMessage("username is longer than 6")
+                .MinimumLength(3).WithMessage("username is shorter than 3")
+                .MustAsync(UniqueCheck).WithMessage("用户名已经被占用");
+        }
+
+        /// <summary>
+        /// 用户唯一性校验
+        /// </summary>
+        /// <param name="UserName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<bool> UniqueCheck(string UserName, CancellationToken cancellationToken)
+        {
+            var res = await _sender.Send(new CheckUserExistsByQuery() { UserName = UserName }, cancellationToken);
+            return res != true;
         }
     }
 }

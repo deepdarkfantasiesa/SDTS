@@ -18,7 +18,7 @@ namespace User.API.Application.Queries.User
         public async Task<UserResponse?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
             return await _dbContext
-                .FirstOrDefaultAsync<UserResponse>
+                .QueryFirstOrDefaultAsync<UserResponse>
                 (@"SELECT 
                         u.""Id"",
                         u.""Name"" 

@@ -14,7 +14,7 @@ namespace User.Infrastructure.QueryContext
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
         /// <returns></returns>
-        Task<IEnumerable<T>> ToListAsync<T>(string sql, object param = null);
+        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null);
 
         /// <summary>
         /// 单个查询
@@ -23,6 +23,6 @@ namespace User.Infrastructure.QueryContext
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
         /// <returns></returns>
-        Task<T?> FirstOrDefaultAsync<T>(string sql, object param = null);
+        Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null);
     }
 }

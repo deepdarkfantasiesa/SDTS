@@ -21,8 +21,19 @@ namespace User.API.Application.Behaviors
 
             _logger.LogInformation("----- Validating command {CommandType}", typeName);
 
-            var failures = _validators
-                .Select(v => v.Validate(request))
+            //var failures = _validators
+            //    .Select(v => v.Validate(request))
+            //    .SelectMany(result => result.Errors)
+            //    .Where(error => error != null)
+            //    .ToList();
+
+            // 异步验证
+            var validationTasks = _validators
+                .Select(v => v.ValidateAsync(request, cancellationToken)); // 调用异步验证方法
+
+            var validationResults = await Task.WhenAll(validationTasks); // 等待所有验证任务完成
+
+            var failures = validationResults
                 .SelectMany(result => result.Errors)
                 .Where(error => error != null)
                 .ToList();
