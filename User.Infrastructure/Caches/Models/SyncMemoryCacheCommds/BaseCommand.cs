@@ -1,9 +1,11 @@
-﻿namespace User.Infrastructure.Caches.Models.SyncMemoryCacheCommds
+﻿using Infrastructure.Core;
+
+namespace User.Infrastructure.Caches.Models.SyncMemoryCacheCommds
 {
-	/// <summary>
-	/// 基本命令
-	/// </summary>
-	public record BaseCommand<T>
+    /// <summary>
+    /// 基本命令
+    /// </summary>
+    public record BaseCommand<T>
 	{
 		/// <summary>
 		/// 键
@@ -25,22 +27,14 @@
 		/// </summary>
 		public TimeSpan? ExpirationTime { get; set; }
 
+		/// <summary>
+		/// 数据类型
+		/// </summary>
 		public string DataType { get; set; }
-	}
-
-	/// <summary>
-	/// 命令类型
-	/// </summary>
-	public enum CommondType
-	{
-		/// <summary>
-		/// 创建
-		/// </summary>
-		Create = 0,
 
 		/// <summary>
-		/// 删除
+		/// 标签
 		/// </summary>
-		Delete = 1,
+		public CacheTag[]? Tags { get; set; }
 	}
 }

@@ -27,7 +27,7 @@ namespace User.API.Application.Queries.User
         /// <summary>
         /// 缓存键
         /// </summary>
-        public string? CacheKey 
+        public string? CacheKey
         {
             get
             {
@@ -44,9 +44,14 @@ namespace User.API.Application.Queries.User
         }
 
         /// <summary>
-        /// 
+        /// 有效时间
         /// </summary>
         public TimeSpan? CacheDuration { get; init; } = TimeSpan.FromMinutes(30);
+
+        /// <summary>
+        /// 标签
+        /// </summary>
+        public CacheTag[]? Tags { get; init; }
 
         /// <summary>
         /// 生成缓存键的委托

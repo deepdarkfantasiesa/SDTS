@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using User.Infrastructure.Caches.ImMemory;
 using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 
 namespace User.Infrastructure.Caches.Redis
 {
-	/// <summary>
-	/// 管道消息处理接口
-	/// </summary>
-	public interface IChannelMessageHandler
+    /// <summary>
+    /// 管道消息处理接口
+    /// </summary>
+    public interface IChannelMessageHandler
 	{
 		/// <summary>
 		/// 同步内存缓存
@@ -26,13 +27,13 @@ namespace User.Infrastructure.Caches.Redis
 		/// <summary>
 		/// 内存缓存
 		/// </summary>
-		private readonly IMemoryCache _memoryCache;
+		private readonly InMemoryCacheContext _memoryCache;
 
 		/// <summary>
 		/// 管道消息处理类
 		/// </summary>
 		/// <param name="memoryCache">内存缓存</param>
-		public ChannelMessageHandler(IMemoryCache memoryCache)
+		public ChannelMessageHandler(InMemoryCacheContext memoryCache)
 		{
 			_memoryCache = memoryCache;
 		}
@@ -57,13 +58,23 @@ namespace User.Infrastructure.Caches.Redis
 				case CommondType.Create:
 					//通过命令的数据类型从command中反射获取Data
 					var data = commandType.GetProperty("Data")?.GetValue(command);
-					_memoryCache.Set(baseCommand.CacheKey, data, new MemoryCacheEntryOptions()
+					if (baseCommand.Tags == null || baseCommand.Tags.Count() == 0)
 					{
-						AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
-					});
+						_memoryCache.Set(baseCommand.CacheKey, data, new MemoryCacheEntryOptions()
+						{
+							AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
+						});
+                    }
+					else
+					{
+						_memoryCache.Set(baseCommand.CacheKey, data, baseCommand.Tags, new MemoryCacheEntryOptions()
+						{
+							AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
+						});
+                    }
 					break;
 				case CommondType.Delete:
-					_memoryCache.Remove(baseCommand.CacheKey);
+					//_memoryCache.Remove(baseCommand.CacheKey);
 					break;
 			}
 		}

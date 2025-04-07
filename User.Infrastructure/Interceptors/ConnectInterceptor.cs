@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Infrastructure.Core;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Service.Framework.Models;
 using Service.Framework.ServiceRegistry;
 using System.Data.Common;
@@ -81,8 +81,14 @@ namespace User.Infrastructure.Interceptors
 		/// <returns></returns>
 		public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
 		{
+			var tags = new CacheTag[]
+			{
+				CacheTag.RelationDatabaseConfig,
+				CacheTag.HealthCheck,
+				CacheTag.Background
+			};
 			//从缓存中获取数据库实例的信息
-			var cacheResult = await _cache.GetStringAsync<List<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: true);
+			var cacheResult = await _cache.GetStringAsync<List<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, tags, preferLocal: true);
 
 			var rdbCaches = cacheResult.IsHit == true ? cacheResult.Value : null;
 

@@ -1,9 +1,9 @@
 ﻿namespace User.Infrastructure.Caches.Models.SyncMemoryCacheCommds
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public record DeleteCommand<T> : BaseCommand<T>
+    /// <summary>
+    /// 删除命令
+    /// </summary>
+    public record DeleteCommand<T> : BaseCommand<T>
 	{
 		/// <summary>
 		/// 

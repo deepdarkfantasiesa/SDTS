@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure.EntityConfigurations;
-using User.Infrastructure.Interceptors;
 
 namespace User.Infrastructure
 {
-	public class UserContext : DbContext, IUnitOfWork, ITransaction
+	public class UserContext : DbContext, IUnitOfWork, IDbTransaction
 	{
 		private readonly IMediator _mediator;
 		private readonly IConfiguration _configuration;

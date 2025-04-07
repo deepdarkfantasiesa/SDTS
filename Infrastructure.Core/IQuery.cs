@@ -32,5 +32,10 @@ namespace Infrastructure.Core
         /// 生成缓存键的委托
         /// </summary>
         public Func<CacheKeyContext, string>? Generator { get; init; }
+
+        /// <summary>
+        /// 标签
+        /// </summary>
+        public CacheTag[] Tags { get; init; }
     }
 }

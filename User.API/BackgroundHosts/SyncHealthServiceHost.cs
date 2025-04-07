@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Infrastructure.Core;
+using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry;
 using User.Infrastructure.Caches;
 using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
@@ -83,10 +84,27 @@ namespace User.API.BackgroundHosts
 					//开启redis事务
 					var transaction = _cacheImpl.BeginTransaction();
 
-					//向redis事务的命令队列插入"写入缓存"命令
-					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig, rdbConfigs, TimeSpan.FromSeconds(20));
+					var tags = new CacheTag[]
+					{
+						CacheTag.Background,
+						CacheTag.HealthCheck,
+						CacheTag.RelationDatabaseConfig
+					};
 
-					var command = new CreateCommand<object>() { CacheKey = CacheKeyPrefix.PgSqlsConfig, Data = rdbConfigs, ExpirationTime = TimeSpan.FromSeconds(10), DataType = rdbConfigs.GetType().FullName };
+					//向redis事务的命令队列插入"写入缓存"命令
+					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig,
+						rdbConfigs,
+                        tags,
+						TimeSpan.FromSeconds(20));
+
+					var command = new CreateCommand<object>()
+					{
+						CacheKey = CacheKeyPrefix.PgSqlsConfig,
+						Data = rdbConfigs,
+						ExpirationTime = TimeSpan.FromSeconds(10),
+						DataType = rdbConfigs.GetType().FullName,
+						Tags = tags
+					};
 
 					//向redis事务的命令队列插入"发布生成缓存消息"命令
 					await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);

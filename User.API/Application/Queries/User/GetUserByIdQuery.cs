@@ -13,5 +13,6 @@ namespace User.API.Application.Queries.User
         public TimeSpan? CacheDuration { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
         public Func<CacheKeyContext, string>? Generator { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
         public CacheKeyContext? KeyContext { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
+        public CacheTag[] Tags { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
     }
 }

@@ -35,9 +35,17 @@ namespace User.API.Application.Behaviors
             //判断缓存优先级
             var preferInMemory = request.PreferCacheLevel == CacheLevelEnum.Memory ? true : false;
 
+            QueryCacheResult<TResponse> cache = null;
             //查询缓存
-            var cache = await _cacheImpl.GetStringAsync<TResponse>("{UserService}:" + request.CacheKey, preferLocal: preferInMemory);
-            
+            if (request.Tags == null || request.Tags.Count() == 0)
+            {
+                cache = await _cacheImpl.GetStringAsync<TResponse>("{UserService}:" + request.CacheKey, preferLocal: preferInMemory);
+            }
+            else
+            {
+                cache = await _cacheImpl.GetStringAsync<TResponse>("{UserService}:" + request.CacheKey, tags: request.Tags, preferLocal: preferInMemory);
+            }
+
             if (cache.IsHit) 
             {
                 //若命中缓存则直接返回缓存结果
@@ -54,14 +62,22 @@ namespace User.API.Application.Behaviors
                 var transaction = _cacheImpl.BeginTransaction();
 
                 //写入缓存
-                await _cacheImpl.SetStringAsync("{UserService}:" + request.CacheKey, response, request.CacheDuration);
+                if (request.Tags == null || request.Tags.Count() == 0)
+                {
+                    await _cacheImpl.SetStringAsync("{UserService}:" + request.CacheKey, response, request.CacheDuration);
+                }
+                else
+                {
+                    await _cacheImpl.SetStringAsync("{UserService}:" + request.CacheKey, response, tags: request.Tags, request.CacheDuration);
+                }
 
                 var command = new CreateCommand<TResponse>()
                 {
                     CacheKey = "{UserService}:" + request.CacheKey,
                     Data = response,
                     ExpirationTime = request.CacheDuration / 2,
-                    DataType = response.GetType().FullName
+                    DataType = response.GetType().FullName,
+                    Tags = request.Tags
                 };
 
                 //向redis事务的命令队列插入"发布生成缓存消息"命令

@@ -10,6 +10,7 @@ using User.API.Application.Queries;
 using User.API.BackgroundHosts;
 using User.Infrastructure;
 using User.Infrastructure.Caches;
+using User.Infrastructure.Caches.ImMemory;
 using User.Infrastructure.Caches.Redis;
 using User.Infrastructure.ExecutionStrategys;
 using User.Infrastructure.Interceptors;
@@ -159,6 +160,8 @@ namespace User.API.Extension
             #region 内存缓存
 
             services.AddMemoryCache();
+
+            services.AddSingleton<InMemoryCacheContext>();
 
             #endregion
 

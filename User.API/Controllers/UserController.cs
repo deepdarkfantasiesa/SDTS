@@ -1,10 +1,13 @@
-﻿using MediatR;
+﻿using Infrastructure.Core;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Service.Framework.Models;
 using StackExchange.Redis;
 using System.Net;
+using System.Text;
+using System.Threading;
 using User.API.Application.Commands;
 using User.API.Application.Queries;
 using User.API.Application.Queries.User;
@@ -52,16 +55,46 @@ namespace User.API.Controllers
 
         }
 
+        private string Check(CacheKeyContext keyContexts)
+        {
+            if (keyContexts.Count == 0)
+                throw new ArgumentNullException("缓存键上下文为空");
+
+            StringBuilder cacheKeyBuilder = new StringBuilder();
+
+            foreach (var kvp in keyContexts)
+            {
+                cacheKeyBuilder.Append($"?{kvp.Key}={kvp.Value}");
+            }
+            return cacheKeyBuilder.ToString();
+        }
+
         [HttpGet("{userid}")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> QueryGetById([FromRoute] int userid)
+        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromServices] ISender _sender)
         {
             try
             {
-                var result = await _mediator.Send(new GetUserByIdQuery { Id = userid });
+                //var result = await _mediator.Send(new GetUserByIdQuery { Id = userid });
 
-                return Ok(result);
+                var res = await _sender.Send(new CheckUserExistsByQuery()
+                {
+                    UserName = userid.ToString(),
+                    PreferCacheLevel = CacheLevelEnum.Memory,
+                    Generator = Check,
+                    KeyContext = new CacheKeyContext
+                    {
+                        { "UserId",userid.ToString()}
+                    },
+                    Tags = new CacheTag[]
+                     {
+                         CacheTag.Query,
+                         CacheTag.CheckIsExist
+                     }
+                });
+
+                return Ok(res);
             }
             catch (Exception ex)
             {
