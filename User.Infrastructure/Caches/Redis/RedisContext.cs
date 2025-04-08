@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using StackExchange.Redis.KeyspaceIsolation;
 using User.Infrastructure.Caches.ImMemory;
 using User.Infrastructure.Settings;
 
@@ -12,6 +13,11 @@ namespace User.Infrastructure.Caches.Redis
     /// </summary>
     public class RedisContext : ICacheImpl
     {
+        /// <summary>
+        /// 数据库
+        /// </summary>
+        private readonly IDatabase db;
+
         /// <summary>
         /// redis连接池
         /// </summary>
@@ -28,9 +34,14 @@ namespace User.Infrastructure.Caches.Redis
         private readonly InMemoryCacheContext _memoryCache;
 
         /// <summary>
-        /// 事务集合
+        /// 事务
         /// </summary>
-        private readonly Dictionary<int, ITransaction> transactions;
+        public ITransaction? transaction { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly string defaultKeyPrefix;
 
         /// <summary>
         /// redis上下文
@@ -43,7 +54,8 @@ namespace User.Infrastructure.Caches.Redis
             _connectionPool = connectionPool;
             _redisSettings = redisSettings.Value;
             _memoryCache = memoryCache;
-            transactions = new Dictionary<int, ITransaction>();
+            defaultKeyPrefix = $"{{{RedisSlot.UserService}}}:";
+            db = _connectionPool.GetDatabase(_redisSettings.DefaultDbNumber).WithKeyPrefix(defaultKeyPrefix);
         }
 
         #region redis相关的操作方法
@@ -53,10 +65,9 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <typeparam name="T">返回的类型</typeparam>
         /// <param name="key">缓存键</param>
-        /// <param name="dbNum">数据库编号</param>
         /// <param name="preferLocal">优先查本地缓存</param>
         /// <returns></returns>
-        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, int dbNum = -1, bool preferLocal = false)
+        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, bool preferLocal = false)
         {
             if (preferLocal)
             {
@@ -66,7 +77,6 @@ namespace User.Infrastructure.Caches.Redis
                     return localCache;
             }
 
-            var db = _connectionPool.GetDatabase(dbNum);
             var redisCache = await db.StringGetAsync(key, flags: CommandFlags.PreferReplica);
             if (redisCache == default)
             {
@@ -89,10 +99,9 @@ namespace User.Infrastructure.Caches.Redis
         /// <typeparam name="T">返回的类型</typeparam>
         /// <param name="key">缓存键</param>
         /// <param name="tags">标签</param>
-        /// <param name="dbNum">数据库编号</param>
         /// <param name="preferLocal">优先查本地缓存</param>
         /// <returns></returns>
-        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheTag[] tags, int dbNum = -1, bool preferLocal = false)
+        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheTag[] tags, bool preferLocal = false)
         {
             if (preferLocal)
             {
@@ -102,11 +111,9 @@ namespace User.Infrastructure.Caches.Redis
                     return localCache;
             }
 
-            var db = _connectionPool.GetDatabase(dbNum);
-
             foreach (var tag in tags)
             {
-                var isExist = await db.SetContainsAsync("{UserService}:" + tag.ToString(), key);
+                var isExist = await db.SetContainsAsync(tag.ToString(), key);
                 if (!isExist)
                 {
                     return new QueryCacheResult<T>
@@ -139,19 +146,16 @@ namespace User.Infrastructure.Caches.Redis
         /// <param name="key">缓存键</param>
         /// <param name="value">缓存值</param>
         /// <param name="expirationTime">过期时间</param>
-        /// <param name="dbNum">数据库编号</param>
         /// <returns></returns>
-        public async Task<bool> SetStringAsync(string key, object value, TimeSpan? expirationTime, int dbNum = -1)
+        public async Task<bool> SetStringAsync(string key, object value, TimeSpan? expirationTime)
         {
             if (expirationTime == null)
                 expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
             var cache = Serialize(value);
-            var transaction = GetTransaction(dbNum);
 
             bool result = false;
             if (transaction == null)
             {
-                var db = _connectionPool.GetDatabase(dbNum);
                 result = await db.StringSetAsync(key, cache, expirationTime);
             }
             else
@@ -169,14 +173,12 @@ namespace User.Infrastructure.Caches.Redis
         /// <param name="value">缓存值</param>
         /// <param name="tags">标签</param>
         /// <param name="expirationTime">过期时间</param>
-        /// <param name="dbNum">数据库编号</param>
         /// <returns></returns>
-        public async Task<bool> SetStringAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime, int dbNum = -1)
+        public async Task<bool> SetStringAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime)
         {
             if (expirationTime == null)
                 expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
             var cache = Serialize(value);
-            var transaction = GetTransaction(dbNum);
 
             bool result = false;
             if (transaction == null)
@@ -185,7 +187,7 @@ namespace User.Infrastructure.Caches.Redis
 
                 foreach (var tag in tags)
                 {
-                    transaction.SetAddAsync("{UserService}:" + tag.ToString(), key);
+                    transaction.SetAddAsync(tag.ToString(), key);
                 }
                 transaction.StringSetAsync(key, cache, expirationTime);
 
@@ -195,7 +197,7 @@ namespace User.Infrastructure.Caches.Redis
             {
                 foreach ( var tag in tags)
                 {
-                    transaction.SetAddAsync("{UserService}:" + tag.ToString(), key);
+                    transaction.SetAddAsync(tag.ToString(), key);
                 }
                 transaction.StringSetAsync(key, cache, expirationTime);
             }
@@ -208,16 +210,13 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <param name="channel">管道名称</param>
         ///<param name="message">消息</param>
-        /// <param name="dbNum">数据库</param>
         /// <returns></returns>
-        public async Task PublishAsync(string channel, object message, int dbNum = -1)
+        public async Task PublishAsync(string channel, object message)
         {
             var messageContent = Serialize(message);
-            var transaction = GetTransaction(dbNum);
 
             if (transaction == null)
             {
-                var db = _connectionPool.GetDatabase(dbNum);
                 await db.PublishAsync(channel, messageContent);
             }
             else
@@ -236,7 +235,7 @@ namespace User.Infrastructure.Caches.Redis
         {
             var connection = _connectionPool.GetConnection();
             var subscriber = connection.GetSubscriber();
-            await subscriber.SubscribeAsync(channel, handler);
+            await subscriber.SubscribeAsync(defaultKeyPrefix + channel, handler);
         }
 
         /// <summary>
@@ -244,16 +243,11 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <param name="dbNum">数据库编号</param>
         /// <returns></returns>
-        public ITransaction BeginTransaction(int dbNum = -1)
+        public ITransaction BeginTransaction()
         {
-            var transaction = GetTransaction(dbNum);
-
             if (transaction == null)
             {
-                dbNum = dbNum == -1 ? _redisSettings.DefaultDbNumber : dbNum;
-                var db = _connectionPool.GetDatabase(dbNum);
                 transaction = db.CreateTransaction();
-                transactions.Add(dbNum, transaction);
             }
 
             return transaction;
@@ -267,23 +261,6 @@ namespace User.Infrastructure.Caches.Redis
         public async Task<bool> CommitTransactionAsync(ITransaction transaction)
         {
             return await transaction.ExecuteAsync();
-        }
-
-        /// <summary>
-        /// 获取事务
-        /// </summary>
-        /// <param name="dbNum">数据库编号</param>
-        /// <returns></returns>
-        public ITransaction? GetTransaction(int dbNum = -1)
-        {
-            var defaultDbNumber = dbNum == -1 ? _redisSettings.DefaultDbNumber : dbNum;
-
-            var transaction = transactions
-                .Where(p => p.Key == defaultDbNumber)
-                .Select(p => p.Value)
-                .FirstOrDefault();
-
-            return transaction;
         }
 
         #endregion
