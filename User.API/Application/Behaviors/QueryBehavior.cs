@@ -37,59 +37,50 @@ namespace User.API.Application.Behaviors
 
             QueryCacheResult<TResponse> cache = null;
             //查询缓存
-            if (request.Tags == null || request.Tags.Count() == 0)
-            {
-                cache = await _cacheImpl.GetStringAsync<TResponse>(request.CacheKey, preferLocal: preferInMemory);
-            }
-            else
-            {
-                cache = await _cacheImpl.GetStringAsync<TResponse>(request.CacheKey, tags: request.Tags, preferLocal: preferInMemory);
-            }
+            cache = await _cacheImpl.GetStringAsync<TResponse>(request.CacheKey, preferLocal: preferInMemory);
 
             if (cache.IsHit) 
             {
                 //若命中缓存则直接返回缓存结果
                 return cache.Value;
             }
+
+            //运行数据库查询逻辑
+            var response = await next();
+
+            #region 插入缓存
+
+            //开启redis事务
+            var transaction = _cacheImpl.BeginTransaction();
+
+            //写入缓存
+            if (request.Tags == null || request.Tags.Count() == 0)
+            {
+                await _cacheImpl.SetStringAsync(request.CacheKey, response, request.CacheDuration);
+            }
             else
             {
-                //运行数据库查询逻辑
-                var response = await next();
-
-                #region 插入缓存
-
-                //开启redis事务
-                var transaction = _cacheImpl.BeginTransaction();
-
-                //写入缓存
-                if (request.Tags == null || request.Tags.Count() == 0)
-                {
-                    await _cacheImpl.SetStringAsync(request.CacheKey, response, request.CacheDuration);
-                }
-                else
-                {
-                    await _cacheImpl.SetStringAsync(request.CacheKey, response, tags: request.Tags, request.CacheDuration);
-                }
-
-                var command = new CreateCommand<TResponse>()
-                {
-                    CacheKey = request.CacheKey,
-                    Data = response,
-                    ExpirationTime = request.CacheDuration / 2,
-                    DataType = response.GetType().FullName,
-                    Tags = request.Tags
-                };
-
-                //向redis事务的命令队列插入"发布生成缓存消息"命令
-                await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
-
-                //执行redis事务命令队列
-                await _cacheImpl.CommitTransactionAsync(transaction);
-
-                #endregion
-
-                return response;
+                await _cacheImpl.SetStringAsync(request.CacheKey, response, tags: request.Tags, request.CacheDuration);
             }
+
+            var command = new CreateCommand<TResponse>()
+            {
+                CacheKey = request.CacheKey,
+                Data = response,
+                ExpirationTime = request.CacheDuration / 2,
+                DataType = response.GetType().FullName,
+                Tags = request.Tags
+            };
+
+            //向redis事务的命令队列插入"发布生成缓存消息"命令
+            await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
+
+            //执行redis事务命令队列
+            await _cacheImpl.CommitTransactionAsync(transaction);
+
+            #endregion
+
+            return response;
         }
     }
 }

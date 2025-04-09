@@ -85,25 +85,22 @@ namespace User.Infrastructure.Caches.ImMemory
         }
 
         /// <summary>
-        /// 获取缓存
+        /// 移除标签中过期的值
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <param name="tags"></param>
+        /// <param name="tag">标签</param>
+        /// <param name="key">键</param>
         /// <returns></returns>
-        public QueryCacheResult<T> Get<T>(string key,CacheTag[] tags)
+        public void RemoveExpireTagValue(CacheTag tag, string key)
         {
-            var isMatch = AreAllTagsMatching(key, tags);
-            if (isMatch == false)
-                return new QueryCacheResult<T> { IsHit = false, Value = default(T) };
-            
-            if(_memoryCache.TryGetValue<T>(key, out var result))
+            if (Tags.TryGetValue(tag, out var keys))
             {
-                return new QueryCacheResult<T> { IsHit = true, Value = result };
-            }
-            else
-            {
-                return new QueryCacheResult<T> { IsHit = false, Value = default(T) };
+                keys.Remove(key);
+                
+                // 如果键集合为空，移除整个标签
+                if (keys.Count == 0)
+                {
+                    Tags.TryRemove(tag, out _);
+                }
             }
         }
 
@@ -128,5 +125,6 @@ namespace User.Infrastructure.Caches.ImMemory
             // 如果所有标签都匹配，则返回 true
             return true;
         }
+
     }
 }

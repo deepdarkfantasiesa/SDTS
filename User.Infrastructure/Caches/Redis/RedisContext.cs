@@ -93,53 +93,6 @@ namespace User.Infrastructure.Caches.Redis
             };
         }
 
-        /// <summary>
-        /// 获取redis中类型为string的数据
-        /// </summary>
-        /// <typeparam name="T">返回的类型</typeparam>
-        /// <param name="key">缓存键</param>
-        /// <param name="tags">标签</param>
-        /// <param name="preferLocal">优先查本地缓存</param>
-        /// <returns></returns>
-        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheTag[] tags, bool preferLocal = false)
-        {
-            if (preferLocal)
-            {
-                var localCache = _memoryCache.Get<T>(key, tags);
-
-                if (localCache.IsHit)
-                    return localCache;
-            }
-
-            foreach (var tag in tags)
-            {
-                var isExist = await db.SetContainsAsync(tag.ToString(), key);
-                if (!isExist)
-                {
-                    return new QueryCacheResult<T>
-                    {
-                        IsHit = false,
-                        Value = default(T)
-                    };
-                }
-            }
-
-            var redisCache = await db.StringGetAsync(key, flags: CommandFlags.PreferReplica);
-            if (redisCache == default)
-            {
-                return new QueryCacheResult<T>
-                {
-                    IsHit = false,
-                    Value = default(T)
-                };
-            }
-            return new QueryCacheResult<T>
-            {
-                IsHit = true,
-                Value = Deserialize<T>(redisCache)
-            };
-        }
-
         #endregion
 
         #region SetString
@@ -301,6 +254,7 @@ namespace User.Infrastructure.Caches.Redis
                 foreach (var expiredKey in expiredKeys)
                 {
                     await db.SetRemoveAsync(tag.ToString(), expiredKey);
+                    _memoryCache.RemoveExpireTagValue(tag, expiredKey);
                 }
             }
         }

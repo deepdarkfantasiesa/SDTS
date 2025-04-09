@@ -17,16 +17,6 @@ namespace User.Infrastructure.Caches
 		/// <returns></returns>
 		Task<QueryCacheResult<T>> GetStringAsync<T>(string key, bool preferLocal = false);
 
-		/// <summary>
-		/// 获取redis中类型为string的数据
-		/// </summary>
-		/// <typeparam name="T">返回的类型</typeparam>
-		/// <param name="key">缓存键</param>
-		/// <param name="tags">标签</param>
-		/// <param name="preferLocal">优先查本地缓存</param>
-		/// <returns></returns>
-		Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheTag[] tags, bool preferLocal = false);
-
         /// <summary>
         /// 向redis中插入string类型的数据
         /// </summary>
