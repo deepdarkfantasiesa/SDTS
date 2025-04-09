@@ -39,7 +39,7 @@ namespace User.Infrastructure.Caches.Redis
         public ITransaction? transaction { get; private set; }
 
         /// <summary>
-        /// 
+        /// 默认键前缀
         /// </summary>
         private readonly string defaultKeyPrefix;
 
@@ -58,7 +58,7 @@ namespace User.Infrastructure.Caches.Redis
             db = _connectionPool.GetDatabase(_redisSettings.DefaultDbNumber).WithKeyPrefix(defaultKeyPrefix);
         }
 
-        #region redis相关的操作方法
+        #region GetString
 
         /// <summary>
         /// 获取redis中类型为string的数据
@@ -140,6 +140,10 @@ namespace User.Infrastructure.Caches.Redis
             };
         }
 
+        #endregion
+
+        #region SetString
+
         /// <summary>
         /// 向redis插入string类型的数据
         /// </summary>
@@ -205,6 +209,10 @@ namespace User.Infrastructure.Caches.Redis
             return result;
         }
 
+        #endregion
+
+        #region Pub/Sub
+
         /// <summary>
         /// 向redis管道发布消息
         /// </summary>
@@ -238,6 +246,10 @@ namespace User.Infrastructure.Caches.Redis
             await subscriber.SubscribeAsync(defaultKeyPrefix + channel, handler);
         }
 
+        #endregion
+
+        #region 事务
+
         /// <summary>
         /// 开启事务
         /// </summary>
@@ -264,6 +276,34 @@ namespace User.Infrastructure.Caches.Redis
         }
 
         #endregion
+
+        /// <summary>
+        /// 移除set中过期的值
+        /// </summary>
+        /// <param name="tags">标签</param>
+        /// <returns></returns>
+        public async Task RemoveExpireTagValue(CacheTag[] tags)
+        {
+            var keys = new List<string>();
+
+            foreach (var tag in tags)
+            {
+                var cacheKeys = await db.SetMembersAsync(tag.ToString());
+
+                var expiredKeys = new List<string>();
+                foreach (var cacheKey in cacheKeys)
+                {
+                    var isExist = await db.KeyExistsAsync(cacheKey.ToString());
+                    if (!isExist)
+                        expiredKeys.Add(cacheKey);
+                }
+
+                foreach (var expiredKey in expiredKeys)
+                {
+                    await db.SetRemoveAsync(tag.ToString(), expiredKey);
+                }
+            }
+        }
 
         #region 私有方法
 

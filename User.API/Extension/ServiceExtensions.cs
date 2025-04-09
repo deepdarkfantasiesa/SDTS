@@ -188,6 +188,9 @@ namespace User.API.Extension
             //注册订阅reids管道后台任务
             services.AddHostedService<SubscribeRedisChannelHost>();
 
+            //注册清理过期tag值后台任务
+            services.AddHostedService<RedisTagCleanupHost>();
+
             #endregion
 
             return services;

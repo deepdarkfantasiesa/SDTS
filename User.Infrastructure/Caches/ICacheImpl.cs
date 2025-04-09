@@ -76,5 +76,13 @@ namespace User.Infrastructure.Caches
 		/// <param name="transaction">事务对象</param>
 		/// <returns></returns>
 		Task<bool> CommitTransactionAsync(ITransaction transaction);
-	}
+
+        /// <summary>
+        /// 移除set中过期的值
+        /// </summary>
+        /// <param name="tags">标签</param>
+        /// <returns></returns>
+        Task RemoveExpireTagValue(CacheTag[] tags);
+
+    }
 }
