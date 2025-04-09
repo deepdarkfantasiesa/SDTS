@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Core;
+using Infrastructure.Core.Extension;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
 
@@ -85,6 +86,28 @@ namespace User.Infrastructure.Caches.ImMemory
         }
 
         /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="key"></param>
+        public void Remove(string key)
+        {
+            _memoryCache.Remove(key);
+            RemoveExpireTagValue(EnumExtensions.GetAllValuesAsArray<CacheTag>(), key);
+        }
+
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="tags">标签</param>
+        public void Remove(CacheTag[] tags)
+        {
+            foreach(var tag in tags)
+            {
+                Tags.TryRemove(tag, out _);
+            }
+        }
+
+        /// <summary>
         /// 移除标签中过期的值
         /// </summary>
         /// <param name="tag">标签</param>
@@ -105,25 +128,18 @@ namespace User.Infrastructure.Caches.ImMemory
         }
 
         /// <summary>
-        /// 检查传入的 tags 中的所有标签是否都包含指定的 key。
+        /// 移除标签中过期的值
         /// </summary>
-        /// <param name="key">要检查的缓存键。</param>
-        /// <param name="tags">要检索的标签数组。</param>
-        /// <returns>如果所有标签的 HashSet 都包含该 key，则返回 true；否则返回 false。</returns>
-        private bool AreAllTagsMatching(string key, CacheTag[] tags)
+        /// <param name="tags">标签</param>
+        /// <param name="key">键</param>
+        /// <returns></returns>
+        public void RemoveExpireTagValue(CacheTag[] tags, string key)
         {
-            foreach (var tag in tags)
+            foreach(var tag in tags)
             {
-                // 检查标签是否存在于 Tags 字典中
-                if (!Tags.TryGetValue(tag, out var hashSet) || !hashSet.Contains(key))
-                {
-                    // 如果标签不存在，或者 HashSet 不包含 key，则返回 false
-                    return false;
-                }
+                RemoveExpireTagValue(tag, key);
             }
-
-            // 如果所有标签都匹配，则返回 true
-            return true;
+            
         }
 
     }

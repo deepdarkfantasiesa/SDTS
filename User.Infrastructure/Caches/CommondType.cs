@@ -11,8 +11,13 @@
         Create = 0,
 
         /// <summary>
-        /// 删除
+        /// 通过键删除
         /// </summary>
-        Delete = 1,
+        DeleteByKey = 1,
+
+        /// <summary>
+        /// 通过标签删除
+        /// </summary>
+        DeleteByTags = 2,
     }
 }

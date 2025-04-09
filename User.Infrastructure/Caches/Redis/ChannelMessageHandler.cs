@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Infrastructure.Core;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using User.Infrastructure.Caches.ImMemory;
@@ -52,13 +53,18 @@ namespace User.Infrastructure.Caches.Redis
 			// 使用反射创建具体的 BaseCommand<> 类型
 			var commandType = typeof(BaseCommand<>).MakeGenericType(dataType);
 			var command = JsonConvert.DeserializeObject(message, commandType);
-			//var dcommand = (dynamic) command;
-			switch(baseCommand.Type)
+
+			switch (baseCommand.Type)
 			{
 				case CommondType.Create:
-					//通过命令的数据类型从command中反射获取Data
-					var data = commandType.GetProperty("Data")?.GetValue(command);
-					if (baseCommand.Tags == null || baseCommand.Tags.Count() == 0)
+					// 使用反射创建具体的 CreateCommand<> 类型
+					var createCommandType = typeof(CreateCommand<>).MakeGenericType(dataType);
+					var createCommand = JsonConvert.DeserializeObject(message, createCommandType);
+
+					//通过命令的数据类型从command中反射获取Data和Tags
+					var data = createCommandType.GetProperty("Data")?.GetValue(createCommand);
+                    var tags = createCommandType.GetProperty("Tags")?.GetValue(createCommand) as CacheTag[];
+                    if (tags == null || tags.Count() == 0)
 					{
 						_memoryCache.Set(baseCommand.CacheKey, data, new MemoryCacheEntryOptions()
 						{
@@ -67,16 +73,30 @@ namespace User.Infrastructure.Caches.Redis
                     }
 					else
 					{
-						_memoryCache.Set(baseCommand.CacheKey, data, baseCommand.Tags, new MemoryCacheEntryOptions()
+						_memoryCache.Set(baseCommand.CacheKey, data, tags, new MemoryCacheEntryOptions()
 						{
 							AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
 						});
                     }
 					break;
-				case CommondType.Delete:
-					//_memoryCache.Remove(baseCommand.CacheKey);
+				case CommondType.DeleteByKey:
+					_memoryCache.Remove(baseCommand.CacheKey);
+					break;
+				case CommondType.DeleteByTags:
+
 					break;
 			}
 		}
-	}
+
+        /// <summary>
+        /// 同步内存缓存
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="message"></param>
+        public void SyncInMemoryCacheV2(RedisChannel channel, RedisValue message)
+		{
+
+		}
+
+    }
 }

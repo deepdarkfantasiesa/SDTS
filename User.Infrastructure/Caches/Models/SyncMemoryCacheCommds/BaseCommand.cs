@@ -17,10 +17,10 @@ namespace User.Infrastructure.Caches.Models.SyncMemoryCacheCommds
 		/// </summary>
 		public CommondType Type { get; set; }
 
-		/// <summary>
-		/// 数据
-		/// </summary>
-		public virtual T? Data { get; set; }
+		///// <summary>
+		///// 数据
+		///// </summary>
+		//public virtual T? Data { get; set; }
 
 		/// <summary>
 		/// 过期时间
@@ -32,9 +32,9 @@ namespace User.Infrastructure.Caches.Models.SyncMemoryCacheCommds
 		/// </summary>
 		public string DataType { get; set; }
 
-		/// <summary>
-		/// 标签
-		/// </summary>
-		public CacheTag[]? Tags { get; set; }
+		///// <summary>
+		///// 标签
+		///// </summary>
+		//public CacheTag[]? Tags { get; set; }
 	}
 }

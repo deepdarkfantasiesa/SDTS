@@ -3,12 +3,12 @@
     /// <summary>
     /// 删除命令
     /// </summary>
-    public record DeleteCommand<T> : BaseCommand<T>
+    public record DeleteByKeyCommand<T> : BaseCommand<T>
 	{
 		/// <summary>
 		/// 
 		/// </summary>
-		public CommondType Type { get; } = CommondType.Delete;
+		public CommondType Type { get; } = CommondType.DeleteByKey;
 
 		/// <summary>
 		/// 
