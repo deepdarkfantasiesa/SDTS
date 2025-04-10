@@ -63,21 +63,21 @@ namespace User.Infrastructure.Caches.Redis
 
 					//通过命令的数据类型从command中反射获取Data和Tags
 					var data = createCommandType.GetProperty("Data")?.GetValue(createCommand);
-                    var tags = createCommandType.GetProperty("Tags")?.GetValue(createCommand) as CacheTag[];
-                    if (tags == null || tags.Count() == 0)
-					{
+     //               var tags = createCommandType.GetProperty("Tags")?.GetValue(createCommand) as CacheTag[];
+     //               if (tags == null || tags.Count() == 0)
+					//{
 						_memoryCache.Set(baseCommand.CacheKey, data, new MemoryCacheEntryOptions()
 						{
 							AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
 						});
-                    }
-					else
-					{
-						_memoryCache.Set(baseCommand.CacheKey, data, tags, new MemoryCacheEntryOptions()
-						{
-							AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
-						});
-                    }
+     //               }
+					//else
+					//{
+					//	_memoryCache.Set(baseCommand.CacheKey, data, tags, new MemoryCacheEntryOptions()
+					//	{
+					//		AbsoluteExpiration = DateTimeOffset.Now.Add(baseCommand.ExpirationTime.Value)
+					//	});
+     //               }
 					break;
 				case CommondType.DeleteByKey:
 					_memoryCache.Remove(baseCommand.CacheKey);

@@ -37,9 +37,9 @@ namespace User.API.Application.Behaviors
 
             QueryCacheResult<TResponse> cache = null;
             //查询缓存
-            cache = await _cacheImpl.GetStringAsync<TResponse>(request.CacheKey, preferLocal: preferInMemory);
+            cache = await _cacheImpl.GetHashAsync<TResponse>(request.CacheKey, preferLocal: preferInMemory);
 
-            if (cache.IsHit) 
+            if (cache.IsHit)
             {
                 //若命中缓存则直接返回缓存结果
                 return cache.Value;
@@ -56,11 +56,11 @@ namespace User.API.Application.Behaviors
             //写入缓存
             if (request.Tags == null || request.Tags.Count() == 0)
             {
-                await _cacheImpl.SetStringAsync(request.CacheKey, response, request.CacheDuration);
+                await _cacheImpl.SetHashAsync(request.CacheKey, response, request.CacheDuration);
             }
             else
             {
-                await _cacheImpl.SetStringAsync(request.CacheKey, response, tags: request.Tags, request.CacheDuration);
+                await _cacheImpl.SetHashAsync(request.CacheKey, response, tags: request.Tags, request.CacheDuration);
             }
 
             var command = new CreateCommand<TResponse>()

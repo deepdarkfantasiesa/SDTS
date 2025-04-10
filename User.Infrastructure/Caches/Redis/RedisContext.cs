@@ -1,8 +1,8 @@
 ﻿using Infrastructure.Core;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using StackExchange.Redis;
 using StackExchange.Redis.KeyspaceIsolation;
+using System.Text.Json;
 using User.Infrastructure.Caches.ImMemory;
 using User.Infrastructure.Settings;
 
@@ -144,7 +144,11 @@ namespace User.Infrastructure.Caches.Redis
 
                 foreach (var tag in tags)
                 {
-                    transaction.SetAddAsync(tag.ToString(), key);
+                    var tagString = tag.ToString();
+                    var otherTags = tags.Where(p => p != tag).ToArray();
+                    var otherTagsJson = JsonSerializer.Serialize(otherTags);
+                    transaction.HashSetAsync(tagString, [new HashEntry(key, otherTagsJson)]);
+                    transaction.HashFieldExpireAsync(tagString, [new RedisValue(key)], expirationTime.Value);
                 }
                 transaction.StringSetAsync(key, cache, expirationTime);
 
@@ -152,14 +156,119 @@ namespace User.Infrastructure.Caches.Redis
             }
             else
             {
-                foreach ( var tag in tags)
+                foreach (var tag in tags)
                 {
-                    transaction.SetAddAsync(tag.ToString(), key);
+                    var tagString = tag.ToString();
+                    var otherTags = tags.Where(p => p != tag).ToArray();
+                    var otherTagsJson = JsonSerializer.Serialize(otherTags);
+                    transaction.HashSetAsync(tagString, [new HashEntry(key, otherTagsJson)]);
+                    transaction.HashFieldExpireAsync(tagString, [new RedisValue(key)], expirationTime.Value);
                 }
                 transaction.StringSetAsync(key, cache, expirationTime);
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region hash
+
+        /// <summary>
+        /// 插入hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <param name="tags">标签</param>
+        /// <param name="expirationTime">过期时间</param>
+        /// <returns></returns>
+        public async Task<bool> SetHashAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime)
+        {
+            if (tags.Count() == 0)
+                throw new ArgumentException("请传入tags");
+
+            if (expirationTime == null)
+                expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
+
+            var cache = Serialize(value);
+
+            if (transaction == null)
+            {
+                transaction = BeginTransaction();
+
+                SetHashWithTrans(key, cache, tags, expirationTime.Value);
+
+                await CommitTransactionAsync(transaction);
+            }
+            else
+            {
+                SetHashWithTrans(key, cache, tags, expirationTime.Value);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 插入hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <param name="expirationTime">过期时间</param>
+        /// <returns></returns>
+        public async Task<bool> SetHashAsync(string key, object value, TimeSpan? expirationTime)
+        {
+            if (expirationTime == null)
+                expirationTime = TimeSpan.FromSeconds(_redisSettings.DefaultExpirationTime);
+
+            var cache = Serialize(value);
+
+            if (transaction == null)
+            {
+                transaction = BeginTransaction();
+
+                SetHashWithTrans(key, cache, expirationTime.Value);
+
+                await CommitTransactionAsync(transaction);
+            }
+            else
+            {
+                SetHashWithTrans(key, cache, expirationTime.Value);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 获取hash
+        /// </summary>
+        /// <typeparam name="T">返回的类型</typeparam>
+        /// <param name="key">缓存键</param>
+        /// <param name="preferLocal">优先查本地缓存</param>
+        /// <returns></returns>
+        public async Task<QueryCacheResult<T>> GetHashAsync<T>(string key, bool preferLocal = false)
+        {
+            if (preferLocal)
+            {
+                var localCache = _memoryCache.Get<T>(key);
+
+                if (localCache.IsHit)
+                    return localCache;
+            }
+
+            var redisCache = await db.HashGetAsync(key, RedisHashField.Data, flags: CommandFlags.PreferReplica);
+            if (redisCache == default)
+            {
+                return new QueryCacheResult<T>
+                {
+                    IsHit = false,
+                    Value = default(T)
+                };
+            }
+            return new QueryCacheResult<T>
+            {
+                IsHit = true,
+                Value = Deserialize<T>(redisCache)
+            };
         }
 
         #endregion
@@ -241,10 +350,10 @@ namespace User.Infrastructure.Caches.Redis
 
             foreach (var tag in tags)
             {
-                var cacheKeys = await db.SetMembersAsync(tag.ToString());
+                var cacheKeys = await db.HashGetAllAsync(tag.ToString());
 
                 var expiredKeys = new List<string>();
-                foreach (var cacheKey in cacheKeys)
+                foreach (var cacheKey in cacheKeys.Select(p => p.Name))
                 {
                     var isExist = await db.KeyExistsAsync(cacheKey.ToString());
                     if (!isExist)
@@ -253,8 +362,8 @@ namespace User.Infrastructure.Caches.Redis
 
                 foreach (var expiredKey in expiredKeys)
                 {
-                    await db.SetRemoveAsync(tag.ToString(), expiredKey);
-                    _memoryCache.RemoveExpireTagValue(tag, expiredKey);
+                    await db.HashDeleteAsync(tag.ToString(), expiredKey);
+                    //_memoryCache.RemoveExpireTagValue(tag, expiredKey);
                 }
             }
         }
@@ -281,12 +390,46 @@ namespace User.Infrastructure.Caches.Redis
         {
             if (cacheData.HasValue)
             {
-                return JsonConvert.DeserializeObject<T>(cacheData);
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(cacheData);
             }
             else
             {
                 return default(T);
             }
+        }
+
+        /// <summary>
+        /// 在redis事务中设置hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="cache">值</param>
+        /// <param name="tags">标签</param>
+        /// <param name="expirationTime">过期时间</param>
+        private void SetHashWithTrans(string key, string cache, CacheTag[] tags, TimeSpan expirationTime)
+        {
+            foreach (var tag in tags)
+            {
+                var tagString = tag.ToString();
+                transaction.HashSetAsync(tagString, [new HashEntry(key, "")]);
+                transaction.HashFieldExpireAsync(tagString, [new RedisValue(key)], expirationTime);
+            }
+
+            transaction.HashSetAsync(key, nameof(RedisHashField.Data), cache);
+            transaction.HashSetAsync(key, nameof(RedisHashField.Tags), Serialize(tags));
+            transaction.KeyExpireAsync(key, expirationTime);
+        }
+
+        /// <summary>
+        /// 在redis事务中设置hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="cache">值</param>
+        /// <param name="expirationTime">过期时间</param>
+        private void SetHashWithTrans(string key, string cache, TimeSpan expirationTime)
+        {
+            transaction.HashSetAsync(key, nameof(RedisHashField.Data), cache);
+            transaction.HashSetAsync(key, nameof(RedisHashField.Tags), "");
+            transaction.KeyExpireAsync(key, expirationTime);
         }
 
         #endregion

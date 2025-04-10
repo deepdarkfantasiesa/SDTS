@@ -36,6 +36,33 @@ namespace User.Infrastructure.Caches
 		/// <returns></returns>
 		Task<bool> SetStringAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime);
 
+        /// <summary>
+        /// 插入hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <param name="expirationTime">过期时间</param>
+        /// <returns></returns>
+        Task<bool> SetHashAsync(string key, object value, TimeSpan? expirationTime);
+
+        /// <summary>
+        /// 插入hash
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <param name="tags">标签</param>
+        /// <param name="expirationTime">过期时间</param>
+        /// <returns></returns>
+        Task<bool> SetHashAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime);
+
+		/// <summary>
+		/// 获取hash
+		/// </summary>
+		/// <typeparam name="T">返回的类型</typeparam>
+		/// <param name="key">键</param>
+		/// <param name="preferLocal">优先查本地缓存</param>
+		/// <returns></returns>
+		Task<QueryCacheResult<T>> GetHashAsync<T>(string key, bool preferLocal = false);
 
         /// <summary>
         /// 向redis管道发布消息

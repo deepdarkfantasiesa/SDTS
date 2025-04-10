@@ -92,7 +92,7 @@ namespace User.API.BackgroundHosts
 					};
 
 					//向redis事务的命令队列插入"写入缓存"命令
-					await _cacheImpl.SetStringAsync(CacheKeyPrefix.PgSqlsConfig,
+					await _cacheImpl.SetHashAsync(CacheKeyPrefix.PgSqlsConfig,
 						rdbConfigs,
                         tags,
 						TimeSpan.FromSeconds(20));
