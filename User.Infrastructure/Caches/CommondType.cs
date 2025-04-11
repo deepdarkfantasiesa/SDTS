@@ -13,11 +13,6 @@
         /// <summary>
         /// 通过键删除
         /// </summary>
-        DeleteByKey = 1,
-
-        /// <summary>
-        /// 通过标签删除
-        /// </summary>
-        DeleteByTags = 2,
+        Delete = 1
     }
 }

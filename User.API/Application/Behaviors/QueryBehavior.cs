@@ -63,17 +63,19 @@ namespace User.API.Application.Behaviors
                 await _cacheImpl.SetHashAsync(request.CacheKey, response, tags: request.Tags, request.CacheDuration);
             }
 
-            var command = new CreateCommand<TResponse>()
+            if (request.CacheDuration.HasValue)
             {
-                CacheKey = request.CacheKey,
-                Data = response,
-                ExpirationTime = request.CacheDuration / 2,
-                DataType = response.GetType().FullName,
-                Tags = request.Tags
-            };
+                var command = new CreateCommand()
+                {
+                    Key = request.CacheKey,
+                    Data = response,
+                    ExpirationTime = request.CacheDuration.Value / 2,
+                    DataType = response.GetType().FullName
+                };
 
-            //向redis事务的命令队列插入"发布生成缓存消息"命令
-            await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
+                //向redis事务的命令队列插入"发布生成缓存消息"命令
+                await _cacheImpl.PublishAsync(CacheKeyPrefix.SyncInMemoryCache, command);
+            }
 
             //执行redis事务命令队列
             await _cacheImpl.CommitTransactionAsync(transaction);

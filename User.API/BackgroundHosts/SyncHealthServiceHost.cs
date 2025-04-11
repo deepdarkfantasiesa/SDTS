@@ -97,13 +97,12 @@ namespace User.API.BackgroundHosts
                         tags,
 						TimeSpan.FromSeconds(20));
 
-					var command = new CreateCommand<object>()
+					var command = new CreateCommand()
 					{
-						CacheKey = CacheKeyPrefix.PgSqlsConfig,
+						Key = CacheKeyPrefix.PgSqlsConfig,
 						Data = rdbConfigs,
 						ExpirationTime = TimeSpan.FromSeconds(10),
-						DataType = rdbConfigs.GetType().FullName,
-						Tags = tags
+						DataType = rdbConfigs.GetType().FullName
 					};
 
 					//向redis事务的命令队列插入"发布生成缓存消息"命令
