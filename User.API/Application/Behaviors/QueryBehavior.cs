@@ -33,7 +33,7 @@ namespace User.API.Application.Behaviors
                 return await next();
 
             //判断缓存优先级
-            var preferInMemory = request.PreferCacheLevel == CacheLevelEnum.Memory ? true : false;
+            var preferInMemory = request.PreferCacheLevel == CacheLevelEnum.Local ? true : false;
 
             QueryCacheResult<TResponse> cache = null;
             //查询缓存

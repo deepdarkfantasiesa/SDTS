@@ -13,6 +13,16 @@
         /// <summary>
         /// 命令类型
         /// </summary>
-        public override CommondType Type { get; } = CommondType.Delete;
+        public override CommondType Type 
+        { 
+            get 
+            { 
+                return CommondType.Delete; 
+            } 
+            init 
+            { 
+
+            } 
+        }
 	}
 }

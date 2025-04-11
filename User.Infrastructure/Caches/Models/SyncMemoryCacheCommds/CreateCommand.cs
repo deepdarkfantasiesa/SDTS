@@ -13,30 +13,27 @@
         /// <summary>
         /// 数据
         /// </summary>
-        public object? Data 
-        {
-            get;
-            init;
-        }
+        public object? Data { get; init; }
 
         /// <summary>
         /// 命令类型
         /// </summary>
-        public override CommondType Type { get; } = CommondType.Create;
+        public override CommondType Type 
+        { 
+            get 
+            { 
+                return CommondType.Create; 
+            }
+            init 
+            {
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private string? originDataType;
+            }
+        }
 
         /// <summary>
 		/// 数据类型
 		/// </summary>
-		public string DataType 
-        {
-            get;
-            init;
-        }
+		public string DataType { get; init; }
 
         /// <summary>
         /// 过期时间

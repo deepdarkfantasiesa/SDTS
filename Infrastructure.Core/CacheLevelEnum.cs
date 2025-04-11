@@ -14,10 +14,10 @@ namespace Infrastructure.Core
         None = 0,
 
         /// <summary>
-        /// 内存缓存（本地内存缓存）
+        /// 本地内存缓存
         /// </summary>
-        [Description("内存缓存（本地内存缓存）")]
-        Memory = 1,
+        [Description("本地内存缓存")]
+        Local = 1,
 
         /// <summary>
         /// 分布式缓存（Redis）

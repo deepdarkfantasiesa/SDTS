@@ -4,6 +4,7 @@ using StackExchange.Redis;
 using StackExchange.Redis.KeyspaceIsolation;
 using System.Text.Json;
 using User.Infrastructure.Caches.ImMemory;
+using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 using User.Infrastructure.Settings;
 
 namespace User.Infrastructure.Caches.Redis
@@ -332,12 +333,15 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <param name="transaction">事务对象</param>
         /// <returns></returns>
-        public async Task<bool> CommitTransactionAsync(ITransaction transaction)
+        public async Task<bool> CommitTransactionAsync(ITransaction trans)
         {
-            return await transaction.ExecuteAsync();
+            transaction = null;
+            return await trans.ExecuteAsync();
         }
 
         #endregion
+
+        #region 其他方法
 
         /// <summary>
         /// 移除set中过期的值
@@ -367,6 +371,52 @@ namespace User.Infrastructure.Caches.Redis
                 }
             }
         }
+
+        /// <summary>
+		/// 通过tag移除缓存
+		/// </summary>
+		/// <param name="tags">标签</param>
+		/// <returns></returns>
+        public async Task RemoveByTags(CacheTag[] tags)
+        {
+            var tagList = tags.Select(p => p.ToString()).ToList();
+            var cacheToRemove = new List<string>();//需要删除的缓存
+            var tagToRemove = new Dictionary<string, string>();//需要删除Tag下的key
+            foreach (var tag in tagList)
+            {
+                var subFields = await db.HashGetAllAsync(tag);
+                foreach (var subField in subFields)
+                {
+                    var key = subField.Name;
+                    var cacheTag = subField.Value;
+                    var currentTags = Deserialize<CacheTag[]>(cacheTag);
+                    var otherTagsKeyToRemove = currentTags.Select(p => p.ToString()).Where(p => !tagList.Contains(p)).ToList();
+                    foreach (var otherTagKeyToRemove in otherTagsKeyToRemove)
+                    {
+                        tagToRemove.Add(otherTagKeyToRemove, key);
+                    }
+                    tagToRemove.Add(tag, key);
+                }
+                cacheToRemove.AddRange(subFields.Select(p => p.Name.ToString()).ToList());
+            }
+            cacheToRemove = cacheToRemove.Distinct().ToList();
+            tagToRemove = tagToRemove.Distinct().ToDictionary<string, string>();
+
+            if (transaction != null)
+            {
+                RemoveTagsWithTrans(cacheToRemove, tagToRemove);
+            }
+            else
+            {
+                BeginTransaction();
+
+                RemoveTagsWithTrans(cacheToRemove, tagToRemove);
+
+                await CommitTransactionAsync(transaction);
+            }
+        }
+
+        #endregion
 
         #region 私有方法
 
@@ -410,7 +460,8 @@ namespace User.Infrastructure.Caches.Redis
             foreach (var tag in tags)
             {
                 var tagString = tag.ToString();
-                transaction.HashSetAsync(tagString, [new HashEntry(key, "")]);
+                var otherTags = tags.Where(p => p != tag);
+                transaction.HashSetAsync(tagString, [new HashEntry(key, Serialize(otherTags))]);
                 transaction.HashFieldExpireAsync(tagString, [new RedisValue(key)], expirationTime);
             }
 
@@ -430,6 +481,28 @@ namespace User.Infrastructure.Caches.Redis
             transaction.HashSetAsync(key, nameof(RedisHashField.Data), cache);
             transaction.HashSetAsync(key, nameof(RedisHashField.Tags), "");
             transaction.KeyExpireAsync(key, expirationTime);
+        }
+
+        /// <summary>
+        /// 通过redis事务移除缓存
+        /// </summary>
+        /// <param name="cacheToRemove">需要被移除的缓存</param>
+        /// <param name="tagToRemove">需要被移除tag下的缓存键</param>
+        private async void RemoveTagsWithTrans(IEnumerable<string> cacheToRemove, Dictionary<string, string> tagToRemove)
+        {
+            foreach (var key in cacheToRemove)
+            {
+                transaction.HashDeleteAsync(key, RedisHashField.Data);
+                transaction.HashDeleteAsync(key, RedisHashField.Tags);
+                await PublishAsync(CacheKeyPrefix.SyncInMemoryCache, new DeleteCommand()
+                {
+                    Key = key
+                });
+            }
+            foreach (var tagHash in tagToRemove)
+            {
+                transaction.HashDeleteAsync(tagHash.Key, tagHash.Value);
+            }
         }
 
         #endregion

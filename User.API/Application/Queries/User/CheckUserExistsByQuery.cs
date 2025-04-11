@@ -13,7 +13,7 @@ namespace User.API.Application.Queries.User
         public string UserName { get; set; }
 
         /// <summary>
-        /// 
+        /// 偏好缓存优先级
         /// </summary>
         public CacheLevelEnum PreferCacheLevel { get; init; } = CacheLevelEnum.None;
 
@@ -22,6 +22,9 @@ namespace User.API.Application.Queries.User
         /// </summary>
         public CacheKeyContext? KeyContext { get; init; }
 
+        /// <summary>
+        /// 缓存键
+        /// </summary>
         private string _cacheKey;
 
         /// <summary>

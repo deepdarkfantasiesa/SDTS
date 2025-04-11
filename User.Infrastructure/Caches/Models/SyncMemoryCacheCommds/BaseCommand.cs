@@ -13,6 +13,6 @@
         /// <summary>
         /// 命令类型
         /// </summary>
-        public virtual CommondType Type { get; }
+        public virtual CommondType Type { get; init; }
     }
 }

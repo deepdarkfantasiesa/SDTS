@@ -101,5 +101,11 @@ namespace User.Infrastructure.Caches
         /// <returns></returns>
         Task RemoveExpireTagValue(CacheTag[] tags);
 
+		/// <summary>
+		/// 通过tag移除缓存
+		/// </summary>
+		/// <param name="tags">标签</param>
+		/// <returns></returns>
+		Task RemoveByTags(CacheTag[] tags);
     }
 }

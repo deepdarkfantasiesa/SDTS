@@ -33,7 +33,7 @@ namespace User.API.Application.Validations
             var res = await _sender.Send(new CheckUserExistsByQuery()
             {
                 UserName = UserName,
-                PreferCacheLevel = CacheLevelEnum.Memory,
+                PreferCacheLevel = CacheLevelEnum.Local,
                 Generator = Check,
                 KeyContext = new CacheKeyContext
                 {

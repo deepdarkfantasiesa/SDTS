@@ -7,7 +7,6 @@ using Service.Framework.Models;
 using StackExchange.Redis;
 using System.Net;
 using System.Text;
-using System.Threading;
 using User.API.Application.Commands;
 using User.API.Application.Queries;
 using User.API.Application.Queries.User;
@@ -69,10 +68,18 @@ namespace User.API.Controllers
             return cacheKeyBuilder.ToString();
         }
 
+        [HttpDelete]
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task DeleteByTags([FromServices]ICacheImpl cache, [FromBody] CacheTag[] tags)
+        {
+            await cache.RemoveByTags(tags);
+        }
+
         [HttpGet("{userid}")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromServices] ISender _sender)
+        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromServices] ISender _sender, [FromServices]ICacheImpl cache)
         {
             try
             {
@@ -81,7 +88,7 @@ namespace User.API.Controllers
                 var res = await _sender.Send(new CheckUserExistsByQuery()
                 {
                     UserName = userid.ToString(),
-                    PreferCacheLevel = CacheLevelEnum.Memory,
+                    PreferCacheLevel = CacheLevelEnum.Local,
                     Generator = Check,
                     KeyContext = new CacheKeyContext
                     {
