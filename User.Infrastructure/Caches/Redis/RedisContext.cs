@@ -381,26 +381,32 @@ namespace User.Infrastructure.Caches.Redis
         {
             var tagList = tags.Select(p => p.ToString()).ToList();
             var cacheToRemove = new List<string>();//需要删除的缓存
-            var tagToRemove = new Dictionary<string, string>();//需要删除Tag下的key
+            var tagToRemove = new Dictionary<string, string>();//key为tag，value为缓存键
             foreach (var tag in tagList)
             {
-                var subFields = await db.HashGetAllAsync(tag);
+                var subFields = await db.HashGetAllAsync(tag);//获取当前tag下所有的缓存键
                 foreach (var subField in subFields)
                 {
-                    var key = subField.Name;
-                    var cacheTag = subField.Value;
-                    var currentTags = Deserialize<CacheTag[]>(cacheTag);
-                    var otherTagsKeyToRemove = currentTags.Select(p => p.ToString()).Where(p => !tagList.Contains(p)).ToList();
-                    foreach (var otherTagKeyToRemove in otherTagsKeyToRemove)
+                    var key = subField.Name;//缓存键
+                    var otherTags = subField.Value;//该缓存键的其他标签
+                    if (otherTags != default)
                     {
-                        tagToRemove.Add(otherTagKeyToRemove, key);
+                        var otherTagsArray = Deserialize<CacheTag[]>(otherTags);
+                        var otherTagsKeyToRemove = otherTagsArray.Select(p => p.ToString()).Where(p => !tagList.Contains(p)).ToList();
+                        foreach (var otherTagKeyToRemove in otherTagsKeyToRemove)
+                        {
+                            tagToRemove.Add(otherTagKeyToRemove, key);//其他标签下的该键
+                        }
                     }
-                    tagToRemove.Add(tag, key);
+                    tagToRemove.Add(tag, key);//当前标签下的该键
                 }
-                cacheToRemove.AddRange(subFields.Select(p => p.Name.ToString()).ToList());
+                cacheToRemove.AddRange(subFields.Select(p => p.Name.ToString()).ToList());//当前缓存
             }
             cacheToRemove = cacheToRemove.Distinct().ToList();
             tagToRemove = tagToRemove.Distinct().ToDictionary<string, string>();
+
+            if (cacheToRemove.Count == 0 && tagToRemove.Count == 0)
+                return;
 
             if (transaction != null)
             {
