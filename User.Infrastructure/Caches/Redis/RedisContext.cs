@@ -66,11 +66,11 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <typeparam name="T">返回的类型</typeparam>
         /// <param name="key">缓存键</param>
-        /// <param name="preferLocal">优先查本地缓存</param>
+        /// <param name="preferCache">偏好缓存</param>
         /// <returns></returns>
-        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, bool preferLocal = false)
+        public async Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheLevel preferCache)
         {
-            if (preferLocal)
+            if (preferCache == CacheLevel.Local)
             {
                 var localCache = _memoryCache.Get<T>(key);
 
@@ -244,11 +244,11 @@ namespace User.Infrastructure.Caches.Redis
         /// </summary>
         /// <typeparam name="T">返回的类型</typeparam>
         /// <param name="key">缓存键</param>
-        /// <param name="preferLocal">优先查本地缓存</param>
+        /// <param name="preferCache">偏好缓存</param>
         /// <returns></returns>
-        public async Task<QueryCacheResult<T>> GetHashAsync<T>(string key, bool preferLocal = false)
+        public async Task<QueryCacheResult<T>> GetHashAsync<T>(string key, CacheLevel preferCache)
         {
-            if (preferLocal)
+            if (preferCache == CacheLevel.Local)
             {
                 var localCache = _memoryCache.Get<T>(key);
 

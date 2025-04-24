@@ -29,15 +29,15 @@ namespace User.API.Application.Behaviors
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             //判断是否使用缓存
-            if (request.PreferCacheLevel == CacheLevelEnum.None)
+            if (request.PreferCacheLevel == QueryCacheLevel.None)
                 return await next();
 
             //判断缓存优先级
-            var preferInMemory = request.PreferCacheLevel == CacheLevelEnum.Local ? true : false;
+            var cacheLevel = request.PreferCacheLevel == QueryCacheLevel.Local ? CacheLevel.Local : CacheLevel.Distributed;
 
             QueryCacheResult<TResponse> cache = null;
             //查询缓存
-            cache = await _cacheImpl.GetHashAsync<TResponse>(request.CacheKey, preferLocal: preferInMemory);
+            cache = await _cacheImpl.GetHashAsync<TResponse>(request.CacheKey, cacheLevel);
 
             if (cache.IsHit)
             {

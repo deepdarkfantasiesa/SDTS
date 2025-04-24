@@ -8,14 +8,14 @@ namespace User.Infrastructure.Caches
 	/// </summary>
 	public interface ICacheImpl
 	{
-		/// <summary>
-		/// 向redis获取类型为string的数据
-		/// </summary>
-		/// <typeparam name="T">返回的类型</typeparam>
-		/// <param name="key">缓存键</param>
-		/// <param name="preferLocal">优先查本地缓存</param>
-		/// <returns></returns>
-		Task<QueryCacheResult<T>> GetStringAsync<T>(string key, bool preferLocal = false);
+        /// <summary>
+        /// 向redis获取类型为string的数据
+        /// </summary>
+        /// <typeparam name="T">返回的类型</typeparam>
+        /// <param name="key">缓存键</param>
+        /// <param name="preferCache">偏好缓存</param>
+        /// <returns></returns>
+        Task<QueryCacheResult<T>> GetStringAsync<T>(string key, CacheLevel preferCache);
 
         /// <summary>
         /// 向redis中插入string类型的数据
@@ -55,14 +55,14 @@ namespace User.Infrastructure.Caches
         /// <returns></returns>
         Task<bool> SetHashAsync(string key, object value, CacheTag[] tags, TimeSpan? expirationTime);
 
-		/// <summary>
-		/// 获取hash
-		/// </summary>
-		/// <typeparam name="T">返回的类型</typeparam>
-		/// <param name="key">键</param>
-		/// <param name="preferLocal">优先查本地缓存</param>
-		/// <returns></returns>
-		Task<QueryCacheResult<T>> GetHashAsync<T>(string key, bool preferLocal = false);
+        /// <summary>
+        /// 获取hash
+        /// </summary>
+        /// <typeparam name="T">返回的类型</typeparam>
+        /// <param name="key">键</param>
+        /// <param name="preferCache">偏好缓存</param>
+        /// <returns></returns>
+        Task<QueryCacheResult<T>> GetHashAsync<T>(string key, CacheLevel preferCache);
 
         /// <summary>
         /// 向redis管道发布消息

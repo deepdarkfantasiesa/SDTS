@@ -15,7 +15,7 @@ namespace User.API.Application.Queries.User
         /// <summary>
         /// 偏好缓存优先级
         /// </summary>
-        public CacheLevelEnum PreferCacheLevel { get; init; } = CacheLevelEnum.None;
+        public QueryCacheLevel PreferCacheLevel { get; init; } = QueryCacheLevel.None;
 
         /// <summary>
         /// 缓存键上下文
@@ -37,7 +37,7 @@ namespace User.API.Application.Queries.User
                 if (!string.IsNullOrWhiteSpace(_cacheKey))
                     return _cacheKey;
 
-                if (this.PreferCacheLevel != CacheLevelEnum.None && (Generator == null || KeyContext == null))
+                if (this.PreferCacheLevel != QueryCacheLevel.None && (Generator == null || KeyContext == null))
                     throw new ArgumentNullException("缓存键生成者或缓存键上下文为空");
 
                 _cacheKey = Generator.Invoke(KeyContext);
@@ -60,5 +60,10 @@ namespace User.API.Application.Queries.User
         /// 生成缓存键的委托
         /// </summary>
         public Func<CacheKeyContext, string>? Generator { get; init; }
+
+        /// <summary>
+        /// 是否使用从库
+        /// </summary>
+        public bool UseReplica { get; init; }
     }
 }

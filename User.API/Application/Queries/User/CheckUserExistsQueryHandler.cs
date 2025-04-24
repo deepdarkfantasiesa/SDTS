@@ -20,7 +20,9 @@ namespace User.API.Application.Queries.User
                 new
                 {
                     Name = request.UserName
-                });
+                }, 
+                useReplica: request.UseReplica
+                );
         }
     }
 }

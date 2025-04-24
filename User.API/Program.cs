@@ -45,9 +45,6 @@ namespace User.API
 			//注册仓储
 			builder.Services.AddRepositories(builder.Configuration);
 
-			//注册查询
-			builder.Services.AddQueries(builder.Configuration);
-
 			//注册消息队列
 			builder.Services.AddEventBus(builder.Configuration);
 

@@ -11,7 +11,7 @@ namespace Infrastructure.Core
         /// <summary>
         /// 偏好缓存等级
         /// </summary>
-        public CacheLevelEnum PreferCacheLevel { get; init; }
+        public QueryCacheLevel PreferCacheLevel { get; init; }
 
         /// <summary>
         /// 缓存键
@@ -37,5 +37,10 @@ namespace Infrastructure.Core
         /// 标签
         /// </summary>
         public CacheTag[] Tags { get; init; }
+
+        /// <summary>
+        /// 是否使用从库
+        /// </summary>
+        public bool UseReplica { get; init; }
     }
 }

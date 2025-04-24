@@ -36,24 +36,6 @@ namespace User.API.Controllers
             return Ok();
         }
 
-        [HttpGet("GetUsers")]
-        [ProducesResponseType(typeof(string), 200)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromServices] IUserQueries userQueries)
-        {
-            try
-            {
-
-                var res = await userQueries.GetAllUsers();
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return NotFound();
-            }
-
-        }
-
         private string Check(CacheKeyContext keyContexts)
         {
             if (keyContexts.Count == 0)
@@ -79,7 +61,7 @@ namespace User.API.Controllers
         [HttpGet("{userid}")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromServices] ISender _sender, [FromServices]ICacheImpl cache)
+        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromHeader]QueryCacheLevel queryCacheLevel, [FromHeader]bool useReplica, [FromServices] ISender _sender, [FromServices]ICacheImpl cache)
         {
             try
             {
@@ -88,17 +70,18 @@ namespace User.API.Controllers
                 var res = await _sender.Send(new CheckUserExistsByQuery()
                 {
                     UserName = userid.ToString(),
-                    PreferCacheLevel = CacheLevelEnum.Local,
+                    PreferCacheLevel = queryCacheLevel,
                     Generator = Check,
                     KeyContext = new CacheKeyContext
                     {
                         { "UserId",userid.ToString()}
                     },
                     Tags = new CacheTag[]
-                     {
-                         CacheTag.Query,
-                         CacheTag.CheckIsExist
-                     }
+                    {
+                        CacheTag.Query,
+                        CacheTag.CheckIsExist
+                    },
+                    UseReplica = useReplica
                 });
 
                 return Ok(res);
@@ -106,22 +89,6 @@ namespace User.API.Controllers
             catch (Exception ex)
             {
                 return NotFound(ex);
-            }
-        }
-
-        [HttpGet("{userid}")]
-        [ProducesResponseType(typeof(string), 200)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> DapperGetById([FromServices] IUserQueries userQueries, [FromRoute] int userid)
-        {
-            try
-            {
-                var res = await userQueries.GetUserAsync(userid);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return NotFound();
             }
         }
 
@@ -191,9 +158,9 @@ namespace User.API.Controllers
         }
 
         [HttpGet("RedisContext")]
-        public async Task<IActionResult> TestRedisContext([FromServices] ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery] bool preferInMemory)
+        public async Task<IActionResult> TestRedisContext([FromServices] ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery] CacheLevel cacheLevel)
         {
-            var cacheData = await _cacheImpl.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(cacheKey, preferLocal: preferInMemory);
+            var cacheData = await _cacheImpl.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(cacheKey, cacheLevel);
             return Ok(cacheData);
         }
 
@@ -216,9 +183,9 @@ namespace User.API.Controllers
         }
 
         [HttpGet("TestCache")]
-        public async Task<IActionResult> TestCache(ICacheImpl cache, [FromQuery] bool preferLocal)
+        public async Task<IActionResult> TestCache(ICacheImpl cache, [FromQuery] CacheLevel cacheLevel)
         {
-            var data = await cache.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, preferLocal: preferLocal);
+            var data = await cache.GetStringAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, cacheLevel);
             return Ok(data);
         }
 
@@ -233,13 +200,6 @@ namespace User.API.Controllers
         public async Task<IActionResult> TestSyncInMemoryCache2(IMemoryCache memoryCache, string key)
         {
             var data = memoryCache.Get<string>(key);
-            return Ok(data);
-        }
-
-        [HttpGet("TestPublishRedis")]
-        public async Task<IActionResult> TestSyncInMemoryCache2(ICacheImpl cacheImpl, string key)
-        {
-            var data = await cacheImpl.GetStringAsync<string>(key);
             return Ok(data);
         }
 

@@ -1,12 +1,10 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Npgsql;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
+using Service.Framework.ServiceRegistry;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using User.API.Application.Behaviors;
-using User.API.Application.Queries;
 using User.API.BackgroundHosts;
 using User.Infrastructure;
 using User.Infrastructure.Caches;
@@ -54,6 +52,14 @@ namespace User.API.Extension
 
             //获取pgsql连接字符串
             var connstr = configuration.GetValue<string>("PgSQL");
+
+            //注册查询上下文
+            services.AddScoped<IQueryDbContext>(sp =>
+            {
+                var _cache = sp.GetRequiredService<ICacheImpl>();
+                var _serviceCenter = sp.GetRequiredService<IRegistryService>();
+                return new DapperContext(connstr, _cache, _serviceCenter);
+            });
 
             //注册查询操作拦截器
             services.AddSingleton<QueryInterceptor>();
@@ -303,31 +309,6 @@ namespace User.API.Extension
         public static IServiceCollection AddFilters(this IServiceCollection services, IConfiguration configuration)
         {
             //services.AddTransient<CacheFilter>();
-            return services;
-        }
-
-        /// <summary>
-        /// 注册查询
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddQueries(this IServiceCollection services, IConfiguration configuration)
-        {
-            //注册查询上下文
-            services.AddScoped<IQueryDbContext>(sp =>
-            {
-                //获取pgsql连接字符串
-                var connstr = configuration.GetValue<string>("PgSQL");
-
-                var dbConnection = new NpgsqlConnection(connstr);
-                return new DapperContext(dbConnection);
-            });
-
-            var provider = services.BuildServiceProvider();
-            var distributedCaches = provider.GetService<IDistributedCache>();
-            services.AddScoped<IUserQueries>(p => new UserQueries(configuration.GetValue<string>("PgSQL")));
-            //services.AddScoped<IUserQueries,UserQueries>();
             return services;
         }
 

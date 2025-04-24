@@ -3,16 +3,10 @@
 namespace Infrastructure.Core
 {
     /// <summary>
-    /// 缓存等级枚举
+    /// 缓存等级
     /// </summary>
-    public enum CacheLevelEnum
+    public enum CacheLevel
     {
-        /// <summary>
-        /// 不使用缓存
-        /// </summary>
-        [Description("不使用缓存")]
-        None = 0,
-
         /// <summary>
         /// 本地内存缓存
         /// </summary>
