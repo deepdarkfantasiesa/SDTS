@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Core;
+using Infrastructure.Core.Query;
 
 namespace User.API.Application.Queries.User
 {
@@ -8,12 +9,5 @@ namespace User.API.Application.Queries.User
     public class GetUserByIdQuery : IQuery<UserResponse>
     {
         public int Id { get; set; }
-        public QueryCacheLevel PreferCacheLevel { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public string? CacheKey { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public TimeSpan? CacheDuration { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public Func<CacheKeyContext, string>? Generator { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public CacheKeyContext? KeyContext { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public CacheTag[] Tags { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
-        public bool UseReplica { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using MediatR;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.Query
 {
     /// <summary>
-    /// 查询
+    /// query缓存
     /// </summary>
     /// <typeparam name="TResponse">返回类型</typeparam>
-    public interface IQuery<TResponse> : IRequest<TResponse>
+    public interface IQueryCache<TResponse> : IRequest<TResponse>
     {
         /// <summary>
         /// 偏好缓存等级
@@ -37,10 +37,5 @@ namespace Infrastructure.Core
         /// 标签
         /// </summary>
         public CacheTag[] Tags { get; init; }
-
-        /// <summary>
-        /// 是否使用从库
-        /// </summary>
-        public bool UseReplica { get; init; }
     }
 }

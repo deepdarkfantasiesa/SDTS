@@ -1,11 +1,12 @@
 ﻿using Infrastructure.Core;
+using Infrastructure.Core.Query;
 
 namespace User.API.Application.Queries.User
 {
     /// <summary>
     /// 校验用户是否存在query
     /// </summary>
-    public class CheckUserExistsByQuery : IQuery<bool>
+    public class CheckUserExistsByQuery : IQuery<bool>, IQueryReplica<bool>, IQueryCache<bool>
     {
         /// <summary>
         /// 

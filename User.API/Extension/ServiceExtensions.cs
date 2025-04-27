@@ -33,7 +33,8 @@ namespace User.API.Extension
                 cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
                 cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
-                cfg.AddOpenBehavior(typeof(QueryBehavior<,>));
+                cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
+                cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
 
@@ -56,9 +57,7 @@ namespace User.API.Extension
             //注册查询上下文
             services.AddScoped<IQueryDbContext>(sp =>
             {
-                var _cache = sp.GetRequiredService<ICacheImpl>();
-                var _serviceCenter = sp.GetRequiredService<IRegistryService>();
-                return new DapperContext(connstr, _cache, _serviceCenter);
+                return new DapperContext(connstr);
             });
 
             //注册查询操作拦截器

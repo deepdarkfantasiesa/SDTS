@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Core;
+using Infrastructure.Core.Query;
 using MediatR;
 using User.Infrastructure.Caches;
 using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
@@ -6,11 +7,11 @@ using User.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 namespace User.API.Application.Behaviors
 {
     /// <summary>
-    /// Query管道行为
+    /// Query缓存管道行为
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
-    public class QueryBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IQuery<TResponse>
+    public class QueryCacheBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IQueryCache<TResponse>
     {
         /// <summary>
         /// 缓存上下文
@@ -21,7 +22,7 @@ namespace User.API.Application.Behaviors
         /// Query管道行为
         /// </summary>
         /// <param name="cacheImpl">缓存上下文</param>
-        public QueryBehavior(ICacheImpl cacheImpl)
+        public QueryCacheBehavior(ICacheImpl cacheImpl)
         {
             _cacheImpl = cacheImpl;
         }

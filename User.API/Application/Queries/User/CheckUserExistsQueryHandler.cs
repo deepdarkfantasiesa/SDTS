@@ -1,4 +1,4 @@
-﻿using Infrastructure.Core;
+﻿using Infrastructure.Core.Query;
 using User.Infrastructure.QueryContext;
 
 namespace User.API.Application.Queries.User
@@ -20,9 +20,7 @@ namespace User.API.Application.Queries.User
                 new
                 {
                     Name = request.UserName
-                }, 
-                useReplica: request.UseReplica
-                );
+                });
         }
     }
 }

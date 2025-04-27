@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.Query
 {
     /// <summary>
     /// 查询处理者

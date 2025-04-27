@@ -13,9 +13,8 @@ namespace User.Infrastructure.QueryContext
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
-        /// <param name="useReplica">是否使用从库</param>
         /// <returns></returns>
-        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, bool useReplica = false);
+        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null);
 
         /// <summary>
         /// 单个查询
@@ -23,8 +22,7 @@ namespace User.Infrastructure.QueryContext
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
-        /// <param name="useReplica">是否使用从库</param>
         /// <returns></returns>
-        Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null, bool useReplica = false);
+        Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null);
     }
 }

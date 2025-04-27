@@ -1,4 +1,4 @@
-﻿using Infrastructure.Core;
+﻿using Infrastructure.Core.Query;
 using User.Infrastructure.QueryContext;
 
 namespace User.API.Application.Queries.User

@@ -1,10 +1,6 @@
 ﻿using Dapper;
-using Infrastructure.Core;
 using Npgsql;
-using Service.Framework.Models;
-using Service.Framework.ServiceRegistry;
 using System.Data;
-using User.Infrastructure.Caches;
 
 namespace User.Infrastructure.QueryContext
 {
@@ -14,16 +10,6 @@ namespace User.Infrastructure.QueryContext
     public class DapperContext : IQueryDbContext
     {
         /// <summary>
-        /// 缓存
-        /// </summary>
-        private readonly ICacheImpl _cache;
-
-        /// <summary>
-        /// 服务发现中心
-        /// </summary>
-        private readonly IRegistryService _serviceCenter;
-
-        /// <summary>
         /// 连接实例
         /// </summary>
         private readonly IDbConnection _connection;
@@ -32,19 +18,15 @@ namespace User.Infrastructure.QueryContext
         /// dapper数据库上下文
         /// </summary>
         /// <param name="connstr">Db连接字符串</param>
-        /// <param name="cache">缓存</param>
-        /// <param name="serviceCenter">服务发现中心</param>
-        public DapperContext(string connstr, ICacheImpl cache, IRegistryService serviceCenter)
+        public DapperContext(string connstr)
         {
             _connection = new NpgsqlConnection(connstr);
-            _cache = cache;
-            _serviceCenter = serviceCenter;
         }
 
         /// <summary>
         /// 连接字符串
         /// </summary>
-        public string ConnectionString 
+        public string ConnectionString
         {
             get => _connection.ConnectionString;
             set => _connection.ConnectionString = value;
@@ -140,15 +122,10 @@ namespace User.Infrastructure.QueryContext
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
-        /// <param name="useReplica">是否使用从库</param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, bool useReplica = false)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null)
         {
             ValidateSql(sql);
-            if (useReplica)
-            {
-                await TrySetConnStrToReplica();
-            }
             return await _connection.QueryAsync<T>(sql, param);
         }
 
@@ -158,15 +135,10 @@ namespace User.Infrastructure.QueryContext
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">语句</param>
         /// <param name="param">参数</param>
-        /// <param name="useReplica">是否使用从库</param>
         /// <returns></returns>
-        public async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null, bool useReplica = false)
+        public async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
         {
             ValidateSql(sql);
-            if (useReplica)
-            {
-                await TrySetConnStrToReplica();
-            }
             return await _connection.QueryFirstOrDefaultAsync<T>(sql, param);
         }
 
@@ -182,35 +154,6 @@ namespace User.Infrastructure.QueryContext
             if (!sql.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("该上下文只能用于查询");
-            }
-        }
-
-        /// <summary>
-		/// 尝试设置连接字符串为从库
-		/// </summary>
-		private async Task TrySetConnStrToReplica()
-        {
-            //从缓存中获取数据库实例的信息
-            var cacheResult = await _cache.GetHashAsync<IEnumerable<RelationalDatabaseModel>>(CacheKeyPrefix.PgSqlsConfig, CacheLevel.Local);
-
-            var rdbs = cacheResult.IsHit == true ? cacheResult.Value : null;
-
-            if (rdbs == null || rdbs.Count() == 0)
-            {
-                rdbs = await _serviceCenter.DiscoverRDB("pgsql");
-            }
-
-            var radom = new Random();
-
-            var replicaRdbs = rdbs.Where(p => p.Tag.Contains("replica")).ToList();
-            if (replicaRdbs != null && replicaRdbs.Count > 0)
-            {
-                var replicaRdb = replicaRdbs[radom.Next(replicaRdbs.Count)];
-                _connection.ConnectionString = $"Host={replicaRdb.Address}:{replicaRdb.Port};Database=postgres;Username=postgres;Password=postgres";
-            }
-            else
-            {
-                Console.WriteLine("设置从库连接字符串失败");
             }
         }
     }
