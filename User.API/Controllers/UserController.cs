@@ -8,7 +8,6 @@ using StackExchange.Redis;
 using System.Net;
 using System.Text;
 using User.API.Application.Commands;
-using User.API.Application.Queries;
 using User.API.Application.Queries.User;
 using User.API.Filters;
 using User.Infrastructure;
@@ -53,7 +52,7 @@ namespace User.API.Controllers
         [HttpDelete]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task DeleteByTags([FromServices]ICacheImpl cache, [FromBody] CacheTag[] tags)
+        public async Task DeleteByTags([FromServices] ICacheImpl cache, [FromBody] CacheTag[] tags)
         {
             await cache.RemoveByTags(tags);
         }
@@ -61,7 +60,7 @@ namespace User.API.Controllers
         [HttpGet("{userid}")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromHeader]QueryCacheLevel queryCacheLevel, [FromHeader]bool useReplica, [FromServices] ISender _sender, [FromServices]ICacheImpl cache)
+        public async Task<IActionResult> QueryGetById([FromRoute] int userid, [FromHeader] QueryCacheLevel queryCacheLevel, [FromHeader] bool useReplica, [FromServices] ISender _sender, [FromServices] ICacheImpl cache)
         {
             try
             {
@@ -69,7 +68,7 @@ namespace User.API.Controllers
 
                 var res = await _sender.Send(new CheckUserExistsByQuery()
                 {
-                    UserName = userid.ToString(),
+                    Params = new CheckUserExistParams { UserName = userid.ToString() },
                     PreferCacheLevel = queryCacheLevel,
                     Generator = Check,
                     KeyContext = new CacheKeyContext

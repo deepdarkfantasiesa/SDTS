@@ -7,7 +7,7 @@ namespace User.API.Application.Queries.User
     /// 通过id查询用户
     /// </summary>
     /// <param name="_dbContext"></param>
-    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext) : IQueryHandler<GetUserByIdQuery, UserResponse>
+    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext) : IQueryHandler<GetUserByIdQuery, GetUserByIdParams, UserResponse>
     {
         /// <summary>
         /// 
@@ -26,7 +26,7 @@ namespace User.API.Application.Queries.User
                         WHERE u.""Id""=@Id",
                 new
                 {
-                    Id = request.Id
+                    Id = request.Params.Id
                 });
         }
     }

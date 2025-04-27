@@ -3,7 +3,7 @@ using User.Infrastructure.QueryContext;
 
 namespace User.API.Application.Queries.User
 {
-    public class CheckUserExistsQueryHandler(IQueryDbContext dbContext) : IQueryHandler<CheckUserExistsByQuery, bool>
+    public class CheckUserExistsQueryHandler(IQueryDbContext dbContext) : IQueryHandler<CheckUserExistsByQuery, CheckUserExistParams, bool>
     {
         /// <summary>
         /// 校验用户是否存在
@@ -19,7 +19,7 @@ namespace User.API.Application.Queries.User
                         WHERE u.""Name""=@Name)",
                 new
                 {
-                    Name = request.UserName
+                    Name = request.Params.UserName
                 });
         }
     }

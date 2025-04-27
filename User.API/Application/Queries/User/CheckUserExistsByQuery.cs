@@ -6,12 +6,12 @@ namespace User.API.Application.Queries.User
     /// <summary>
     /// 校验用户是否存在query
     /// </summary>
-    public class CheckUserExistsByQuery : IQuery<bool>, IQueryReplica<bool>, IQueryCache<bool>
+    public class CheckUserExistsByQuery : QueryBase<CheckUserExistParams, bool>, IQueryReplica<bool>, IQueryCache<bool>
     {
         /// <summary>
-        /// 
+        /// query参数
         /// </summary>
-        public string UserName { get; set; }
+        public CheckUserExistParams Params { get; init; }
 
         /// <summary>
         /// 偏好缓存优先级

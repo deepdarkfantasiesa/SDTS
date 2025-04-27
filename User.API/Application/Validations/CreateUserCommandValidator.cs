@@ -32,7 +32,7 @@ namespace User.API.Application.Validations
         {
             var res = await _sender.Send(new CheckUserExistsByQuery()
             {
-                UserName = UserName,
+                Params = new CheckUserExistParams { UserName = UserName },
                 PreferCacheLevel = QueryCacheLevel.Local,
                 Generator = Check,
                 KeyContext = new CacheKeyContext
