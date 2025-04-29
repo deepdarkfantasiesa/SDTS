@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
+using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
-using Service.Framework.ServiceRegistry;
 using Service.Framework.ServiceRegistry.Consul.Configs;
 using User.API.Application.Behaviors;
 using User.API.BackgroundHosts;

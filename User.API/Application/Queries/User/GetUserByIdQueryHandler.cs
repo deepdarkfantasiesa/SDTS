@@ -1,5 +1,5 @@
-﻿using Infrastructure.Core.Query;
-using User.Infrastructure.QueryContext;
+﻿using Infrastructure.Core;
+using Infrastructure.Core.Query;
 
 namespace User.API.Application.Queries.User
 {
@@ -7,8 +7,10 @@ namespace User.API.Application.Queries.User
     /// 通过id查询用户
     /// </summary>
     /// <param name="_dbContext"></param>
-    public class GetUserByIdQueryHandler(IQueryDbContext _dbContext) : IQueryHandler<GetUserByIdQuery, GetUserByIdParams, UserResponse>
+    public class GetUserByIdQueryHandler(IQueryDbContext queryContext) : IQueryHandler<GetUserByIdQuery, GetUserByIdParams, UserResponse>
     {
+        public IQueryDbContext _queryContext => queryContext;
+
         /// <summary>
         /// 
         /// </summary>
@@ -17,7 +19,7 @@ namespace User.API.Application.Queries.User
         /// <returns></returns>
         public async Task<UserResponse?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
-            return await _dbContext
+            return await _queryContext
                 .QueryFirstOrDefaultAsync<UserResponse>
                 (@"SELECT 
                         u.""Id"",

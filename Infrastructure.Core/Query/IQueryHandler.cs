@@ -11,5 +11,9 @@ namespace Infrastructure.Core.Query
     public interface IQueryHandler<TRequest, TParams, TResponse>
         : IRequestHandler<TRequest, TResponse> where TRequest : QueryBase<TParams, TResponse>
     {
+        /// <summary>
+        /// 查询上下文
+        /// </summary>
+        public IQueryDbContext _queryContext { get; }
     }
 }

@@ -1,10 +1,12 @@
-﻿using Infrastructure.Core.Query;
-using User.Infrastructure.QueryContext;
+﻿using Infrastructure.Core;
+using Infrastructure.Core.Query;
 
 namespace User.API.Application.Queries.User
 {
-    public class CheckUserExistsQueryHandler(IQueryDbContext dbContext) : IQueryHandler<CheckUserExistsByQuery, CheckUserExistParams, bool>
+    public class CheckUserExistsQueryHandler(IQueryDbContext queryContext) : IQueryHandler<CheckUserExistsByQuery, CheckUserExistParams, bool>
     {
+        public IQueryDbContext _queryContext => queryContext;
+
         /// <summary>
         /// 校验用户是否存在
         /// </summary>
@@ -13,7 +15,7 @@ namespace User.API.Application.Queries.User
         /// <returns></returns>
         public async Task<bool> Handle(CheckUserExistsByQuery request, CancellationToken cancellationToken)
         {
-            return await dbContext.QueryFirstOrDefaultAsync<bool>
+            return await _queryContext.QueryFirstOrDefaultAsync<bool>
                 (@"SELECT EXISTS (
                         SELECT 1 FROM ""User"" AS u 
                         WHERE u.""Name""=@Name)",

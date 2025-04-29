@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Infrastructure.Core;
 using Npgsql;
 using System.Data;
 
