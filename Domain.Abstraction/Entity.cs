@@ -1,96 +1,64 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Abstraction
+﻿namespace Domain.Abstraction
 {
+    /// <summary>
+    /// 实体基类
+    /// </summary>
     public abstract class Entity
     {
-        int? _requestedHashCode;
-        int _Id;
-        public virtual int Id
-        {
-            get
-            {
-                return _Id;
-            }
-            protected set
-            {
-                _Id = value;
-            }
-        }
 
-        private List<INotification> _domainEvents;
-        public IReadOnlyCollection<INotification> DomainEvents => _domainEvents?.AsReadOnly();
+        /// <summary>
+        /// 领域事件集合
+        /// </summary>
+        private List<IDomainEvent> _domainEvents = new List<IDomainEvent>();
 
-        public void AddDomainEvent(INotification eventItem)
-        {
-            _domainEvents = _domainEvents ?? new List<INotification>();
-            _domainEvents.Add(eventItem);
-        }
+        /// <summary>
+        /// 领域事件集合
+        /// </summary>
+        public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-        public void RemoveDomainEvent(INotification eventItem)
-        {
-            _domainEvents?.Remove(eventItem);
-        }
+        /// <summary>
+        /// 添加一个领域事件
+        /// </summary>
+        /// <param name="eventItem">领域事件</param>
+        public void AddDomainEvent(IDomainEvent eventItem) => _domainEvents.Add(eventItem);
 
-        public void ClearDomainEvents()
-        {
-            _domainEvents?.Clear();
-        }
+        /// <summary>
+        /// 移除一个领域事件
+        /// </summary>
+        /// <param name="eventItem">领域事件</param>
+        public void RemoveDomainEvent(IDomainEvent eventItem) => _domainEvents.Remove(eventItem);
 
-        public bool IsTransient()
-        {
-            return this.Id == default;
-        }
+        /// <summary>
+        /// 清除所有领域事件
+        /// </summary>
+        public void ClearDomainEvents() => _domainEvents.Clear();
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null || !(obj is Entity))
-                return false;
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreateAt {  get; set; }
 
-            if (Object.ReferenceEquals(this, obj))
-                return true;
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        public DateTime? UpdateAt { get; set; }
 
-            if (this.GetType() != obj.GetType())
-                return false;
+        /// <summary>
+        /// 是否被删除
+        /// </summary>
+        public bool IsDeleted { get; set; }
+    }
 
-            Entity item = (Entity)obj;
-
-            if (item.IsTransient() || this.IsTransient())
-                return false;
-            else
-                return item.Id == this.Id;
-        }
-
-        public override int GetHashCode()
-        {
-            if (!IsTransient())
-            {
-                if (!_requestedHashCode.HasValue)
-                    _requestedHashCode = this.Id.GetHashCode() ^ 31; // XOR for random distribution (http://blogs.msdn.com/b/ericlippert/archive/2011/02/28/guidelines-and-rules-for-gethashcode.aspx)
-
-                return _requestedHashCode.Value;
-            }
-            else
-                return base.GetHashCode();
-
-        }
-
-        public static bool operator ==(Entity left, Entity right)
-        {
-            if (Object.Equals(left, null))
-                return (Object.Equals(right, null)) ? true : false;
-            else
-                return left.Equals(right);
-        }
-
-        public static bool operator !=(Entity left, Entity right)
-        {
-            return !(left == right);
-        }
+    /// <summary>
+    /// 泛型实体基类
+    /// </summary>
+    /// <typeparam name="TKey">强类型id继承类</typeparam>
+    public abstract class Entity<TKey> : Entity 
+        where TKey : notnull, IEntityTypeId
+    {
+        /// <summary>
+        /// id
+        /// </summary>
+        public TKey Id { get; protected set; }
     }
 }

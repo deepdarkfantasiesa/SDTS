@@ -53,7 +53,7 @@ namespace User.Infrastructure.Repositories
             return Task.FromResult(Update(user));
         }
 
-        public virtual async Task<Users> GetAsync(int id)
+        public virtual async Task<Users> GetAsync(UserId id)
         {
             return await _context.Users.FirstOrDefaultAsync(p => p.Id == id);
         }

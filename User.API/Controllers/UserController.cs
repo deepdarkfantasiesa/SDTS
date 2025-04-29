@@ -10,6 +10,7 @@ using System.Text;
 using User.API.Application.Commands;
 using User.API.Application.Queries.User;
 using User.API.Filters;
+using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure;
 using User.Infrastructure.Caches;
 
@@ -92,7 +93,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("{userid}")]
-        public async Task<IActionResult> DbContextGetById([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext, [FromRoute] int userid)
+        public async Task<IActionResult> DbContextGetById([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext, [FromRoute] UserId userid)
         {
             if (useReplica.HasValue && useReplica.Value == true)
             {
@@ -124,7 +125,7 @@ namespace User.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromServices] UserContext dbContext, int id)
+        public async Task<IActionResult> Delete([FromServices] UserContext dbContext, UserId id)
         {
             //var user = await dbContext.Users
             //    .Where(p => p.Id == id)
@@ -132,7 +133,7 @@ namespace User.API.Controllers
 
             //dbContext.Users.Remove(user);
 
-            await dbContext.Users.Where(p => p.Id == id).ExecuteDeleteAsync();
+            //await dbContext.Users.Where(p => p.Id == id).ExecuteDeleteAsync();
 
 
             return await dbContext.SaveChangesAsync() > 0 ? Ok() : NotFound();
@@ -151,8 +152,8 @@ namespace User.API.Controllers
             }
             else
             {
-                var users = await dbContext.Users.ToListAsync();
-                return Ok(users);
+                //var users = await dbContext.Users.ToListAsync();
+                return Ok();
             }
         }
 

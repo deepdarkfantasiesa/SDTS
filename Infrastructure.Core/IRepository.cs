@@ -2,7 +2,9 @@
 
 namespace Infrastructure.Core
 {
-    public interface IRepository<TEntity> where TEntity : Entity, IAggregateRoot
+    public interface IRepository<TEntity,TKey> 
+        where TEntity : Entity, IAggregateRoot
+        where TKey : IEntityTypeId
     {
         IUnitOfWork UnitOfWork { get; }
         TEntity Add(TEntity entity);
@@ -12,6 +14,6 @@ namespace Infrastructure.Core
         bool Remove(Entity entity);
         Task<bool> RemoveAsync(Entity entity);
 
-        Task<TEntity> GetAsync(int id);
+        Task<TEntity> GetAsync(TKey id);
     }
 }

@@ -12,8 +12,11 @@ namespace User.Infrastructure.EntityConfigurations
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Users> builder)
         {
-            builder.HasKey(t => t.Id);
             builder.ToTable("User");
+            builder.HasKey(t => t.Id);
+            builder.Property(p => p.Id)
+                .HasConversion(p => p.Id, value => new UserId(value))
+                .HasValueGenerator<StrongTypedIdValueGenerator<UserId>>();
             builder.OwnsOne(o => o.Address, a =>
             {
                 a.WithOwner();
