@@ -6,19 +6,18 @@ namespace User.API.Application.Commands
 {
     public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, bool>
     {
-        private readonly IUserRepository _repository;
-        public CreateUserCommandHandler(IUserRepository repository)
+        private readonly IUserRepo _repo;
+
+        public CreateUserCommandHandler(IUserRepo userRepo)
         {
-            _repository = repository;
+            _repo = userRepo;
         }
         public async Task<bool> Handle(CreateUserCommand user, CancellationToken cancellationToken)
         {
             var address = new Address("1", "2", "3", "4", "5");
             var user1 = new Users(address, user.UserName);
 
-            _repository.Add(user1);
-            await _repository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
+            await _repo.AddAsync(user1, cancellationToken);
             return true;
         }
     }

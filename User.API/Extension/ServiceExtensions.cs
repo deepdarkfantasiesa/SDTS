@@ -283,7 +283,8 @@ namespace User.API.Extension
         /// <returns></returns>
         public static IServiceCollection AddRepositories(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IUserRepository, UserRepository>();
+            //services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserRepo, UserRepo>();
             return services;
         }
 

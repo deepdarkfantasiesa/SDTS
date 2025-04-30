@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Service.Framework.Models;
 using StackExchange.Redis;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using User.API.Application.Commands;
 using User.API.Application.Queries.User;
@@ -13,6 +14,7 @@ using User.API.Filters;
 using User.Domain.AggregatesModel.UserAggregate;
 using User.Infrastructure;
 using User.Infrastructure.Caches;
+using User.Infrastructure.Repositories;
 
 namespace User.API.Controllers
 {
@@ -93,7 +95,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("{userid}")]
-        public async Task<IActionResult> DbContextGetById([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext, [FromRoute] UserId userid)
+        public async Task<IActionResult> DbContextGetById([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext, [FromRoute] UserId userid, [FromServices] IUserRepo userRepo, [EnumeratorCancellation]CancellationToken cancellationToken)
         {
             if (useReplica.HasValue && useReplica.Value == true)
             {
@@ -112,15 +114,8 @@ namespace User.API.Controllers
             }
             else
             {
-                var users = await dbContext.Users
-                    .Where(p => p.Id == userid)
-                    .Select(p => new
-                    {
-                        p.Id,
-                        p.Name,
-                    })
-                    .FirstOrDefaultAsync();
-                return Ok(users);
+                var res = await userRepo.GetByIdAsync(userid, cancellationToken);
+                return Ok(res);
             }
         }
 

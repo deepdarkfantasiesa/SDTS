@@ -1,0 +1,240 @@
+﻿using Domain.Abstraction;
+using Infrastructure.Core.Extension;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace Infrastructure.Core
+{
+    /// <summary>
+    /// 泛型仓储
+    /// </summary>
+    /// <typeparam name="TDbContext">数据库上下文</typeparam>
+    /// <typeparam name="TEntity">聚合根类型</typeparam>
+    /// <typeparam name="TKey">聚合根Id类型</typeparam>
+    public class Repository<TDbContext, TEntity, TKey> : IRepository<TEntity, TKey>
+        where TDbContext : DbContext, IUnitOfWork
+        where TEntity : Entity<TKey>, IAggregateRoot
+        where TKey : notnull, IEntityTypeId
+    {
+        /// <summary>
+        /// 数据库上下文
+        /// </summary>
+        private readonly TDbContext _uow;
+
+        /// <summary>
+        /// 泛型仓储
+        /// </summary>
+        /// <param name="uow">数据库上下文</param>
+        public Repository(TDbContext uow)
+        {
+            _uow = uow;
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <returns></returns>
+        public virtual TEntity Add(TEntity entity)
+        {
+            return AddAsync(entity).Result;
+        }
+
+        /// <summary>
+        /// 异步新增
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return (await _uow.AddAsync(entity, cancellationToken)).Entity;
+        }
+
+        /// <summary>
+        /// 批量插入
+        /// </summary>
+        /// <param name="entities">聚合根对象集合</param>
+        public virtual void AddRange(IEnumerable<TEntity> entities)
+        {
+            AddRangeAsync(entities).Wait();
+        }
+
+        /// <summary>
+        /// 异步批量插入
+        /// </summary>
+        /// <param name="entities">聚合根对象集合</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public virtual async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await _uow.AddRangeAsync(entities, cancellationToken);
+        }
+
+        /// <summary>
+        /// 软删除
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
+        /// <returns></returns>
+        public virtual bool Delete(TEntity entity, bool autoSetIsDelete)
+        {
+            return DeleteAsync(entity, autoSetIsDelete).Result;
+        }
+
+        /// <summary>
+        /// 异步软删除
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public virtual async Task<bool> DeleteAsync(TEntity entity, bool autoSetIsDelete, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            entity.IsDeleted = true;
+            if (autoSetIsDelete)
+            {
+                var entry = _uow.Entry(entity);
+                await DeleteSubEntities(entry);
+            }
+            await Task.Run(() => { _uow.Update(entity); }, cancellationToken);
+            return true;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
+        /// <returns></returns>
+        public virtual TEntity Update(TEntity entity, bool autoSetUpdateAt)
+        {
+            entity.UpdateAt = DateTime.Now;
+            if (autoSetUpdateAt)
+            {
+                var entry = _uow.Entry(entity);
+                SetUpdateAt(entry);
+            }
+            return _uow.Update(entity).Entity;
+        }
+
+        /// <summary>
+        /// 异步更新
+        /// </summary>
+        /// <param name="entity">聚合根对象</param>
+        /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity, bool autoSetUpdateAt, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return await Task.FromResult(Update(entity, autoSetUpdateAt));
+        }
+
+        /// <summary>
+        /// 通过Id获取
+        /// </summary>
+        /// <param name="id">聚合根Id</param>
+        /// <returns>聚合根对象</returns>
+        public virtual TEntity GetById(TKey id)
+        {
+            return _uow.Set<TEntity>()
+                .Where(p => p.Id.Equals(id))
+                .Single();
+        }
+
+        /// <summary>
+        /// 通过Id异步获取
+        /// </summary>
+        /// <param name="id">聚合根Id</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>聚合根对象</returns>
+        public virtual async Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return await _uow.Set<TEntity>()
+                .Where(p => p.Id.Equals(id))
+                .SingleAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 递归遍历所有导航属性并设置UpdateAt值
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        private void SetUpdateAt(EntityEntry entry)
+        {
+            foreach (var collection in entry.Collections)
+            {
+                if (collection.CurrentValue == null)
+                    continue;
+
+                var subEntities = collection.CurrentValue as IEnumerable<Entity>
+                    ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
+                foreach (var subEntity in subEntities)
+                {
+                    subEntity.UpdateAt = DateTime.Now;
+                    var subEntry = _uow.Entry(subEntity);
+                    SetUpdateAt(subEntry);
+                }
+            }
+
+            foreach (var navigation in entry.Navigations)
+            {
+                if (navigation.CurrentValue == null)
+                    continue;
+
+                var subEntity = navigation.CurrentValue as Entity
+                    ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
+                subEntity.UpdateAt = DateTime.Now;
+                var subEntry = _uow.Entry(subEntity);
+                SetUpdateAt(subEntry);
+            }
+        }
+
+        /// <summary>
+        /// 递归遍历所有导航属性并设置IsDelete为true
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        private async Task DeleteSubEntities(EntityEntry entry)
+        {
+            foreach (var collection in entry.Collections)
+            {
+                if (!collection.IsLoaded) // 检查导航属性是否已加载
+                {
+                    await collection.LoadAsync(); // 显式加载导航属性
+                }
+
+                if (collection.CurrentValue == null)
+                    continue;
+
+                var subEntities = collection.CurrentValue as IEnumerable<Entity>
+                    ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
+                foreach (var subEntity in subEntities)
+                {
+                    subEntity.IsDeleted = true;
+                    var subEntry = _uow.Entry(subEntity);
+                    await DeleteSubEntities(subEntry);
+                }
+            }
+
+            foreach (var navigation in entry.Navigations)
+            {
+                if (!navigation.IsLoaded)
+                {
+                    await navigation.LoadAsync();
+                }
+
+                if (navigation.CurrentValue == null)
+                    continue;
+
+                var subEntity = navigation.CurrentValue as Entity
+                    ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
+
+                subEntity.IsDeleted = true;
+                var subEntry = _uow.Entry(subEntity);
+                await DeleteSubEntities(subEntry);
+            }
+        }
+    }
+}

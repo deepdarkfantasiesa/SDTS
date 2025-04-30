@@ -36,7 +36,7 @@
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime CreateAt {  get; set; }
+        public DateTime CreateAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 更新时间
@@ -53,7 +53,7 @@
     /// 泛型实体基类
     /// </summary>
     /// <typeparam name="TKey">强类型id继承类</typeparam>
-    public abstract class Entity<TKey> : Entity 
+    public abstract class Entity<TKey> : Entity
         where TKey : notnull, IEntityTypeId
     {
         /// <summary>
