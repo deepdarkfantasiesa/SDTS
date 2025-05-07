@@ -119,21 +119,6 @@ namespace User.API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete([FromServices] UserContext dbContext, UserId id)
-        {
-            //var user = await dbContext.Users
-            //    .Where(p => p.Id == id)
-            //    .SingleOrDefaultAsync();
-
-            //dbContext.Users.Remove(user);
-
-            //await dbContext.Users.Where(p => p.Id == id).ExecuteDeleteAsync();
-
-
-            return await dbContext.SaveChangesAsync() > 0 ? Ok() : NotFound();
-        }
-
         [HttpGet("QueryByDbContext")]
         public async Task<IActionResult> QueryByDbContext([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext)
         {

@@ -1,19 +1,33 @@
-﻿using DotNetCore.CAP;
-using Microsoft.EntityFrameworkCore.Storage;
-
-namespace Infrastructure.Core
+﻿namespace Infrastructure.Core
 {
-    public interface IDbTransaction
+    /// <summary>
+    /// 数据库事务接口
+    /// </summary>
+    public interface IDbTransaction: IUnitOfWork
     {
-        IDbContextTransaction GetCurrentTransaction();
-
+        /// <summary>
+        /// 是否开启事务
+        /// </summary>
         bool HasActiveTransaction { get; }
 
-        Task<IDbContextTransaction> BeginTransactionAsync();
-        Task<IDbContextTransaction> BeginTransactionAsyncTest(ICapPublisher publisher);
+        /// <summary>
+        /// 开启事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>事务对象</returns>
+        Task BeginTransactionAsync(CancellationToken cancellationToken = default);
 
-        Task CommitTransactionAsync(IDbContextTransaction transaction);
+        /// <summary>
+        /// 提交事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
 
-        void RollbackTransaction();
+        /// <summary>
+        /// 回滚事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        Task RollbackTransaction(CancellationToken cancellationToken = default);
     }
 }

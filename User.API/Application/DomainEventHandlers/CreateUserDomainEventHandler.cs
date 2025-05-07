@@ -15,10 +15,9 @@ namespace User.API.Application.DomainEventHandlers
             _logger = logger;
         }
 
-        public Task Handle(CreateUserDomainEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(CreateUserDomainEvent notification, CancellationToken cancellationToken)
         {
-            _capPublisher.Publish("createuser", new CreateUserIntegrationEvent("114514"));
-            return Task.CompletedTask;
+            await _capPublisher.PublishAsync("createuser", new CreateUserIntegrationEvent(notification.User.Name));
         }
     }
 }

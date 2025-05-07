@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.2.1" />
-    <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="8.3.0" />
-    <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="8.3.0" />
+    <PackageReference Include="DotNetCore.CAP.Dashboard" Version="8.3.4" />
+    <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="8.3.4" />
+    <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="8.3.4" />
     <PackageReference Include="FluentValidation" Version="11.8.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />

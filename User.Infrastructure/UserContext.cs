@@ -4,22 +4,20 @@ using Infrastructure.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
 using System.Linq.Expressions;
 using User.Domain.AggregatesModel.UserAggregate;
-using User.Infrastructure.EntityConfigurations;
 
 namespace User.Infrastructure
 {
-    public class UserContext : DbContext, IUnitOfWork, IDbTransaction
+    public class UserContext : DbContext, IDbTransaction
     {
         private readonly IMediator _mediator;
-        private readonly IConfiguration _configuration;
-        public UserContext(DbContextOptions<UserContext> options, IMediator mediator, IConfiguration configuration) : base(options)
+        private readonly ICapPublisher _capBus;
+
+        public UserContext(DbContextOptions<UserContext> options, IMediator mediator, ICapPublisher capBus) : base(options)
         {
             _mediator = mediator;
-            _configuration = configuration;
-            //Console.WriteLine($"context is created ,Id:{this.ContextId.InstanceId}");
+            _capBus = capBus;
         }
 
         public DbSet<Users> Users { get; set; }
@@ -38,85 +36,107 @@ namespace User.Infrastructure
 
             base.OnModelCreating(modelBuilder);
         }
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //	optionsBuilder.AddInterceptors(new MasterSlaveShiftInterceptor(_configuration.GetSection("master").Value, _configuration.GetSection("slaves").Value));
-        //	base.OnConfiguring(optionsBuilder);
-        //}
 
+        #region SaveChange
+
+        /// <summary>
+        /// 先分发领域事件再持久化实体（未显示开启事务时调用）
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            if (HasActiveTransaction)
+                throw new ArgumentException("已显示开启事务，请调用SaveEntitiesAsync");
+
+            //分发领域事件
+            await _mediator.DispatchDomainEventsAsync(this, cancellationToken);
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 先持久化实体到数据库并分发领域事件（已显示开启事务时调用）
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
-            await _mediator.DispatchDomainEventsAsync(this);
+            if (!HasActiveTransaction)
+                throw new ArgumentException("未显示开启事务，请调用SaveChangesAsync");
+
+            //先持久化聚合，以防后面的command因为没有Id取不到之前的聚合
             var result = await base.SaveChangesAsync(cancellationToken);
 
-            //var result = await base.SaveChangesAsync(cancellationToken);
-            //await _mediator.DispatchDomainEventsAsync(this);
+            //分发领域事件
+            await _mediator.DispatchDomainEventsAsync(this, cancellationToken);
+
             return true;
         }
 
+        #endregion
+
+        #region 事务
+
+        /// <summary>
+        /// 事务对象
+        /// </summary>
         private IDbContextTransaction _currentTransaction;
+
+        /// <summary>
+        /// 是否开启事务
+        /// </summary>
         public bool HasActiveTransaction => _currentTransaction != null;
 
-        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
-
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        /// <summary>
+        /// 开启事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction != null)
-                return null;
-            // _currentTransaction=await Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
-            //_currentTransaction = Database.BeginTransaction(_capBus, autoCommit:false);
-            return _currentTransaction;
+                return;
+
+            //开启并与cap共享事务
+            _currentTransaction = await Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, _capBus, autoCommit: false);
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsyncTest(ICapPublisher capBus)
+        /// <summary>
+        /// 提交事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
-            if (_currentTransaction != null)
-                return null;
-            _currentTransaction = Database.BeginTransaction(capBus, autoCommit: false);
-            return _currentTransaction;
+            if (!HasActiveTransaction)
+                return;
+
+            await _currentTransaction.CommitAsync(cancellationToken);
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
         }
 
-        public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+        /// <summary>
+        /// 回滚事务
+        /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
+        public async Task RollbackTransaction(CancellationToken cancellationToken = default)
         {
-            if (transaction == null)
-                throw new ArgumentNullException(nameof(transaction));
-            if (transaction != _currentTransaction)
-                throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+            if (!HasActiveTransaction)
+                return;
 
             try
             {
-                await SaveChangesAsync();
-                transaction.Commit();
-            }
-            catch
-            {
-                RollbackTransaction();
-                throw;
+                await _currentTransaction.RollbackAsync(cancellationToken);
             }
             finally
             {
-                if (_currentTransaction != null)
-                {
-                    _currentTransaction.Dispose();
-                    _currentTransaction = null;
-                }
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
             }
         }
 
-        public void RollbackTransaction()
-        {
-            try
-            {
-                _currentTransaction?.Rollback();
-            }
-            finally
-            {
-                if (_currentTransaction != null)
-                {
-                    _currentTransaction.Dispose();
-                    _currentTransaction = null;
-                }
-            }
-        }
+        #endregion
     }
 }

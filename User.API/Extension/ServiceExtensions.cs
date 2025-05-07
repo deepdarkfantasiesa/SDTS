@@ -70,7 +70,7 @@ namespace User.API.Extension
             services.AddSingleton<DeleteInterceptor>();
 
             //注册写上下文
-            services.AddDbContextPool<UserContext>((serviceProvider, builder) =>
+            services.AddDbContext<IDbTransaction,UserContext>((serviceProvider, builder) =>
             {
                 builder.UseNpgsql(connstr, options =>
                 {
@@ -236,19 +236,21 @@ namespace User.API.Extension
         /// <returns></returns>
         public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
         {
+            //获取pgsql连接字符串
+            var connstr = configuration.GetValue<string>("PgSQL");
+
             services.AddCap(options =>
             {
                 //mysql持久化
                 //options.UseEntityFramework<UserContext>();
 
                 //pgsql持久化
-                options.UsePostgreSql(configuration.GetSection("PgSQL").Value);
-
+                options.UsePostgreSql(connstr);
                 options.UseRabbitMQ(opt =>
                 {
                     configuration.GetSection("RabbitMQ").Bind(opt);
                 });
-
+                options.UseDashboard();
                 /*
                 string connstr = configuration.GetValue<string>("kafka");
                 options.UseKafka(connstr);

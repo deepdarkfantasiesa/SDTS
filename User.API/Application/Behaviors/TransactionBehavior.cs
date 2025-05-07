@@ -1,61 +1,79 @@
 ﻿using Domain.Abstraction;
-using DotNetCore.CAP;
+using Infrastructure.Core;
 using Infrastructure.Core.Extension;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using User.Infrastructure;
 
 namespace User.API.Application.Behaviors
 {
-    public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : ICommand<TResponse>
+    /// <summary>
+    /// 管道事务行为
+    /// </summary>
+    /// <typeparam name="TRequest">命令</typeparam>
+    /// <typeparam name="TResponse">响应类型</typeparam>
+    public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : ICommand<TResponse>
     {
+        /// <summary>
+        /// 日志
+        /// </summary>
         private readonly ILogger<TransactionBehavior<TRequest, TResponse>> _logger;
-        private readonly UserContext _context;
-        private readonly ICapPublisher _capPublisher;
-        //public TransactionBehavior(ILogger<TransactionBehavior<TRequest, TResponse>> logger,UserContext context)
-        public TransactionBehavior(ILogger<TransactionBehavior<TRequest, TResponse>> logger, UserContext context, ICapPublisher capPublisher)
+
+        /// <summary>
+        /// 数据库上下文
+        /// </summary>
+        private readonly IDbTransaction _context;
+
+        /// <summary>
+        /// 管道事务行为
+        /// </summary>
+        /// <param name="logger">日志</param>
+        /// <param name="context">数据库上下文</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public TransactionBehavior(ILogger<TransactionBehavior<TRequest, TResponse>> logger, IDbTransaction context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _capPublisher = capPublisher ?? throw new ArgumentNullException(nameof(capPublisher));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="next"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             var response = default(TResponse);
-            var typeName = request.GetGenericTypeName();
 
             try
             {
                 if (_context.HasActiveTransaction)
                 {
-                    await next();
+                    response = await next();
+
+                    //持久化聚合并分发领域事件
+                    await _context.SaveEntitiesAsync(cancellationToken);
                 }
-                var strategy = _context.Database.CreateExecutionStrategy();
-                await strategy.ExecuteAsync(async () =>
+                else
                 {
-                    Guid transactionId;
-                    using (var transaction = await _context.BeginTransactionAsyncTest(_capPublisher))
-                    {
-                        using (_logger.BeginScope("TransactionContext:{TransactionId}", transaction.TransactionId))
-                        {
-                            _logger.LogInformation("----- 开始事务 {TransactionId} ({@Command})", transaction.TransactionId, typeName);
+                    //开启事务
+                    await _context.BeginTransactionAsync(cancellationToken);
 
-                            response = await next();
+                    response = await next();
 
-                            _logger.LogInformation("----- 提交事务 {TransactionId} {CommandName}", transaction.TransactionId, typeName);
-
-
-                            await _context.CommitTransactionAsync(transaction);
-
-                            transactionId = transaction.TransactionId;
-                        }
-                    }
-                });
+                    //持久化聚合并分发领域事件，假如领域事件发出了新的command在这里会有一个递归
+                    await _context.SaveEntitiesAsync(cancellationToken);
+                    throw new Exception("手抛");
+                    //提交事务
+                    await _context.CommitTransactionAsync(cancellationToken);
+                }
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理事务出错 {CommandName} ({@Command})", typeName, request);
+                _logger.LogError(ex, $"处理事务出错 {request.GetGenericTypeName()} ({@request})");
+                await _context.RollbackTransaction(cancellationToken);
                 throw;
             }
         }
