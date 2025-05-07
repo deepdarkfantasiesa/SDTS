@@ -12,12 +12,10 @@ namespace User.Infrastructure
     public class UserContext : DbContext, IDbTransaction
     {
         private readonly IMediator _mediator;
-        private readonly ICapPublisher _capBus;
 
-        public UserContext(DbContextOptions<UserContext> options, IMediator mediator, ICapPublisher capBus) : base(options)
+        public UserContext(DbContextOptions<UserContext> options, IMediator mediator) : base(options)
         {
             _mediator = mediator;
-            _capBus = capBus;
         }
 
         public DbSet<Users> Users { get; set; }
@@ -93,13 +91,14 @@ namespace User.Infrastructure
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+        public void BeginTransaction(ICapPublisher capPublisher, CancellationToken cancellationToken = default)
         {
             if (_currentTransaction != null)
                 return;
 
-            //开启并与cap共享事务
-            _currentTransaction = await Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, _capBus, autoCommit: false);
+            //开启并与cap共享事务（这里有个惊天大坑，一定不要用异步的，如果用异步的会导致领域事件注入的cap发布者没有事务对象）
+            _currentTransaction = Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead, capPublisher, autoCommit: false);
+
         }
 
         /// <summary>

@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Core
+﻿using DotNetCore.CAP;
+
+namespace Infrastructure.Core
 {
     /// <summary>
     /// 数据库事务接口
@@ -15,7 +17,7 @@
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>事务对象</returns>
-        Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+        void BeginTransaction(ICapPublisher capPublisher,CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 提交事务

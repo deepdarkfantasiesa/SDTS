@@ -84,12 +84,12 @@ namespace User.API
 				await next();
 			});
 
-			using(var scope = app.Services.CreateScope())
-			{
-				var dc = scope.ServiceProvider.GetService<UserContext>();
-				//dc.Database.EnsureDeleted();//表结构发生改变时需要这行
-				dc.Database.EnsureCreated();
-			}
+			//using(var scope = app.Services.CreateScope())
+			//{
+			//	var dc = scope.ServiceProvider.GetService<UserContext>();
+			//	//dc.Database.EnsureDeleted();//表结构发生改变时需要这行
+			//	dc.Database.EnsureCreated();
+			//}
 
 
 			// Configure the HTTP request pipeline.

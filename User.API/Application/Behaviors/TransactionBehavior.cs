@@ -1,4 +1,5 @@
 ﻿using Domain.Abstraction;
+using DotNetCore.CAP;
 using Infrastructure.Core;
 using Infrastructure.Core.Extension;
 using MediatR;
@@ -13,6 +14,11 @@ namespace User.API.Application.Behaviors
     public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : ICommand<TResponse>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly ICapPublisher _capPublisher;
+
         /// <summary>
         /// 日志
         /// </summary>
@@ -29,8 +35,9 @@ namespace User.API.Application.Behaviors
         /// <param name="logger">日志</param>
         /// <param name="context">数据库上下文</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TransactionBehavior(ILogger<TransactionBehavior<TRequest, TResponse>> logger, IDbTransaction context)
+        public TransactionBehavior(ILogger<TransactionBehavior<TRequest, TResponse>> logger, IDbTransaction context, ICapPublisher capPublisher)
         {
+            _capPublisher = capPublisher;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
@@ -58,7 +65,7 @@ namespace User.API.Application.Behaviors
                 else
                 {
                     //开启事务
-                    await _context.BeginTransactionAsync(cancellationToken);
+                    _context.BeginTransaction(_capPublisher,cancellationToken);
 
                     response = await next();
 

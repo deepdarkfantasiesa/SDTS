@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Service.Framework.ServiceRegistry.Consul.Configs;
@@ -83,31 +84,31 @@ namespace User.API.Extension
                 builder.AddInterceptors(deleteInterceptor);
             });
 
-            //注册读上下文工厂
-            services.AddPooledDbContextFactory<QueryDbContext>(async (serviceProvider, builder) =>
-            {
-                builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
-                {
-                    //添加重试策略
-                    npgsqlOptionsAction.ExecutionStrategy(context => new QueryRetryingExecutionStrategy(context, 3, TimeSpan.FromMilliseconds(100)));
-                });
+            ////注册读上下文工厂
+            //services.AddPooledDbContextFactory<QueryDbContext>(async (serviceProvider, builder) =>
+            //{
+            //    builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
+            //    {
+            //        //添加重试策略
+            //        npgsqlOptionsAction.ExecutionStrategy(context => new QueryRetryingExecutionStrategy(context, 3, TimeSpan.FromMilliseconds(100)));
+            //    });
 
-                //默认不跟踪实体
-                builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            //    //默认不跟踪实体
+            //    builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-                var queryInterceptor = serviceProvider.GetService<QueryInterceptor>() ?? throw new ArgumentNullException("获取查询操作拦截器失败");
+            //    var queryInterceptor = serviceProvider.GetService<QueryInterceptor>() ?? throw new ArgumentNullException("获取查询操作拦截器失败");
 
-                //添加查询操作拦截器
-                builder.AddInterceptors(queryInterceptor);
+            //    //添加查询操作拦截器
+            //    builder.AddInterceptors(queryInterceptor);
 
-                await using (var scope = serviceProvider.CreateAsyncScope())
-                {
-                    var connectInterceptor = scope.ServiceProvider.GetService<ConnectInterceptor>() ?? throw new ArgumentNullException("获取连接操作拦截器失败");
+            //    await using (var scope = serviceProvider.CreateAsyncScope())
+            //    {
+            //        var connectInterceptor = scope.ServiceProvider.GetService<ConnectInterceptor>() ?? throw new ArgumentNullException("获取连接操作拦截器失败");
 
-                    //添加连接操作拦截器
-                    builder.AddInterceptors(connectInterceptor);
-                }
-            });
+            //        //添加连接操作拦截器
+            //        builder.AddInterceptors(connectInterceptor);
+            //    }
+            //});
 
             #endregion
 
@@ -245,16 +246,15 @@ namespace User.API.Extension
                 //options.UseEntityFramework<UserContext>();
 
                 //pgsql持久化
-                options.UsePostgreSql(connstr);
+
+                options.UseEntityFramework<UserContext>();
+
                 options.UseRabbitMQ(opt =>
                 {
                     configuration.GetSection("RabbitMQ").Bind(opt);
                 });
+
                 options.UseDashboard();
-                /*
-                string connstr = configuration.GetValue<string>("kafka");
-                options.UseKafka(connstr);
-                */
             });
 
             return services;
