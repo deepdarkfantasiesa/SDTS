@@ -77,9 +77,9 @@ namespace Infrastructure.Core
         /// <param name="entity">聚合根对象</param>
         /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
         /// <returns></returns>
-        public virtual bool Delete(TEntity entity, bool autoSetIsDelete)
+        public virtual bool Delete(TEntity entity)
         {
-            return DeleteAsync(entity, autoSetIsDelete).Result;
+            return DeleteAsync(entity).Result;
         }
 
         /// <summary>
@@ -89,14 +89,14 @@ namespace Infrastructure.Core
         /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        public virtual async Task<bool> DeleteAsync(TEntity entity, bool autoSetIsDelete, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
         {
-            entity.IsDeleted = true;
-            if (autoSetIsDelete)
-            {
-                var entry = _uow.Entry(entity);
-                await DeleteSubEntities(entry);
-            }
+            if (!entity.IsDeleted)
+                throw new ArgumentException("聚合根未标记为已删除");
+
+            var entry = _uow.Entry(entity);
+            await CheckSubEntitiesDeleteStatus(entry);
+
             await Task.Run(() => { _uow.Update(entity); }, cancellationToken);
             return true;
         }
@@ -191,19 +191,19 @@ namespace Infrastructure.Core
         }
 
         /// <summary>
-        /// 递归遍历所有导航属性并设置IsDelete为true
+        /// 检查子实体的删除情况
         /// </summary>
         /// <param name="entry"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        private async Task DeleteSubEntities(EntityEntry entry)
+        /// <exception cref="ArgumentException"></exception>
+        private async Task CheckSubEntitiesDeleteStatus(EntityEntry entry)
         {
             foreach (var collection in entry.Collections)
             {
                 if (!collection.IsLoaded) // 检查导航属性是否已加载
-                {
-                    await collection.LoadAsync(); // 显式加载导航属性
-                }
+                    throw new ArgumentNullException($"{collection.GetGenericTypeName()}子实体集未被加载");
 
                 if (collection.CurrentValue == null)
                     continue;
@@ -212,18 +212,17 @@ namespace Infrastructure.Core
                     ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
                 foreach (var subEntity in subEntities)
                 {
-                    subEntity.IsDeleted = true;
+                    if (!subEntity.IsDeleted)
+                        throw new ArgumentException("子实体未被标记为已删除");
                     var subEntry = _uow.Entry(subEntity);
-                    await DeleteSubEntities(subEntry);
+                    await CheckSubEntitiesDeleteStatus(subEntry);
                 }
             }
 
             foreach (var navigation in entry.Navigations)
             {
                 if (!navigation.IsLoaded)
-                {
-                    await navigation.LoadAsync();
-                }
+                    throw new ArgumentNullException($"{navigation.GetGenericTypeName()}子实体未被加载");
 
                 if (navigation.CurrentValue == null)
                     continue;
@@ -231,9 +230,10 @@ namespace Infrastructure.Core
                 var subEntity = navigation.CurrentValue as Entity
                     ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
 
-                subEntity.IsDeleted = true;
+                if (!subEntity.IsDeleted)
+                    throw new ArgumentException("子实体未被标记为已删除");
                 var subEntry = _uow.Entry(subEntity);
-                await DeleteSubEntities(subEntry);
+                await CheckSubEntitiesDeleteStatus(subEntry);
             }
         }
     }

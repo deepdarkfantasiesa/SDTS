@@ -5,7 +5,6 @@
     /// </summary>
     public abstract class Entity
     {
-
         /// <summary>
         /// 领域事件集合
         /// </summary>
@@ -46,7 +45,15 @@
         /// <summary>
         /// 是否被删除
         /// </summary>
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; private set; }
+
+        /// <summary>
+        /// 软删除；因为软删除可能会有事件，所以设置IsDeleted必须通过方法
+        /// </summary>
+        public virtual void SoftDelete()
+        {
+            IsDeleted = true;
+        }
     }
 
     /// <summary>

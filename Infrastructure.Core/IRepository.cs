@@ -44,18 +44,16 @@ namespace Infrastructure.Core
         /// 软删除
         /// </summary>
         /// <param name="entity">聚合根对象</param>
-        /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
         /// <returns></returns>
-        bool Delete(TEntity entity, bool autoSetIsDelete);
+        bool Delete(TEntity entity);
 
         /// <summary>
         /// 异步软删除
         /// </summary>
         /// <param name="entity">聚合根对象</param>
-        /// <param name="autoSetIsDelete">是否自动设置软删字段</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task<bool> DeleteAsync(TEntity entity,bool autoSetIsDelete, CancellationToken cancellationToken);
+        Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken);
 
         /// <summary>
         /// 更新
