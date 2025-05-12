@@ -210,6 +210,7 @@ namespace Auth.API.Extension
         {
             //services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserRepo, UserRepo>();
+            services.AddScoped<IRoleRepo, RoleRepo>();
             return services;
         }
 
