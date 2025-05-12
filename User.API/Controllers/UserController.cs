@@ -95,28 +95,10 @@ namespace User.API.Controllers
         }
 
         [HttpGet("{userid}")]
-        public async Task<IActionResult> DbContextGetById([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext, [FromRoute] UserId userid, [FromServices] IUserRepo userRepo, [EnumeratorCancellation]CancellationToken cancellationToken)
+        public async Task<IActionResult> DbContextGetById([FromServices] UserContext dbContext, [FromRoute] UserId userid, [FromServices] IUserRepo userRepo, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (useReplica.HasValue && useReplica.Value == true)
-            {
-                using (var queryContext = await dbContextFactory.CreateDbContextAsync())
-                {
-                    var users = await queryContext.Users
-                        .Where(p => p.Id == userid)
-                        .Select(p => new
-                        {
-                            p.Id,
-                            p.Name,
-                        })
-                        .FirstOrDefaultAsync();
-                    return Ok(users);
-                }
-            }
-            else
-            {
-                var res = await userRepo.GetByIdAsync(userid, cancellationToken);
-                return Ok(res);
-            }
+            var res = await userRepo.GetByIdAsync(userid, cancellationToken);
+            return Ok(res);
         }
 
         [HttpGet("QueryByDbContext")]

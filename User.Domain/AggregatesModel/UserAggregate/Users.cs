@@ -1,35 +1,9 @@
 ﻿using Domain.Abstraction;
-using System.ComponentModel;
 using User.Domain.Events;
 
 namespace User.Domain.AggregatesModel.UserAggregate
 {
-    public class UserIdTypeConverter : TypeConverter
-    {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
-        {
-            if (value is string stringValue && Guid.TryParse(stringValue, out var guid))
-            {
-                return new UserId(guid);
-            }
-
-            throw new NotSupportedException("Invalid UserId format.");
-        }
-    }
-
-    [TypeConverter(typeof(UserIdTypeConverter))]
-    public record UserId : GuidEntityTypeId
-    {
-        public UserId(Guid id) : base(id)
-        {
-
-        }
-    }
+    public record UserId(Guid Id) : GuidEntityTypeId(Id);
 
     public class Users : Entity<UserId>, IAggregateRoot
     {
