@@ -19,7 +19,7 @@ namespace Auth.API
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //builder.Services.AddSwaggerGen();
 
             //注册强类型id转换器
             builder.Services.AddStrongTypeConverter("Auth.Domain");
@@ -97,7 +97,7 @@ namespace Auth.API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
+                //app.UseSwagger();
                 app.UseSwaggerUI();
             }
 

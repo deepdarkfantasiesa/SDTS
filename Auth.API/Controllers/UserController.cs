@@ -101,24 +101,6 @@ namespace Auth.API.Controllers
             return Ok(res);
         }
 
-        [HttpGet("QueryByDbContext")]
-        public async Task<IActionResult> QueryByDbContext([FromHeader] bool? useReplica, [FromServices] IDbContextFactory<QueryDbContext> dbContextFactory, [FromServices] UserContext dbContext)
-        {
-            if (useReplica.HasValue && useReplica.Value == true)
-            {
-                using (var queryContext = await dbContextFactory.CreateDbContextAsync())
-                {
-                    var users = await queryContext.Users.ToListAsync();
-                    return Ok(users);
-                }
-            }
-            else
-            {
-                //var users = await dbContext.Users.ToListAsync();
-                return Ok();
-            }
-        }
-
         [HttpGet("RedisContext")]
         public async Task<IActionResult> TestRedisContext([FromServices] ICacheImpl _cacheImpl, [FromQuery] string cacheKey, [FromQuery] CacheLevel cacheLevel)
         {

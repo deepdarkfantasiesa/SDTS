@@ -7,10 +7,6 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
 
     public class User : Entity<UserId>, IAggregateRoot
     {
-        public virtual ICollection<Address>? Address { get; private set; }
-
-        public string Name { get; private set; }
-
         public User(ICollection<Address> address, string name)
         {
             Name = name;
@@ -22,5 +18,14 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
         {
 
         }
+
+        public string Name { get; private set; }
+
+        public string? Description { get; private set; }
+
+        public virtual ICollection<UserRole> Roles { get; private set; }
+
+        public virtual ICollection<Address> Address { get; private set; }
+
     }
 }

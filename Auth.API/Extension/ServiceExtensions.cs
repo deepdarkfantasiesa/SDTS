@@ -49,8 +49,6 @@ namespace Auth.API.Extension
         /// <returns></returns>
         public static IServiceCollection AddDbContexts(this IServiceCollection services, IConfiguration configuration)
         {
-            #region pgsql
-
             //获取pgsql连接字符串
             var connstr = configuration.GetValue<string>("PgSQL");
 
@@ -59,12 +57,6 @@ namespace Auth.API.Extension
             {
                 return new DapperContext(connstr);
             });
-
-            //注册查询操作拦截器
-            services.AddSingleton<QueryInterceptor>();
-
-            //注册连接操作拦截器
-            services.AddScoped<ConnectInterceptor>();
 
             //注册删除操作拦截器
             services.AddSingleton<DeleteInterceptor>();
@@ -82,74 +74,6 @@ namespace Auth.API.Extension
                 //添加删除操作拦截器
                 builder.AddInterceptors(deleteInterceptor);
             });
-
-            ////注册读上下文工厂
-            //services.AddPooledDbContextFactory<QueryDbContext>(async (serviceProvider, builder) =>
-            //{
-            //    builder.UseNpgsql(connstr, npgsqlOptionsAction: npgsqlOptionsAction =>
-            //    {
-            //        //添加重试策略
-            //        npgsqlOptionsAction.ExecutionStrategy(context => new QueryRetryingExecutionStrategy(context, 3, TimeSpan.FromMilliseconds(100)));
-            //    });
-
-            //    //默认不跟踪实体
-            //    builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-
-            //    var queryInterceptor = serviceProvider.GetService<QueryInterceptor>() ?? throw new ArgumentNullException("获取查询操作拦截器失败");
-
-            //    //添加查询操作拦截器
-            //    builder.AddInterceptors(queryInterceptor);
-
-            //    await using (var scope = serviceProvider.CreateAsyncScope())
-            //    {
-            //        var connectInterceptor = scope.ServiceProvider.GetService<ConnectInterceptor>() ?? throw new ArgumentNullException("获取连接操作拦截器失败");
-
-            //        //添加连接操作拦截器
-            //        builder.AddInterceptors(connectInterceptor);
-            //    }
-            //});
-
-            #endregion
-
-            #region Sqlserver
-
-            //var connstr = configuration.GetValue<string>("SQLServer");
-            //services.AddDbContext<UserContext>(builder =>
-            //{
-            //    builder.UseSqlServer(connstr);
-            //});
-
-            #endregion
-
-            #region Mysql
-
-            //var connstr = configuration.GetValue<string>("MySQL");
-            //services.AddDbContext<UserContext>(builder =>
-            //{
-            //	builder.UseMySql(connstr, ServerVersion.AutoDetect(connstr),
-            //	options =>
-            //	{
-            //		options.EnableRetryOnFailure(
-            //			maxRetryCount: 3,
-            //			maxRetryDelay: TimeSpan.FromSeconds(10),
-            //			errorNumbersToAdd: new int[] { 40613 });
-            //		options.MigrationsAssembly("User.API");
-            //	});
-
-            //});
-
-            #endregion
-
-            #region mongo
-
-            /*
-            services.AddDbContext<UserContext>(builder =>
-            {
-                builder.UseMongoDB("mongodb://192.168.18.107:27017/","mgtestdb");
-            });
-            */
-
-            #endregion
 
             return services;
         }

@@ -2,17 +2,30 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Auth.Infrastructure.EntityConfigurations
+namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
 {
-    public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
+    internal class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("User");
+            builder.ToTable("user");
+
             builder.HasKey(t => t.Id);
+
             builder.Property(p => p.Id)
+                .HasColumnName("id")
                 .HasConversion(p => p.Value, value => new UserId(value))
                 .HasValueGenerator<StrongTypedIdValueGenerator<UserId>>();
+
+            builder.Property(p => p.Description)
+                .HasColumnName("description")
+                .HasMaxLength(500)
+                .IsRequired(false);
+
+            builder.Property(p => p.Name)
+                .HasColumnName("name")
+                .IsRequired(true);
+
             builder.OwnsMany(o => o.Address, a =>
             {
                 a.WithOwner();
@@ -23,7 +36,6 @@ namespace Auth.Infrastructure.EntityConfigurations
                 a.Property(p => p.ZipCode).HasMaxLength(10);
             });
 
-            builder.Property(p => p.Name).HasColumnName("name").IsRequired(true);
         }
     }
 }
