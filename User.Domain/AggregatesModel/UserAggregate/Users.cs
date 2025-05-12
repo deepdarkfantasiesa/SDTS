@@ -3,7 +3,7 @@ using User.Domain.Events;
 
 namespace User.Domain.AggregatesModel.UserAggregate
 {
-    public record UserId(Guid Id) : GuidEntityTypeId(Id);
+    public record UserId(Guid Value) : GuidEntityTypeId(Value);
 
     public class Users : Entity<UserId>, IAggregateRoot
     {

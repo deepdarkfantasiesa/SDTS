@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using User.Domain.AggregatesModel.UserAggregate;
 
 namespace User.Infrastructure.EntityConfigurations
@@ -15,7 +10,7 @@ namespace User.Infrastructure.EntityConfigurations
             builder.ToTable("User");
             builder.HasKey(t => t.Id);
             builder.Property(p => p.Id)
-                .HasConversion(p => p.Id, value => new UserId(value))
+                .HasConversion(p => p.Value, value => new UserId(value))
                 .HasValueGenerator<StrongTypedIdValueGenerator<UserId>>();
             builder.OwnsOne(o => o.Address, a =>
             {

@@ -69,9 +69,9 @@ namespace User.API.Application.Behaviors
 
                     response = await next();
 
-                    //持久化聚合并分发领域事件，假如领域事件发出了新的command在这里会有一个递归
+                    //持久化聚合并分发领域事件，假如领域事件触发了新的command在这里会有一个递归
                     await _context.SaveEntitiesAsync(cancellationToken);
-                    throw new Exception("手抛");
+
                     //提交事务
                     await _context.CommitTransactionAsync(cancellationToken);
                 }

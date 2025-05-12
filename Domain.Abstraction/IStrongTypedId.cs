@@ -16,7 +16,7 @@ namespace Domain.Abstraction
     /// <typeparam name="T">id类型</typeparam>
     public interface IEntityTypeId<T> : IEntityTypeId
     {
-        T Id { get; init; }
+        T Value { get; }
     }
 
     /// <summary>
@@ -24,14 +24,22 @@ namespace Domain.Abstraction
     /// </summary>
     public record GuidEntityTypeId : IEntityTypeId<Guid>
     {
-        public Guid Id { get; init; }
+        private readonly Guid _value;
 
-        public GuidEntityTypeId(Guid id)
+        public Guid Value
         {
-            Id = id;
+            get
+            {
+                return _value;
+            }
         }
 
-        public override string ToString() => Id.ToString();
+        public GuidEntityTypeId(Guid value)
+        {
+            _value = value;
+        }
+
+        public override string ToString() => Value.ToString();
     }
 
     /// <summary>
@@ -65,10 +73,11 @@ namespace Domain.Abstraction
         /// 注册强类型id转换器
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="assemblyName">程序集名称</param>
         /// <returns></returns>
-        public static IServiceCollection AddStrongTypeConverter(this IServiceCollection services)
+        public static IServiceCollection AddStrongTypeConverter(this IServiceCollection services, string assemblyName)
         {
-            var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("User.Domain"));
+            var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
             var types = assembly.GetTypes();
 
             // 遍历所有程序集，查找继承自 GuidEntityTypeId 的类型

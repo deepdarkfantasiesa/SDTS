@@ -22,7 +22,7 @@ namespace User.API
             builder.Services.AddSwaggerGen();
 
             //注册强类型id转换器
-            builder.Services.AddStrongTypeConverter();
+            builder.Services.AddStrongTypeConverter("User.Domain");
 
             //注册中介者
             builder.Services.AddMediatR(builder.Configuration);
