@@ -1,4 +1,5 @@
-﻿using Auth.Domain.AggregatesModel.UserAggregate;
+﻿using Auth.Domain.AggregatesModel.RoleAggregate;
+using Auth.Domain.AggregatesModel.UserAggregate;
 using Domain.Abstraction;
 using DotNetCore.CAP;
 using Infrastructure.Core;
@@ -19,6 +20,8 @@ namespace Auth.Infrastructure
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Role { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => typeof(Entity).IsAssignableFrom(e.ClrType)))

@@ -109,7 +109,7 @@ namespace Infrastructure.Core
         /// <returns></returns>
         public virtual TEntity Update(TEntity entity, bool autoSetUpdateAt)
         {
-            entity.UpdateAt = DateTime.Now;
+            entity.UpdateAt = DateTime.UtcNow;
             if (autoSetUpdateAt)
             {
                 var entry = _uow.Entry(entity);

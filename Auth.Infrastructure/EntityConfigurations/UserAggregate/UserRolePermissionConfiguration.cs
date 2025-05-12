@@ -37,6 +37,10 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
                 .HasMaxLength(200)
                 .IsRequired(true);
 
+            builder.Property(r => r.OriginalPermissionId)
+                .HasColumnName("original_permission_id")
+                .IsRequired(true);
+
             // 配置外键
             builder.Property(p => p.RoleId)
                 .HasColumnName ("role_id")

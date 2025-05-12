@@ -64,7 +64,8 @@ namespace Auth.API.Extension
             //注册写上下文
             services.AddDbContext<IDbTransaction, UserContext>((serviceProvider, builder) =>
             {
-                builder.UseNpgsql(connstr, options =>
+                builder.UseLazyLoadingProxies()
+                .UseNpgsql(connstr, options =>
                 {
                     options.MigrationsAssembly("Auth.API");
                 });

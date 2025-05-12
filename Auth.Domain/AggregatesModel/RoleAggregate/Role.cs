@@ -17,6 +17,10 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
             Description = description;
         }
 
+        /// <summary>
+        /// 批量插入权限
+        /// </summary>
+        /// <param name="permissions">权限列表</param>
         public void AddPermissions(IEnumerable<RolePermission> permissions)
         {
             Permissions = permissions.ToList();

@@ -17,7 +17,7 @@ namespace Auth.API.Application.Queries.User
         {
             return await _queryContext.QueryFirstOrDefaultAsync<bool>
                 (@"SELECT EXISTS (
-                        SELECT 1 FROM ""User"" AS u 
+                        SELECT 1 FROM ""user"" AS u 
                         WHERE u.""name""=@Name)",
                 new
                 {

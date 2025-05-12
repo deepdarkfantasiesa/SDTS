@@ -15,7 +15,7 @@ namespace Auth.API.Application.Validations
         {
             _sender = sender;
 
-            RuleFor(c => c.UserName)
+            RuleFor(c => c.Name)
                 .NotEmpty().WithMessage("username is empty")
                 .MaximumLength(6).WithMessage("username is longer than 6")
                 .MinimumLength(3).WithMessage("username is shorter than 3")

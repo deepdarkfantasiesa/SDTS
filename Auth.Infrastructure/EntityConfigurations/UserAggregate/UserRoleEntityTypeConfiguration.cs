@@ -29,6 +29,9 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
                 .HasColumnName("description")
                 .HasMaxLength(500)
                 .IsRequired(false);
+            builder.Property(r => r.OriginalRoleId)
+                .HasColumnName("original_role_id")
+                .IsRequired(true);
 
             // 配置外键
             builder.Property(r => r.UserId)
