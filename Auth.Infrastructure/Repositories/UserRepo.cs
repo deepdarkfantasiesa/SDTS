@@ -21,13 +21,11 @@ namespace Auth.Infrastructure.Repositories
 
         public async Task<IEnumerable<User>> GetUserByRolePermissionId(RolePermissionId id)
         {
-            var users = await _context.Users.Where(p =>
-                p.Roles.Where(q =>
-                    q.Permissions.Where(o => o.OriginalPermissionId == id)
-                    .Select(o => o.RoleId)
-                    .First() == q.Id)
-                .Select(q => q.UserId)
-                .First() == p.Id)
+            var users = await _context.Users
+                .Where(p => p.Roles
+                    .SelectMany(q => q.Permissions)
+                    .Where(q => q.OriginalPermissionId == id)
+                    .Any())
                 .ToListAsync();
 
             return users;

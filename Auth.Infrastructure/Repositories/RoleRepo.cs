@@ -6,7 +6,7 @@ namespace Auth.Infrastructure.Repositories
 {
     public interface IRoleRepo : IRepository<Role, RoleId>
     {
-        Task<Role> GetByPermissionId(RolePermissionId id);
+        Task<Role> GetRoleByPermissionId(RolePermissionId id);
     }
 
     public class RoleRepo : Repository<UserContext, Role, RoleId>, IRoleRepo
@@ -18,13 +18,12 @@ namespace Auth.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Role> GetByPermissionId(RolePermissionId id)
+        public async Task<Role> GetRoleByPermissionId(RolePermissionId id)
         {
             var role = await _context.Role
                 .Where(p => p.Permissions
                     .Where(q => q.Id == id)
-                    .Select(q => q.RoleId)
-                    .First() == p.Id)
+                    .Any())
                 .SingleAsync();
 
             return role;

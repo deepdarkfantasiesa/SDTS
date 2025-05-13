@@ -9,7 +9,7 @@ namespace Auth.API.Application.Commands.RoleAggregate
         public async Task<bool> Handle(UpdateRolePermissionCommand request, CancellationToken cancellationToken)
         {
             var rolePermissionId = new RolePermissionId(request.RolePermissionsId);
-            var role = await roleRepo.GetByPermissionId(rolePermissionId);
+            var role = await roleRepo.GetRoleByPermissionId(rolePermissionId);
             var permission = role.Permissions.Where(p => p.Id == rolePermissionId).First();
             permission.Update(request.Name, request.Description, request.Url);
             await roleRepo.UpdateAsync(role, cancellationToken);
