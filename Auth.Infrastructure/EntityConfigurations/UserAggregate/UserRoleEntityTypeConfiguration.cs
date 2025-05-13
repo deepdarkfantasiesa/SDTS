@@ -1,5 +1,5 @@
-﻿using Auth.Domain.AggregatesModel.RoleAggregate;
-using Auth.Domain.AggregatesModel.UserAggregate;
+﻿using Auth.Domain.AggregatesModel.UserAggregate;
+using Infrastructure.Core.Extension;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,10 +15,8 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
             builder.HasKey(r => r.Id);
             builder.Property(r => r.Id)
                 .HasColumnName("id")
-                .HasConversion(
-                    id => id.Value, // 强类型 ID 转换为 Guid
-                    value => new UserRoleId(value)) // Guid 转换为强类型 ID
-                .HasValueGenerator<StrongTypedIdValueGenerator<UserRoleId>>();
+                .HasStronglyTypedIdConversion()//设置强类型id转换规则
+                .HasStronglyTypedIdValueGenerator();//设置自定义强类型id生成策略
 
             // 配置属性
             builder.Property(r => r.Name)
@@ -32,17 +30,13 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
                 .IsRequired(false);
             builder.Property(r => r.OriginalRoleId)
                 .HasColumnName("original_role_id")
-                .HasConversion(
-                    id => id.Value,
-                    value => new RoleId(value))
+                .HasStronglyTypedIdConversion()//设置强类型id转换规则
                 .IsRequired(true);
 
             // 配置外键
             builder.Property(r => r.UserId)
                 .HasColumnName("user_id")
-                .HasConversion(
-                    id => id.Value, // 强类型 ID 转换为 Guid
-                    value => new UserId(value)); // Guid 转换为强类型 ID
+                .HasStronglyTypedIdConversion();//设置强类型id转换规则
 
             builder.HasOne(r => r.User)
                 .WithMany(u => u.Roles) // 配置 User 的导航属性

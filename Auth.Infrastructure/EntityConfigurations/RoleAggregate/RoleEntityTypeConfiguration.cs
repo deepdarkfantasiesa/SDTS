@@ -1,6 +1,7 @@
 ﻿using Auth.Domain.AggregatesModel.RoleAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Infrastructure.Core.Extension;
 
 namespace Auth.Infrastructure.EntityConfigurations.RoleAggregate
 {
@@ -14,8 +15,8 @@ namespace Auth.Infrastructure.EntityConfigurations.RoleAggregate
 
             builder.Property(p => p.Id)
                 .HasColumnName("id")
-                .HasConversion(p => p.Value, value => new RoleId(value))
-                .HasValueGenerator<StrongTypedIdValueGenerator<RoleId>>();
+                .HasStronglyTypedIdConversion()//设置强类型id转换规则
+                .HasStronglyTypedIdValueGenerator();//设置自定义强类型id生成策略
 
             builder.Property(p => p.Description)
                 .HasColumnName("description")

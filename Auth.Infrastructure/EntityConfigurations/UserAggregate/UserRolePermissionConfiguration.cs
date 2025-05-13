@@ -1,5 +1,5 @@
-﻿using Auth.Domain.AggregatesModel.RoleAggregate;
-using Auth.Domain.AggregatesModel.UserAggregate;
+﻿using Auth.Domain.AggregatesModel.UserAggregate;
+using Infrastructure.Core.Extension;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,15 +16,12 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
 
             builder.Property(p => p.Id)
                 .HasColumnName("id")
-                .HasConversion(
-                    id => id.Value, // 强类型 ID 转换为 Guid
-                    value => new UserRolePermissionId(value)) // Guid 转换为强类型 ID
-                .HasValueGenerator<StrongTypedIdValueGenerator<UserRolePermissionId>>();
+                .HasStronglyTypedIdConversion()//设置强类型id转换规则
+                .HasStronglyTypedIdValueGenerator();//设置自定义强类型id生成策略
 
             // 配置属性
             builder.Property(p => p.Name)
                 .HasColumnName("name")
-                .IsRequired()
                 .HasMaxLength(100)
                 .IsRequired(true);
             builder.Property(p => p.Description)
@@ -37,17 +34,13 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
                 .IsRequired(true);
             builder.Property(p => p.OriginalPermissionId)
                 .HasColumnName("original_permission_id")
-                .HasConversion(id =>
-                    id.Value,
-                    value => new RolePermissionId(value))
+                .HasStronglyTypedIdConversion()//设置强类型id转换规则
                 .IsRequired(true);
 
             // 配置外键
             builder.Property(p => p.RoleId)
-                .HasColumnName ("role_id")
-                .HasConversion(
-                    id => id.Value, // 强类型 ID 转换为 Guid
-                    value => new UserRoleId(value)); // Guid 转换为强类型 ID
+                .HasColumnName("role_id")
+                .HasStronglyTypedIdConversion();//设置强类型id转换规则
 
             builder.HasOne(p => p.Role)
                 .WithMany(r => r.Permissions) // 配置 UserRole 的导航属性
