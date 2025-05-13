@@ -49,7 +49,7 @@ namespace Auth.API.BackgroundHosts
                 return;
             Console.WriteLine("BackgroundHostSettings Changed");
             _bgHostSettings = bgHostSettings;
-            _syncPgSqltimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(_bgHostSettings.SyncPgSql));
+            _syncPgSqltimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(_bgHostSettings.SyncPgSql));
         }
 
         /// <summary>

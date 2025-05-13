@@ -1,4 +1,5 @@
-﻿using Auth.Domain.AggregatesModel.UserAggregate;
+﻿using Auth.Domain.AggregatesModel.RoleAggregate;
+using Auth.Domain.AggregatesModel.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,6 +32,9 @@ namespace Auth.Infrastructure.EntityConfigurations.UserAggregate
                 .IsRequired(false);
             builder.Property(r => r.OriginalRoleId)
                 .HasColumnName("original_role_id")
+                .HasConversion(
+                    id => id.Value,
+                    value => new RoleId(value))
                 .IsRequired(true);
 
             // 配置外键

@@ -2,7 +2,7 @@
 using Auth.Infrastructure.Repositories;
 using Domain.Abstraction;
 
-namespace Auth.API.Application.Commands
+namespace Auth.API.Application.Commands.RoleAggregate
 {
     public class CreateRoleCommandHandler(IRoleRepo roleRepo) : ICommandHandler<CreateRoleCommand, bool>
     {

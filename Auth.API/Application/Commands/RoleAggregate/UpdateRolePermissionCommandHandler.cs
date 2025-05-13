@@ -2,7 +2,7 @@
 using Auth.Infrastructure.Repositories;
 using Domain.Abstraction;
 
-namespace Auth.API.Application.Commands
+namespace Auth.API.Application.Commands.RoleAggregate
 {
     public class UpdateRolePermissionCommandHandler(IRoleRepo roleRepo) : ICommandHandler<UpdateRolePermissionCommand, bool>
     {
@@ -12,7 +12,7 @@ namespace Auth.API.Application.Commands
             var role = await roleRepo.GetByPermissionId(rolePermissionId);
             var permission = role.Permissions.Where(p => p.Id == rolePermissionId).First();
             permission.Update(request.Name, request.Description, request.Url);
-            await roleRepo.UpdateAsync(role, false, cancellationToken);
+            await roleRepo.UpdateAsync(role, cancellationToken);
             return true;
         }
     }

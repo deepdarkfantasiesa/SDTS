@@ -227,7 +227,7 @@ namespace User.API.Migrations
 
             modelBuilder.Entity("Auth.Domain.AggregatesModel.UserAggregate.User", b =>
                 {
-                    b.OwnsMany("Auth.Domain.AggregatesModel.UserAggregate.Address", "Address", b1 =>
+                    b.OwnsMany("Auth.Domain.AggregatesModel.UserAggregate.User.Address#Auth.Domain.AggregatesModel.UserAggregate.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("UserId")
                                 .HasColumnType("uuid");
@@ -265,7 +265,7 @@ namespace User.API.Migrations
 
                             b1.HasKey("UserId", "Id");
 
-                            b1.ToTable("Address");
+                            b1.ToTable("Address", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("UserId");

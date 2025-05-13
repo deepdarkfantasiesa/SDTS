@@ -1,4 +1,5 @@
-﻿using Domain.Abstraction;
+﻿using Auth.Domain.AggregatesModel.RoleAggregate;
+using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.UserAggregate
 {
@@ -11,12 +12,26 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
 
         }
 
-        public UserRolePermission(Guid riginalPermissionId, string name, string? description, string url)
+        public UserRolePermission(RolePermissionId originalPermissionId, string name, string? description, string url)
         {
-            OriginalPermissionId = riginalPermissionId;
-            Name = name; 
-            Description = description; 
+            OriginalPermissionId = originalPermissionId;
+            Name = name;
+            Description = description;
             Url = url;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="url"></param>
+        public void Update(string name, string? description, string url)
+        {
+            Name = name;
+            Description = description;
+            Url = url;
+            UpdateAt = DateTime.UtcNow;
         }
 
         public string Name { get; private set; }
@@ -25,7 +40,7 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
 
         public string Url { get; private set; }
 
-        public Guid OriginalPermissionId { get; private set; }
+        public RolePermissionId OriginalPermissionId { get; private set; }
 
         public UserRoleId RoleId { get; private set; }
 

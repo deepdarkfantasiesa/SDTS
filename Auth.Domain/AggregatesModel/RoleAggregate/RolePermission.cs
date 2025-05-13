@@ -19,13 +19,19 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
             Url = url;
         }
 
-        public void Update(string name,string? description,string url)
+        public void Update(string name, string? description, string url)
         {
             Name = name;
             Description = description;
             Url = url;
             UpdateAt = DateTime.UtcNow;
-            AddDomainEvent(new UpdateRolePermissionDomainEvent(name, description, url));
+            AddDomainEvent(new UpdateRolePermissionDomainEvent
+            {
+                Id = Id,
+                Description = description,
+                Url = url,
+                Name = name,
+            });
         }
 
         public string Name { get; private set; }

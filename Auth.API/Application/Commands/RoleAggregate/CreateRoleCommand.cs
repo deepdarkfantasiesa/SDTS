@@ -1,11 +1,11 @@
 ﻿using Domain.Abstraction;
 
-namespace Auth.API.Application.Commands
+namespace Auth.API.Application.Commands.RoleAggregate
 {
     /// <summary>
     /// 创建角色命令
     /// </summary>
-    public class CreateRoleCommand:ICommand<bool>
+    public class CreateRoleCommand : ICommand<bool>
     {
         /// <summary>
         /// 角色名称

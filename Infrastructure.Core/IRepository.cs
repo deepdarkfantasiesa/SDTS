@@ -24,7 +24,7 @@ namespace Infrastructure.Core
         /// <param name="entity">聚合根对象</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
+        Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// 批量插入
@@ -38,7 +38,7 @@ namespace Infrastructure.Core
         /// <param name="entities">聚合根对象集合</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken);
+        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// 软删除
@@ -53,24 +53,37 @@ namespace Infrastructure.Core
         /// <param name="entity">聚合根对象</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken);
+        Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// 更新
         /// </summary>
         /// <param name="entity">聚合根对象</param>
-        /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
         /// <returns></returns>
-        TEntity Update(TEntity entity, bool autoSetUpdateAt);
+        TEntity Update(TEntity entity);
 
         /// <summary>
         /// 异步更新
         /// </summary>
         /// <param name="entity">聚合根对象</param>
-        /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task<TEntity> UpdateAsync(TEntity entity, bool autoSetUpdateAt, CancellationToken cancellationToken);
+        Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// 批量更新
+        /// </summary>
+        /// <param name="entities">实体集合</param>
+        /// <returns></returns>
+        void UpdateRange(IEnumerable<TEntity> entities);
+
+        /// <summary>
+        /// 异步批量更新
+        /// </summary>
+        /// <param name="entities">实体集合</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken);
 
         /// <summary>
         /// 通过Id获取
@@ -85,6 +98,6 @@ namespace Infrastructure.Core
         /// <param name="id">聚合根Id</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>聚合根对象</returns>
-        Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken);
+        Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

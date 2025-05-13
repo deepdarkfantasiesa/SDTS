@@ -1,8 +1,8 @@
 ﻿using Domain.Abstraction;
 
-namespace Auth.API.Application.Commands
+namespace Auth.API.Application.Commands.RoleAggregate
 {
-    public class UpdateRolePermissionCommand:ICommand<bool>
+    public class UpdateRolePermissionCommand : ICommand<bool>
     {
         public Guid RolePermissionsId { get; init; }
 
@@ -10,6 +10,6 @@ namespace Auth.API.Application.Commands
 
         public string? Description { get; init; }
 
-        public string Url { get;init; }
+        public string Url { get; init; }
     }
 }

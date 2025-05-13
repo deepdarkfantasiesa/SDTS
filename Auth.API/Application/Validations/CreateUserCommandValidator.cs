@@ -1,4 +1,4 @@
-﻿using Auth.API.Application.Commands;
+﻿using Auth.API.Application.Commands.UserAggregate;
 using Auth.API.Application.Queries.User;
 using FluentValidation;
 using Infrastructure.Core;

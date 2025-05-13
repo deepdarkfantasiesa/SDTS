@@ -1,9 +1,9 @@
 ﻿using Auth.Domain.AggregatesModel.RoleAggregate;
 using Domain.Abstraction;
 
-namespace Auth.Domain.Events
+namespace Auth.API.Application.Commands.UserAggregate
 {
-    public class UpdateRolePermissionDomainEvent : IDomainEvent
+    public class UpdateUserRolePermissionCommand : ICommand<bool>
     {
         public RolePermissionId Id { get; init; }
 

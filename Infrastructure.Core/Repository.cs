@@ -107,14 +107,14 @@ namespace Infrastructure.Core
         /// <param name="entity">聚合根对象</param>
         /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
         /// <returns></returns>
-        public virtual TEntity Update(TEntity entity, bool autoSetUpdateAt)
+        public virtual TEntity Update(TEntity entity)
         {
             entity.UpdateAt = DateTime.UtcNow;
-            if (autoSetUpdateAt)
-            {
-                var entry = _uow.Entry(entity);
-                SetUpdateAt(entry);
-            }
+            //if (autoSetUpdateAt)
+            //{
+            //    var entry = _uow.Entry(entity);
+            //    SetUpdateAt(entry);
+            //}
             return _uow.Update(entity).Entity;
         }
 
@@ -125,9 +125,31 @@ namespace Infrastructure.Core
         /// <param name="autoSetUpdateAt">是否自动设置更新时间</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity, bool autoSetUpdateAt, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
         {
-            return await Task.FromResult(Update(entity, autoSetUpdateAt));
+            return await Task.FromResult(Update(entity));
+        }
+
+
+        /// <summary>
+        /// 批量更新
+        /// </summary>
+        /// <param name="entities">实体集合</param>
+        /// <returns></returns>
+        public virtual void UpdateRange(IEnumerable<TEntity> entities)
+        {
+            _uow.UpdateRange(entities);
+        }
+
+        /// <summary>
+        /// 异步批量更新
+        /// </summary>
+        /// <param name="entities">实体集合</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns></returns>
+        public virtual async Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
+        {
+            await Task.Run(() => UpdateRange(entities), cancellationToken);
         }
 
         /// <summary>
@@ -148,7 +170,7 @@ namespace Infrastructure.Core
         /// <param name="id">聚合根Id</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>聚合根对象</returns>
-        public virtual async Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken)
         {
             return await _uow.Set<TEntity>()
                 .Where(p => p.Id.Equals(id))

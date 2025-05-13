@@ -1,4 +1,4 @@
-﻿using Auth.API.Application.Commands;
+﻿using Auth.API.Application.Commands.UserAggregate;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

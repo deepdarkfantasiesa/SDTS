@@ -1,4 +1,5 @@
-﻿using Domain.Abstraction;
+﻿using Auth.Domain.AggregatesModel.RoleAggregate;
+using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.UserAggregate
 {
@@ -11,7 +12,7 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
             
         }
 
-        public UserRole(Guid originalRoleId, string name, string? description)
+        public UserRole(RoleId originalRoleId, string name, string? description)
         {
             OriginalRoleId = originalRoleId;
             Name = name;
@@ -31,7 +32,7 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
 
         public virtual User User { get; private set; }
 
-        public Guid OriginalRoleId { get; private set; }
+        public RoleId OriginalRoleId { get; private set; }
 
         public virtual ICollection<UserRolePermission> Permissions { get; private set; } = [];
     }
