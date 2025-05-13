@@ -24,15 +24,40 @@ namespace Auth.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //为所有继承自Entity的实体配置Entity下的字段
             foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => typeof(Entity).IsAssignableFrom(e.ClrType)))
             {
-                modelBuilder.Entity(entityType.ClrType).Property<bool>(nameof(Entity.IsDeleted));
+                //配置创建字段
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.CreateAt))
+                    .HasColumnName("create_at")
+                    .IsRequired(true);
+
+                //配置更新字段
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.UpdateAt))
+                    .HasColumnName("update_at")
+                    .IsRequired(false);
+
+                //配置软删除字段
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.IsDeleted))
+                    .HasColumnName("is_deleted")
+                    .HasDefaultValue(false)
+                    .IsRequired(true);
+
+                // 配置全局查询过滤器
                 var parameter = Expression.Parameter(entityType.ClrType, "e");
-                var body = Expression.Equal(Expression.Call(typeof(EF), nameof(EF.Property), [typeof(bool)], parameter, Expression.Constant(nameof(Entity.IsDeleted))), Expression.Constant(false));
-                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(Expression.Lambda(body, parameter));
+                var filter = Expression.Lambda(
+                    Expression.Equal(
+                        Expression.Property(parameter, nameof(Entity.IsDeleted)),
+                        Expression.Constant(false)
+                    ),
+                    parameter
+                );
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
             }
 
-            //modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserContext).Assembly);
 
             base.OnModelCreating(modelBuilder);

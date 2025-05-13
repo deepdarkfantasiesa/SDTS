@@ -9,6 +9,11 @@ namespace Auth.API.Application.Commands.UserAggregate
         {
             var users = await userRepo.GetUserByRolePermissionId(request.Id);
 
+            if (users == null || users.Count() == 0)
+            {
+                return true;
+            }
+
             var permissions = users.SelectMany(u => u.Roles)
                 .SelectMany(r => r.Permissions)
                 .Where(p => p.OriginalPermissionId == request.Id)
