@@ -83,7 +83,7 @@ namespace Infrastructure.Core
         /// <param name="entities">实体集合</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns></returns>
-        Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken);
+        Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// 通过Id获取

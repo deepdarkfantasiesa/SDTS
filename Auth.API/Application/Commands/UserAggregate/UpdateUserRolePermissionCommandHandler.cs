@@ -7,7 +7,7 @@ namespace Auth.API.Application.Commands.UserAggregate
     {
         public async Task<bool> Handle(UpdateUserRolePermissionCommand request, CancellationToken cancellationToken)
         {
-            var users = await userRepo.GetUserByRolePermissionId(request.Id);
+            var users = await userRepo.GetByRolePermissionIdAsync(request.Id);
 
             if (users == null || users.Count() == 0)
             {

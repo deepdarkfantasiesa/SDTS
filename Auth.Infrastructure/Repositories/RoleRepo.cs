@@ -6,7 +6,12 @@ namespace Auth.Infrastructure.Repositories
 {
     public interface IRoleRepo : IRepository<Role, RoleId>
     {
-        Task<Role> GetRoleByPermissionId(RolePermissionId id);
+        /// <summary>
+        /// 通过权限Id获取角色
+        /// </summary>
+        /// <param name="id">权限Id</param>
+        /// <returns></returns>
+        Task<Role> GetByPermissionIdAsync(RolePermissionId id);
     }
 
     public class RoleRepo : Repository<UserContext, Role, RoleId>, IRoleRepo
@@ -18,7 +23,12 @@ namespace Auth.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Role> GetRoleByPermissionId(RolePermissionId id)
+        /// <summary>
+        /// 通过权限Id获取角色
+        /// </summary>
+        /// <param name="id">权限Id</param>
+        /// <returns></returns>
+        public async Task<Role> GetByPermissionIdAsync(RolePermissionId id)
         {
             var role = await _context.Role
                 .Where(p => p.Permissions

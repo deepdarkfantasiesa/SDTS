@@ -34,6 +34,18 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
             });
         }
 
+        /// <summary>
+        /// 软删除
+        /// </summary>
+        public override void SoftDelete()
+        {
+            AddDomainEvent(new DeleteRolePermissionDomainEvent
+            {
+                RolePermissionId = Id
+            });
+            base.SoftDelete();
+        }
+
         public string Name { get; private set; }
 
         public string? Description { get; private set; }
