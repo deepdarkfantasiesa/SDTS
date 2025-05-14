@@ -12,7 +12,7 @@ namespace Auth.API.Application.Behaviors
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
-    public class QueryReplicaBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IQueryReplica<TResponse>
+    public class QueryReplicaBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IQueryReplica
     {
         /// <summary>
         /// 缓存

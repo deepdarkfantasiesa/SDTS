@@ -30,7 +30,7 @@ namespace Auth.API.Application.Validations
         /// <returns></returns>
         private async Task<bool> UniqueCheck(string UserName, CancellationToken cancellationToken)
         {
-            var res = await _sender.Send(new CheckUserExistsByQuery()
+            var res = await _sender.Send<bool>(new CheckUserExistsByQuery()
             {
                 Params = new CheckUserExistParams { UserName = UserName },
                 PreferCacheLevel = QueryCacheLevel.Local,

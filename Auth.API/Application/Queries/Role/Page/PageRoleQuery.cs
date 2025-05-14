@@ -5,7 +5,7 @@ namespace Auth.API.Application.Queries.Role.Page
     /// <summary>
     /// 分页查询角色入参
     /// </summary>
-    public record PageRoleQuery : IQueryBase<PageRequest<QueryCondition>, PageResponse<QueryResult>>, IQueryReplica<PageResponse<QueryResult>>
+    public record PageRoleQuery : IQueryBase<PageRequest<QueryCondition>, PageResponse<QueryResult>>, IQueryReplica
     {
         /// <summary>
         /// 

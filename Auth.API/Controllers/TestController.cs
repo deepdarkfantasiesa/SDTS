@@ -60,7 +60,7 @@ namespace Auth.API.Controllers
             {
                 //var result = await _mediator.Send(new GetUserByIdQuery { Id = userid });
 
-                var res = await _sender.Send(new CheckUserExistsByQuery()
+                var res = await _sender.Send<bool>(new CheckUserExistsByQuery()
                 {
                     Params = new CheckUserExistParams { UserName = userid.ToString() },
                     PreferCacheLevel = queryCacheLevel,

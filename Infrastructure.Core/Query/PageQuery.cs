@@ -20,7 +20,7 @@
     /// 分页查询请求
     /// </summary>
     /// <typeparam name="TCondition">查询条件</typeparam>
-    public record PageRequest<TCondition>: IQueryParam
+    public record PageRequest<TCondition> : IQueryParam
     {
         /// <summary>
         /// 筛选条件
@@ -40,7 +40,7 @@
         /// <summary>
         /// 排序
         /// </summary>
-        public IEnumerable<SortOption>? Sort { get; init; }
+        public IEnumerable<SortOption>? Sorts { get; init; }
 
         /// <summary>
         /// 分组
