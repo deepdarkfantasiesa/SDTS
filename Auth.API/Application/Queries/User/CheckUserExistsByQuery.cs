@@ -6,7 +6,7 @@ namespace Auth.API.Application.Queries.User
     /// <summary>
     /// 校验用户是否存在query
     /// </summary>
-    public class CheckUserExistsByQuery : QueryBase<CheckUserExistParams, bool>, IQueryReplica<bool>, IQueryCache<bool>
+    public class CheckUserExistsByQuery : IQueryBase<CheckUserExistParams, bool>, IQueryReplica<bool>, IQueryCache<bool>
     {
         /// <summary>
         /// query参数
