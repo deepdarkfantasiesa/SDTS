@@ -3,7 +3,7 @@ using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.UserAggregate
 {
-    public record UserId(Guid Value) : GuidEntityTypeId(Value);
+    public record UserId(Guid Value) : IEntityTypeId<Guid>;
 
     public class User : Entity<UserId>, IAggregateRoot
     {

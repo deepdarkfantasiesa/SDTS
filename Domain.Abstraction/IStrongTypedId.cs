@@ -20,33 +20,10 @@ namespace Domain.Abstraction
     }
 
     /// <summary>
-    /// guid类型实体Id
-    /// </summary>
-    public record GuidEntityTypeId : IEntityTypeId<Guid>
-    {
-        private readonly Guid _value;
-
-        public Guid Value
-        {
-            get
-            {
-                return _value;
-            }
-        }
-
-        public GuidEntityTypeId(Guid value)
-        {
-            _value = value;
-        }
-
-        public override string ToString() => Value.ToString();
-    }
-
-    /// <summary>
     /// 强类型id转换器
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class StronglyTypedIdConverter<T> : TypeConverter where T : GuidEntityTypeId
+    public class StronglyTypedIdConverter<T> : TypeConverter where T : IEntityTypeId<Guid>
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -80,9 +57,12 @@ namespace Domain.Abstraction
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
             var types = assembly.GetTypes();
 
-            // 遍历所有程序集，查找继承自 GuidEntityTypeId 的类型
+            // 查找实现了 IEntityTypeId<Guid> 接口的类型
             var stronglyTypedIdTypes = types
-                .Where(t => t.IsSubclassOf(typeof(GuidEntityTypeId)) && !t.IsAbstract);
+                .Where(t => t.GetInterfaces().Any(i =>
+                    i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>) &&
+                    i.GetGenericArguments()[0] == typeof(Guid)) // 确保泛型参数是 Guid
+                );
 
             foreach (var type in stronglyTypedIdTypes)
             {

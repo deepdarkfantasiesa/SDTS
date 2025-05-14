@@ -2,7 +2,7 @@
 
 namespace Auth.Domain.AggregatesModel.RoleAggregate
 {
-    public record RoleId(Guid Value) : GuidEntityTypeId(Value);
+    public record RoleId(Guid Value) : IEntityTypeId<Guid>;
 
     public class Role : Entity<RoleId>, IAggregateRoot
     {

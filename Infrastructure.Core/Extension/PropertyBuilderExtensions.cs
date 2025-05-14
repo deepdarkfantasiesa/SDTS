@@ -13,7 +13,7 @@ namespace Infrastructure.Core.Extension
         /// <returns>属性构建器</returns>
         public static PropertyBuilder<TStronglyTypedId> HasStronglyTypedIdConversion<TStronglyTypedId>(
             this PropertyBuilder<TStronglyTypedId> propertyBuilder)
-            where TStronglyTypedId : GuidEntityTypeId
+            where TStronglyTypedId : IEntityTypeId<Guid>
         {
             return propertyBuilder.HasConversion(
                 id => id.Value, // 强类型 ID 转换为 Guid
@@ -28,7 +28,7 @@ namespace Infrastructure.Core.Extension
         /// <returns></returns>
         public static PropertyBuilder<TStronglyTypedId> HasStronglyTypedIdValueGenerator<TStronglyTypedId>(
             this PropertyBuilder<TStronglyTypedId> propertyBuilder)
-            where TStronglyTypedId : GuidEntityTypeId
+            where TStronglyTypedId : IEntityTypeId<Guid>
         {
             return propertyBuilder.HasValueGenerator<StrongTypedIdValueGenerator<TStronglyTypedId>>();
         }

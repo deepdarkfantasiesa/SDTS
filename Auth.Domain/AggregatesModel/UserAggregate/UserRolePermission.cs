@@ -3,7 +3,7 @@ using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.UserAggregate
 {
-    public record UserRolePermissionId(Guid Value) : GuidEntityTypeId(Value);
+    public record UserRolePermissionId(Guid Value) : IEntityTypeId<Guid>;
 
     public class UserRolePermission : Entity<UserRolePermissionId>
     {
