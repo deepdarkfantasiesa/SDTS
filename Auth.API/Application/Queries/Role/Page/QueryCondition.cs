@@ -7,22 +7,22 @@ namespace Auth.API.Application.Queries.Role.Page
     /// </summary>
     public record QueryCondition
     {
-        [DatabaseMap("role", "description")]
+        [ConditionColumn("role", "description", ConditionOperator.Like)]
         public string? Description { get; init; }
 
-        [DatabaseMap(null, "name")]
+        [ConditionColumn(null, "name", ConditionOperator.Like)]
         public string? Name { get; init; }
 
-        [DatabaseMap(null, "create_at")]
+        [ConditionColumn(null, "create_at", ConditionOperator.GreaterThanOrEqual)]
         public DateTime? CreateAtStart { get; init; }
 
-        [DatabaseMap(null, "create_at")]
+        [ConditionColumn(null, "create_at", ConditionOperator.LessThanOrEqual)]
         public DateTime? CreateAtEnd { get; init; }
 
-        [DatabaseMap(null, "update_at")]
+        [ConditionColumn(null, "update_at", ConditionOperator.GreaterThanOrEqual)]
         public DateTime? UpdateAtStart { get; init; }
 
-        [DatabaseMap(null, "update_at")]
+        [ConditionColumn(null, "update_at", ConditionOperator.LessThanOrEqual)]
         public DateTime? UpdateAtEnd { get; init; }
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace Infrastructure.Core.Query
 {
     /// <summary>
-    /// 数据库映射标签
+    /// 返回列映射标签
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class DatabaseMapAttribute : Attribute
+    public class SelectColumnAttribute : Attribute
     {
         /// <summary>
         /// 表名
@@ -17,11 +17,11 @@
         public string ColumnName { get; }
 
         /// <summary>
-        /// 数据库映射标签
+        /// 返回列映射标签
         /// </summary>
-        /// <param name="tableName">表名</param>
+        /// <param name="tableName">表名（如果有联表一定要填）</param>
         /// <param name="columnName">列名</param>
-        public DatabaseMapAttribute(string? tableName, string columnName)
+        public SelectColumnAttribute(string? tableName, string columnName)
         {
             TableName = tableName;
             ColumnName = columnName;

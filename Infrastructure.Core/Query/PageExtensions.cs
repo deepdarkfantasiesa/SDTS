@@ -1,0 +1,188 @@
+﻿using Castle.Components.DictionaryAdapter;
+using System.Reflection;
+
+namespace Infrastructure.Core.Query
+{
+    /// <summary>
+    /// 分页查询拓展方法
+    /// </summary>
+    public static class PageExtensions
+    {
+        /// <summary>
+        /// 生成排序sql
+        /// </summary>
+        /// <typeparam name="TCondition"></typeparam>
+        /// <param name="pageRequest"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static string GetSortClause<TCondition>(this PageRequest<TCondition> pageRequest)
+        {
+            if (pageRequest.Sorts == null || !pageRequest.Sorts.Any())
+            {
+                return "ORDER BY create_at DESC ";
+            }
+
+            var sortClauses = new List<string>();
+            var properties = typeof(TCondition).GetProperties();
+
+            foreach (var sort in pageRequest.Sorts)
+            {
+                var property = properties.FirstOrDefault(p => p.Name == sort.SortName);
+                if (property == null)
+                {
+                    throw new InvalidOperationException($"Property '{sort.SortName}' does not exist on type '{typeof(TCondition).Name}'.");
+                }
+
+                var attribute = property.GetCustomAttribute<ConditionColumnAttribute>();
+                if (attribute == null)
+                {
+                    throw new InvalidOperationException($"Property '{sort.SortName}' does not have a ColumnNameAttribute.");
+                }
+
+                var columnName = string.IsNullOrWhiteSpace(attribute.TableName)
+                    ? attribute.ColumnName
+                    : $"{attribute.TableName}.{attribute.ColumnName}";
+                var direction = sort.IsAsc ? "ASC" : "DESC";
+                sortClauses.Add($"{columnName} {direction}");
+            }
+
+            return "ORDER BY " + string.Join(", ", sortClauses) + " ";
+        }
+
+        /// <summary>
+        /// 生成分组条件sql
+        /// </summary>
+        /// <typeparam name="TCondition"></typeparam>
+        /// <param name="pageRequest"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static string GetGroupClause<TCondition>(this PageRequest<TCondition> pageRequest)
+        {
+            if (pageRequest.GroupBy == null || pageRequest.GroupBy.Count() == 0)
+            {
+                return "";
+            }
+
+            var groupConditions = new List<string>();
+            var properties = typeof(TCondition).GetProperties();
+
+            foreach (var group in pageRequest.GroupBy)
+            {
+                var property = properties.FirstOrDefault(p => p.Name == group);
+                if (property == null)
+                {
+                    throw new InvalidOperationException($"Property '{group}' does not exist on type '{typeof(TCondition).Name}'.");
+                }
+
+                var attribute = property.GetCustomAttribute<SelectColumnAttribute>();
+                if (attribute == null)
+                {
+                    throw new InvalidOperationException($"Property '{group}' does not have a ColumnNameAttribute.");
+                }
+
+                var columnName = string.IsNullOrWhiteSpace(attribute.TableName)
+                    ? attribute.ColumnName
+                    : $"{attribute.TableName}.{attribute.ColumnName}";
+                groupConditions.Add(columnName);
+            }
+            return $"GROUP BY {string.Join(", ", groupConditions)} ";
+        }
+
+        /// <summary>
+        /// 生成查询列sql
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="pageResponse"></param>
+        /// <returns></returns>
+        public static string GetColumnClause<TData>(this PageResponse<TData> pageResponse)
+        {
+            //获取所有应用了SelectColumnAttribute的属性
+            var properties = typeof(TData).GetProperties()
+                .Where(p => p.GetCustomAttributes(typeof(SelectColumnAttribute), false).Any())
+                .ToList() ?? throw new ArgumentNullException("请为需要返回的列打上'SelectColumnAttribute'标签");
+
+            var selectClauses = new List<string>();
+
+            foreach (var property in properties)
+            {
+                var attribute = property.GetCustomAttribute<SelectColumnAttribute>();
+
+                var selectColumn = string.IsNullOrWhiteSpace(attribute.TableName)
+                    ? $"{attribute.ColumnName} AS {property.Name}"
+                    : $"{attribute.TableName}.{attribute.ColumnName} AS {property.Name}";
+
+                selectClauses.Add(selectColumn);
+            }
+
+            return string.Join(",", selectClauses);
+        }
+
+        /// <summary>
+        /// 获取接在“Where is_deleted=FALSE”之后的其他筛选条件
+        /// </summary>
+        /// <typeparam name="TCondition"></typeparam>
+        /// <param name="pageRequest"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="NotSupportedException"></exception>
+        public static string GetWhereClause<TCondition>(this PageRequest<TCondition> pageRequest,ref Dictionary<string, object> parameters)
+        {
+            //获取所有应用了ConditionColumnAttribute的属性
+            var properties = typeof(TCondition).GetProperties()
+                .Where(p => p.GetCustomAttributes(typeof(ConditionColumnAttribute), false).Any())
+                .ToList() ?? throw new ArgumentNullException("请为需要返回的列打上'ConditionColumnAttribute'标签");
+
+            var conditions = new List<string>();
+
+            foreach (var property in properties)
+            {
+                var attribute = property.GetCustomAttribute<ConditionColumnAttribute>();
+
+                var value = property.GetValue(pageRequest.Conditions);
+
+                if (value == null)
+                    continue;
+
+                var column = string.IsNullOrEmpty(attribute.TableName)
+                    ? attribute.ColumnName
+                    : $"{attribute.TableName}.{attribute.ColumnName}";
+
+                string conditionSql = attribute.ConditionOperator switch
+                {
+                    ConditionOperator.Equal => $"{column} = @{property.Name}",
+                    ConditionOperator.NotEqual => $"{column} != @{property.Name}",
+                    ConditionOperator.GreaterThan => $"{column} > @{property.Name}",
+                    ConditionOperator.GreaterThanOrEqual => $"{column} >= @{property.Name}",
+                    ConditionOperator.LessThan => $"{column} < @{property.Name}",
+                    ConditionOperator.LessThanOrEqual => $"{column} <= @{property.Name}",
+                    ConditionOperator.Like => $"{column} LIKE '%' || @{property.Name} || '%'",
+                    ConditionOperator.In => $"{column} IN (@{property.Name})",
+                    ConditionOperator.NotIn => $"{column} NOT IN (@{property.Name})",
+                    ConditionOperator.IsNull => $"{column} IS NULL",
+                    ConditionOperator.IsNotNull => $"{column} IS NOT NULL",
+                    _ => throw new NotSupportedException($"Operator {attribute.ConditionOperator} is not supported.")
+                };
+
+                conditions.Add(conditionSql);
+                parameters.Add(property.Name, value);
+            }
+
+            var whereClause = conditions.Any() ? " AND " + string.Join(" AND ", conditions)+" " : string.Empty;
+            return whereClause;
+        }
+
+        /// <summary>
+        /// 获取分页sql
+        /// </summary>
+        /// <typeparam name="TCondition"></typeparam>
+        /// <param name="pageRequest"></param>
+        /// <returns></returns>
+        public static string GetPageClause<TCondition>(this PageRequest<TCondition> pageRequest, ref Dictionary<string, object> parameters)
+        {
+            parameters.Add("PageNumber", pageRequest.PageNumber);
+            parameters.Add("PageSize", pageRequest.PageSize);
+
+            return "LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize ";
+        }
+    }
+}

@@ -57,7 +57,7 @@
         /// <summary>
         /// 当前页的数据列表
         /// </summary>
-        public IEnumerable<TData>? Items { get; init; }
+        public IEnumerable<TData>? Items { get; set; }
 
         /// <summary>
         /// 当前页码
@@ -72,7 +72,7 @@
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount { get; init; }
+        public int TotalCount { get; set; }
 
         /// <summary>
         /// 总页数
