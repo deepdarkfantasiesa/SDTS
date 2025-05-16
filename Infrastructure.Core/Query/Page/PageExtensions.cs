@@ -1,7 +1,7 @@
 ﻿using Castle.Components.DictionaryAdapter;
 using System.Reflection;
 
-namespace Infrastructure.Core.Query
+namespace Infrastructure.Core.Query.Page
 {
     /// <summary>
     /// 分页查询拓展方法
@@ -15,11 +15,11 @@ namespace Infrastructure.Core.Query
         /// <param name="pageRequest"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static string GetSortClause<TCondition>(this PageRequest<TCondition> pageRequest)
+        public static OrderSql GetOrderClause<TCondition>(this PageRequest<TCondition> pageRequest)
         {
             if (pageRequest.Sorts == null || !pageRequest.Sorts.Any())
             {
-                return "ORDER BY create_at DESC ";
+                return new OrderSql("ORDER BY create_at DESC");
             }
 
             var sortClauses = new List<string>();
@@ -46,7 +46,7 @@ namespace Infrastructure.Core.Query
                 sortClauses.Add($"{columnName} {direction}");
             }
 
-            return "ORDER BY " + string.Join(", ", sortClauses) + " ";
+            return new OrderSql("ORDER BY " + string.Join(", ", sortClauses));
         }
 
         /// <summary>
@@ -56,11 +56,11 @@ namespace Infrastructure.Core.Query
         /// <param name="pageRequest"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static string GetGroupClause<TCondition>(this PageRequest<TCondition> pageRequest)
+        public static GroupSql GetGroupClause<TCondition>(this PageRequest<TCondition> pageRequest)
         {
             if (pageRequest.GroupBy == null || pageRequest.GroupBy.Count() == 0)
             {
-                return "";
+                return new GroupSql("");
             }
 
             var groupConditions = new List<string>();
@@ -85,7 +85,7 @@ namespace Infrastructure.Core.Query
                     : $"{attribute.TableName}.{attribute.ColumnName}";
                 groupConditions.Add(columnName);
             }
-            return $"GROUP BY {string.Join(", ", groupConditions)} ";
+            return new GroupSql($"GROUP BY {string.Join(", ", groupConditions)}");
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Infrastructure.Core.Query
         /// <typeparam name="TData"></typeparam>
         /// <param name="pageResponse"></param>
         /// <returns></returns>
-        public static string GetColumnClause<TData>(this PageResponse<TData> pageResponse)
+        public static ColumnSql GetColumnClause<TData>(this PageResponse<TData> pageResponse)
         {
             //获取所有应用了SelectColumnAttribute的属性
             var properties = typeof(TData).GetProperties()
@@ -114,7 +114,7 @@ namespace Infrastructure.Core.Query
                 selectClauses.Add(selectColumn);
             }
 
-            return string.Join(",", selectClauses);
+            return new ColumnSql(string.Join(",", selectClauses));
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Infrastructure.Core.Query
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="NotSupportedException"></exception>
-        public static string GetWhereClause<TCondition>(this PageRequest<TCondition> pageRequest,ref Dictionary<string, object> parameters)
+        public static ConditionSql GetConditionClause<TCondition>(this PageRequest<TCondition> pageRequest, ref Dictionary<string, object> parameters)
         {
             //获取所有应用了ConditionColumnAttribute的属性
             var properties = typeof(TCondition).GetProperties()
@@ -167,8 +167,8 @@ namespace Infrastructure.Core.Query
                 parameters.Add(property.Name, value);
             }
 
-            var whereClause = conditions.Any() ? " AND " + string.Join(" AND ", conditions)+" " : string.Empty;
-            return whereClause;
+            var conditionClause = conditions.Any() ? " AND " + string.Join(" AND ", conditions) : string.Empty;
+            return new ConditionSql(conditionClause);
         }
 
         /// <summary>
@@ -177,12 +177,12 @@ namespace Infrastructure.Core.Query
         /// <typeparam name="TCondition"></typeparam>
         /// <param name="pageRequest"></param>
         /// <returns></returns>
-        public static string GetPageClause<TCondition>(this PageRequest<TCondition> pageRequest, ref Dictionary<string, object> parameters)
+        public static PageSql GetPageClause<TCondition>(this PageRequest<TCondition> pageRequest, ref Dictionary<string, object> parameters)
         {
             parameters.Add("PageNumber", pageRequest.PageNumber);
             parameters.Add("PageSize", pageRequest.PageSize);
 
-            return "LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize ";
+            return new PageSql("LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize");
         }
     }
 }

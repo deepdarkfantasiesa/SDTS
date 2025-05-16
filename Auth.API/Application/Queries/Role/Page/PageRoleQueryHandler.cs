@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Core;
 using Infrastructure.Core.Query;
+using Infrastructure.Core.Query.Page;
 using System.Text;
 
 namespace Auth.API.Application.Queries.Role.Page
@@ -24,60 +25,50 @@ namespace Auth.API.Application.Queries.Role.Page
         public async Task<PageResponse<QueryResult>> Handle(PageRoleQuery request, CancellationToken cancellationToken)
         {
             var conditions = request.Params.Conditions;
-            var result = new PageResponse<QueryResult>
-            {
-                PageNumber = request.Params.PageNumber,
-                PageSize = request.Params.PageSize,
-            };
-
-            //分页返回字段
-            var columnReplace = result.GetColumnClause();
-
-            //统计
-            var countReplace = "COUNT(*)";
+            var result = new PageResponse<QueryResult>();
 
             //基本sql
-            var baseSql = $@"
-             SELECT
-               REPLACESQL
-             FROM
-               role 
-             WHERE
-               is_deleted = FALSE
-            ";
+            //COLUMNClAUSE：待替换的列sql
+            //CONDITIONClAUSE：待替换的过滤sql
+            //ORDERCLAUSE：待替换的排序sql
+            //PAGECLAUSE：待替换的分页sql
+            var baseSql = "SELECT COLUMNClAUSE FROM role WHERE is_deleted = FALSE CONDITIONClAUSE ORDERCLAUSE PAGECLAUSE";
+            var countSql = "SELECT COUNT(1) FROM role WHERE is_deleted = FALSE CONDITIONClAUSE";
 
             //主sql
             var pageBuilder = new StringBuilder(baseSql);
-            var countBuilder = new StringBuilder(baseSql);
+            var countBuilder = new StringBuilder(countSql);
 
-            //参数
+            //参数集合
             var parameters = new Dictionary<string, object>();
 
-            //拼接过滤条件
-            var whereSql = request.Params.GetWhereClause(ref parameters);
-            pageBuilder.Append(whereSql);
-            countBuilder.Append(whereSql);
+            //过滤条件
+            var whereSql = request.Params.GetConditionClause(ref parameters);
+            pageBuilder.ReplaceCondition(whereSql);
+            countBuilder.ReplaceCondition(whereSql);
 
-            //生成统计sql
-            var countString = countBuilder.ToString();
-            countString = countString.Replace("REPLACESQL", countReplace);
-            var count = await _queryContext.QueryFirstOrDefaultAsync<int>(countString, parameters);
+            //统计查询
+            var count = await _queryContext.QueryFirstOrDefaultAsync<int>(countBuilder.ToString(), parameters);
 
             //排序条件
-            var orderSql = request.Params.GetSortClause();
-            pageBuilder.Append(orderSql);
+            var orderSql = request.Params.GetOrderClause();
+            pageBuilder.ReplaceOrder(orderSql);
 
             //分页条件
             var pageSql = request.Params.GetPageClause(ref parameters);
-            pageBuilder.Append(pageSql);
+            pageBuilder.ReplacePage(pageSql);
 
-            //生成分页sql
-            var pageString = pageBuilder.ToString();
-            pageString = pageString.Replace("REPLACESQL", columnReplace);
-            var data = await _queryContext.QueryAsync<QueryResult>(pageString, parameters);
+            //分页返回字段
+            var columnReplace = result.GetColumnClause();
+            pageBuilder.ReplaceColumn(columnReplace);
+
+            //分页查询
+            var data = await _queryContext.QueryAsync<QueryResult>(pageBuilder.ToString(), parameters);
 
             result.Items = data;
             result.TotalCount = count;
+            result.PageNumber = request.Params.PageNumber;
+            result.PageSize = request.Params.PageSize;
             return result;
         }
     }

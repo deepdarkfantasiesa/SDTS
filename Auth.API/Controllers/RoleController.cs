@@ -1,6 +1,6 @@
 ﻿using Auth.API.Application.Commands.RoleAggregate;
 using Auth.API.Application.Queries.Role.Page;
-using Infrastructure.Core.Query;
+using Infrastructure.Core.Query.Page;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

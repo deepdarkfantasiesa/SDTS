@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Core.Query
+﻿namespace Infrastructure.Core.Query.Page
 {
     /// <summary>
     /// 排序选项
@@ -62,12 +62,12 @@
         /// <summary>
         /// 当前页码
         /// </summary>
-        public int PageNumber { get; init; }
+        public int PageNumber { get; set; }
 
         /// <summary>
         /// 每页大小
         /// </summary>
-        public int PageSize { get; init; }
+        public int PageSize { get; set; }
 
         /// <summary>
         /// 总记录数

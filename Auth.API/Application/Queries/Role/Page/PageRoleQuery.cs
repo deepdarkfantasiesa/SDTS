@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Core.Query;
+using Infrastructure.Core.Query.Page;
 
 namespace Auth.API.Application.Queries.Role.Page
 {
