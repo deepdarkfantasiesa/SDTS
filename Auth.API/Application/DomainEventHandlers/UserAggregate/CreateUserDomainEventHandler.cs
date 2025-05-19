@@ -3,7 +3,7 @@ using Auth.Domain.Events;
 using Domain.Abstraction;
 using DotNetCore.CAP;
 
-namespace Auth.API.Application.DomainEventHandlers
+namespace Auth.API.Application.DomainEventHandlers.UserAggregate
 {
     public class CreateUserDomainEventHandler : IDomainEventHandler<CreateUserDomainEvent>
     {

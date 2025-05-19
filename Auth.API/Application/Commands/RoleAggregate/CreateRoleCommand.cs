@@ -1,11 +1,13 @@
-﻿using Domain.Abstraction;
+﻿using Auth.Domain.AggregatesModel.RoleAggregate;
+using Auth.Infrastructure.Repositories;
+using Domain.Abstraction;
 
 namespace Auth.API.Application.Commands.RoleAggregate
 {
     /// <summary>
     /// 创建角色命令
     /// </summary>
-    public class CreateRoleCommand : ICommand<bool>
+    public record CreateRoleCommand : ICommand<bool>
     {
         /// <summary>
         /// 角色名称
@@ -42,5 +44,22 @@ namespace Auth.API.Application.Commands.RoleAggregate
         /// 地址
         /// </summary>
         public string Url { get; init; }
+    }
+
+    public class CreateRoleCommandHandler(IRoleRepo roleRepo) : ICommandHandler<CreateRoleCommand, bool>
+    {
+        public async Task<bool> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
+        {
+            //实例化角色
+            var role = new Role(request.Name, request.Description);
+
+            //批量插入权限
+            role.AddPermissions(request.Permissions.Select(p => new RolePermission(p.Name, p.Description, p.Url)));
+
+            //插入数据库
+            await roleRepo.AddAsync(role, cancellationToken);
+
+            return true;
+        }
     }
 }

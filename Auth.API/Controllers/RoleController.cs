@@ -45,26 +45,5 @@ namespace Auth.API.Controllers
             };
             return await _sender.Send<PageResponse<QueryResult>>(query);
         }
-
-        /// <summary>
-        /// 更新角色权限
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        [HttpPut]
-        public async Task<bool> UpdatePermission([FromBody] UpdateRolePermissionCommand command)
-        {
-            return await _sender.Send(command);
-        }
-
-        /// <summary>
-        /// 删除角色权限
-        /// </summary>
-        /// <returns></returns>
-        [HttpDelete]
-        public async Task<bool> DeletePermission([FromBody] DeleteRolePermissionCommand command)
-        {
-            return await _sender.Send(command);
-        }
     }
 }
