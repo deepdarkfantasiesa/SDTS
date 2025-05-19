@@ -15,17 +15,23 @@ namespace Auth.Infrastructure
         /// <returns></returns>
         public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext ctx, CancellationToken cancellationToken = default)
         {
+            //查询所有已跟踪且拥有领域事件的聚合根
             var domainEntities = ctx.ChangeTracker
-            .Entries<Entity>()
-            .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any());
+                .Entries()
+                .Where(x => x.Entity is IAggregateRoot aggregateRoot
+                    && aggregateRoot.DomainEvents.Any())
+                .Select(x => (IAggregateRoot)x.Entity);
 
+            //获取所有领域事件
             var domainEvents = domainEntities
-                .SelectMany(x => x.Entity.DomainEvents)
+                .SelectMany(x => x.DomainEvents)
                 .ToList();
 
+            //清空聚合根中所有领域事件
             domainEntities.ToList()
-                .ForEach(entity => entity.Entity.ClearDomainEvents());
+                .ForEach(entity => entity.ClearDomainEvents());
 
+            //分发领域事件
             foreach (var domainEvent in domainEvents)
                 await mediator.Publish(domainEvent, cancellationToken);
         }

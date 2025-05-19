@@ -1,5 +1,4 @@
-﻿using Auth.Domain.Events;
-using Domain.Abstraction;
+﻿using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.RoleAggregate
 {
@@ -25,25 +24,6 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
             Description = description;
             Url = url;
             UpdateAt = DateTime.UtcNow;
-            AddDomainEvent(new UpdateRolePermissionDomainEvent
-            {
-                Id = Id,
-                Description = description,
-                Url = url,
-                Name = name,
-            });
-        }
-
-        /// <summary>
-        /// 软删除
-        /// </summary>
-        public override void SoftDelete()
-        {
-            AddDomainEvent(new DeleteRolePermissionDomainEvent
-            {
-                RolePermissionId = Id
-            });
-            base.SoftDelete();
         }
 
         public string Name { get; private set; }

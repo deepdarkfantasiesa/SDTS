@@ -13,7 +13,7 @@ namespace Infrastructure.Core
     /// <typeparam name="TKey">聚合根Id类型</typeparam>
     public class Repository<TDbContext, TEntity, TKey> : IRepository<TEntity, TKey>
         where TDbContext : DbContext, IUnitOfWork
-        where TEntity : Entity<TKey>, IAggregateRoot
+        where TEntity : AggregateRoot<TKey>
         where TKey : notnull, IEntityTypeId
     {
         /// <summary>
@@ -189,7 +189,7 @@ namespace Infrastructure.Core
                 if (collection.CurrentValue == null)
                     continue;
 
-                var subEntities = collection.CurrentValue as IEnumerable<Entity>
+                var subEntities = collection.CurrentValue as IEnumerable<BaseEntity>
                     ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
                 foreach (var subEntity in subEntities)
                 {
@@ -204,7 +204,7 @@ namespace Infrastructure.Core
                 if (navigation.CurrentValue == null)
                     continue;
 
-                var subEntity = navigation.CurrentValue as Entity
+                var subEntity = navigation.CurrentValue as BaseEntity
                     ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
                 subEntity.UpdateAt = DateTime.Now;
                 var subEntry = _uow.Entry(subEntity);
@@ -230,7 +230,7 @@ namespace Infrastructure.Core
                 if (collection.CurrentValue == null)
                     continue;
 
-                var subEntities = collection.CurrentValue as IEnumerable<Entity>
+                var subEntities = collection.CurrentValue as IEnumerable<BaseEntity>
                     ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
                 foreach (var subEntity in subEntities)
                 {
@@ -249,7 +249,7 @@ namespace Infrastructure.Core
                 if (navigation.CurrentValue == null)
                     continue;
 
-                var subEntity = navigation.CurrentValue as Entity
+                var subEntity = navigation.CurrentValue as BaseEntity
                     ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
 
                 if (!subEntity.IsDeleted)
