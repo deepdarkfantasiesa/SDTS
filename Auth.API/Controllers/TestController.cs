@@ -29,20 +29,6 @@ namespace Auth.API.Controllers
             _mediator = mediator;
         }
 
-        private string Check(CacheKeyContext keyContexts)
-        {
-            if (keyContexts.Count == 0)
-                throw new ArgumentNullException("缓存键上下文为空");
-
-            StringBuilder cacheKeyBuilder = new StringBuilder();
-
-            foreach (var kvp in keyContexts)
-            {
-                cacheKeyBuilder.Append($"?{kvp.Key}={kvp.Value}");
-            }
-            return cacheKeyBuilder.ToString();
-        }
-
         [HttpDelete]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -64,15 +50,9 @@ namespace Auth.API.Controllers
                 {
                     Params = new CheckUserExistParams { UserName = userid.ToString() },
                     PreferCacheLevel = queryCacheLevel,
-                    Generator = Check,
                     KeyContext = new CacheKeyContext
                     {
                         { "UserId",userid.ToString()}
-                    },
-                    Tags = new CacheTag[]
-                    {
-                        CacheTag.Query,
-                        CacheTag.CheckIsExist
                     },
                     UseReplica = useReplica
                 });

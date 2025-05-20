@@ -1,13 +1,9 @@
-﻿using Auth.Infrastructure.Caches;
-using Auth.Infrastructure.Caches.ImMemory;
+﻿using Auth.Infrastructure.Caches.ImMemory;
 using Auth.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
-using Infrastructure.Core;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
-using Service.Framework.Models;
 using StackExchange.Redis;
 using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace Auth.Infrastructure.Caches.Redis
 {
@@ -57,8 +53,13 @@ namespace Auth.Infrastructure.Caches.Redis
                 case CommondType.Create:
                     //先序列化创建命令
                     var createCommand = JsonConvert.DeserializeObject<CreateCommand>(message);
-                    //拿到数据类型
+                    //拿到数据类型,如果类没有定义在其他类库中，可能会导致dataType为null
                     Type dataType = Type.GetType(createCommand.DataType);
+                    if (dataType == null)
+                    {
+                        var assembly = Assembly.Load("Infrastructure.Core");
+                        dataType = assembly.GetType(createCommand.DataType);
+                    }
                     //反序列化数据为原类型
                     var data = JsonConvert.DeserializeObject(createCommand.Data.ToString().ToLower(), dataType);
                     //写入内存缓存

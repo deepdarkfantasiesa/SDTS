@@ -1,5 +1,4 @@
-﻿using Castle.Components.DictionaryAdapter;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Infrastructure.Core.Query.Page
 {
@@ -183,6 +182,50 @@ namespace Infrastructure.Core.Query.Page
             parameters.Add("PageSize", pageRequest.PageSize);
 
             return new PageSql("LIMIT @PageSize OFFSET (@PageNumber - 1) * @PageSize");
+        }
+
+        /// <summary>
+        /// 获取缓存键上下文
+        /// </summary>
+        /// <typeparam name="TCondition"></typeparam>
+        /// <param name="pageRequest"></param>
+        /// <returns></returns>
+        public static CacheKeyContext GetCacheKeyContext<TCondition>(this PageRequest<TCondition> pageRequest)
+        {
+            var keyContext = new CacheKeyContext();
+
+            keyContext.Add("PageNumber", pageRequest.PageNumber);
+            keyContext.Add("PageSize", pageRequest.PageSize);
+
+            if (pageRequest.Sorts != null && pageRequest.Sorts.Any())
+            {
+                int i = 0;
+                foreach (var sort in pageRequest.Sorts)
+                {
+                    keyContext.Add($"SortBy{sort.SortName}{i++}", sort.IsAsc);
+                }
+            }
+
+            if (pageRequest.GroupBy != null && pageRequest.GroupBy.Any())
+            {
+                int i = 0;
+                foreach (var group in pageRequest.GroupBy)
+                {
+                    keyContext.Add($"Group{i++}", group);
+                }
+            }
+
+            var properties = typeof(TCondition).GetProperties();
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(pageRequest.Conditions);
+                if (value == null)
+                    continue;
+
+                keyContext.Add(property.Name, value);
+            }
+
+            return keyContext;
         }
     }
 }

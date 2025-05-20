@@ -6,7 +6,7 @@ namespace Auth.API.Application.Queries.User
     /// <summary>
     /// 校验用户是否存在query
     /// </summary>
-    public class CheckUserExistsByQuery : IQueryBase<CheckUserExistParams, bool>, IQueryReplica, IQueryCache<bool>
+    public record CheckUserExistsByQuery : IQueryBase<CheckUserExistParams, bool>, IQueryReplica, IQueryCache<bool>
     {
         /// <summary>
         /// query参数
@@ -38,10 +38,10 @@ namespace Auth.API.Application.Queries.User
                 if (!string.IsNullOrWhiteSpace(_cacheKey))
                     return _cacheKey;
 
-                if (PreferCacheLevel != QueryCacheLevel.None && (Generator == null || KeyContext == null))
-                    throw new ArgumentNullException("缓存键生成者或缓存键上下文为空");
+                if (PreferCacheLevel != QueryCacheLevel.None && (KeyContext == null || KeyContext.Count == 0))
+                    throw new ArgumentNullException("缓存键上下文为空");
 
-                _cacheKey = Generator.Invoke(KeyContext);
+                _cacheKey = CacheKeyGenerator.Check(KeyContext);
 
                 return _cacheKey;
             }
@@ -55,12 +55,17 @@ namespace Auth.API.Application.Queries.User
         /// <summary>
         /// 标签
         /// </summary>
-        public CacheTag[]? Tags { get; init; }
-
-        /// <summary>
-        /// 生成缓存键的委托
-        /// </summary>
-        public Func<CacheKeyContext, string>? Generator { get; init; }
+        public CacheTag[]? Tags
+        {
+            get
+            {
+                return new[]
+                {
+                    CacheTag.Query,
+                    CacheTag.CheckIsExist
+                };
+            }
+        }
 
         /// <summary>
         /// 是否使用从库

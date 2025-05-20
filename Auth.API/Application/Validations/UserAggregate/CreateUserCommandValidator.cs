@@ -34,27 +34,12 @@ namespace Auth.API.Application.Validations.UserAggregate
             {
                 Params = new CheckUserExistParams { UserName = UserName },
                 PreferCacheLevel = QueryCacheLevel.Local,
-                Generator = Check,
                 KeyContext = new CacheKeyContext
                 {
                     { "Name",UserName}
                 }
             }, cancellationToken);
             return res != true;
-        }
-
-        private string Check(CacheKeyContext keyContexts)
-        {
-            if (keyContexts.Count == 0)
-                throw new ArgumentNullException("缓存键上下文为空");
-
-            StringBuilder cacheKeyBuilder = new StringBuilder();
-
-            foreach (var kvp in keyContexts)
-            {
-                cacheKeyBuilder.Append($"{kvp.Key}={kvp.Value}");
-            }
-            return cacheKeyBuilder.ToString();
         }
     }
 }

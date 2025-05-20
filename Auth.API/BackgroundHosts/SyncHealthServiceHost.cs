@@ -60,7 +60,7 @@ namespace Auth.API.BackgroundHosts
         /// <exception cref="NotImplementedException"></exception>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _syncPgSqltimer = new Timer(SyncPgSqlTask, null, TimeSpan.Zero, TimeSpan.FromSeconds(_bgHostSettings.SyncPgSql));
+            _syncPgSqltimer = new Timer(SyncPgSqlTask, null, TimeSpan.Zero, TimeSpan.FromMinutes(_bgHostSettings.SyncPgSql));
 
             return Task.CompletedTask;
         }

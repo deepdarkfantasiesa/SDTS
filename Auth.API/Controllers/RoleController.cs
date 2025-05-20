@@ -1,5 +1,6 @@
 ﻿using Auth.API.Application.Commands.RoleAggregate;
 using Auth.API.Application.Queries.Role.Page;
+using Infrastructure.Core;
 using Infrastructure.Core.Query.Page;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -37,22 +38,24 @@ namespace Auth.API.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<bool> Update([FromBody]UpdateRoleCommand command)
+        public async Task<bool> Update([FromBody] UpdateRoleCommand command)
         {
             return await _sender.Send(command);
         }
 
         /// <summary>
-        /// 
+        /// 分页查询
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<PageResponse<QueryResult>> Page([FromBody]PageRequest<QueryCondition> request)
+        public async Task<PageResponse<QueryResult>> Page([FromHeader] bool? useReplica, [FromHeader] QueryCacheLevel? cacheLevel, [FromBody] PageRequest<QueryCondition> request)
         {
             var query = new PageRoleQuery
             {
                 Params = request,
-                UseReplica = true
+                UseReplica = useReplica.HasValue ? useReplica.Value : true,
+                PreferCacheLevel = cacheLevel.HasValue ? cacheLevel.Value : QueryCacheLevel.None,
+                KeyContext = request.GetCacheKeyContext()
             };
             return await _sender.Send<PageResponse<QueryResult>>(query);
         }

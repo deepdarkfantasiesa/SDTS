@@ -37,5 +37,10 @@ namespace Infrastructure.Core
         [Description("检查是否存在")]
         CheckIsExist = 4,
 
+        /// <summary>
+        /// 分页
+        /// </summary>
+        [Description("分页")]
+        Page = 5
     }
 }
