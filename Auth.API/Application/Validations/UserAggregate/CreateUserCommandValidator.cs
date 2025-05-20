@@ -5,7 +5,7 @@ using Infrastructure.Core;
 using MediatR;
 using System.Text;
 
-namespace Auth.API.Application.Validations
+namespace Auth.API.Application.Validations.UserAggregate
 {
     public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     {
