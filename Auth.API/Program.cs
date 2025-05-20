@@ -57,6 +57,9 @@ namespace Auth.API
             //注册配置类
             builder.Services.AddConfigs(builder.Configuration);
 
+            //注册追踪者
+            builder.Services.AddTracing(builder.Configuration);
+
             //注册后台任务
             builder.Services.AddBackgroundHosts(builder.Configuration);
 

@@ -12,6 +12,13 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.10" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.12.0-beta.1" />
     <PackageReference Include="RedLock.net" Version="2.3.2" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
   </ItemGroup>

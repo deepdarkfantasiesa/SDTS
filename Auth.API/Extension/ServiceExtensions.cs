@@ -12,6 +12,9 @@ using Auth.Infrastructure.Settings;
 using FluentValidation;
 using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Service.Framework.ServiceRegistry.Consul.Configs;
@@ -249,6 +252,30 @@ namespace Auth.API.Extension
         {
             //注册同步数据后台服务
             services.AddHostedService<SyncHealthServiceHost>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 注册追踪者
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddTracing(this IServiceCollection services,IConfiguration configuration)
+        {
+            services.AddOpenTelemetry()
+                .ConfigureResource(resource => resource.AddService("Auth.API"))
+                .WithTracing(tracing =>
+                {
+                    tracing.AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddEntityFrameworkCoreInstrumentation()
+                        .AddRedisInstrumentation()
+                        .AddNpgsql();
+
+                    tracing.AddOtlpExporter();
+                });
 
             return services;
         }
