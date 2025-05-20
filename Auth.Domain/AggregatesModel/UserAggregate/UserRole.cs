@@ -9,7 +9,7 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
     {
         public UserRole()
         {
-            
+
         }
 
         public UserRole(RoleId originalRoleId, string name, string? description)
@@ -24,7 +24,14 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
             Permissions.Add(permission);
         }
 
-        public string Name {  get; private set; }
+        public void Update(string name, string? description)
+        {
+            Name = name;
+            Description = description;
+            UpdateAt = DateTime.UtcNow;
+        }
+
+        public string Name { get; private set; }
 
         public string? Description { get; private set; }
 

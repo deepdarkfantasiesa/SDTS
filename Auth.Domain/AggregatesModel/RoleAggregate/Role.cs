@@ -1,4 +1,5 @@
-﻿using Domain.Abstraction;
+﻿using Auth.Domain.Events.RoleAggregate;
+using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.RoleAggregate
 {
@@ -8,10 +9,10 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
     {
         public Role()
         {
-            
+
         }
 
-        public Role(string name,string? description)
+        public Role(string name, string? description)
         {
             Name = name;
             Description = description;
@@ -24,6 +25,14 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
         public void AddPermissions(IEnumerable<RolePermission> permissions)
         {
             Permissions = permissions.ToList();
+        }
+
+        public void Update(string name, string? description)
+        {
+            Name = name;
+            Description = description;
+            UpdateAt = DateTime.UtcNow;
+            AddDomainEvent(new UpdateRolePermissionDomainEvent(this));
         }
 
         public string Name { get; private set; }

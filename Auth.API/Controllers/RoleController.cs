@@ -32,6 +32,17 @@ namespace Auth.API.Controllers
         }
 
         /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<bool> Update([FromBody]UpdateRoleCommand command)
+        {
+            return await _sender.Send(command);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>

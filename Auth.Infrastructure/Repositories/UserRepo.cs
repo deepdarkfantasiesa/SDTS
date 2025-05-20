@@ -8,6 +8,8 @@ namespace Auth.Infrastructure.Repositories
     public interface IUserRepo : IRepository<User, UserId>
     {
         Task<IEnumerable<User>> GetByRolePermissionIdAsync(RolePermissionId id);
+
+        Task<IEnumerable<User>> GetByRoleIdAsync(RoleId id);
     }
 
     public class UserRepo : Repository<UserContext, User, UserId>, IUserRepo
@@ -26,6 +28,17 @@ namespace Auth.Infrastructure.Repositories
                     .SelectMany(q => q.Permissions)
                     .Where(q => q.OriginalPermissionId == id)
                     .Any())
+                .ToListAsync();
+
+            return users;
+        }
+
+        public async Task<IEnumerable<User>> GetByRoleIdAsync(RoleId id)
+        {
+            var users = await _context.Users
+                .SelectMany(u => u.Roles)
+                .Where(r => r.OriginalRoleId == id)
+                .Select(r => r.User)
                 .ToListAsync();
 
             return users;

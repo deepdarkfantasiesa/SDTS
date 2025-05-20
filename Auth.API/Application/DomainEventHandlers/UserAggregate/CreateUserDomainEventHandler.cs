@@ -1,5 +1,5 @@
 ﻿using Auth.API.Application.IntegrationEvents;
-using Auth.Domain.Events;
+using Auth.Domain.Events.UserAggregate;
 using Domain.Abstraction;
 using DotNetCore.CAP;
 

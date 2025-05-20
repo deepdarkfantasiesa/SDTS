@@ -1,6 +1,6 @@
 ﻿using Domain.Abstraction;
 
-namespace Auth.Domain.Events
+namespace Auth.Domain.Events.UserAggregate
 {
     public class CreateUserDomainEvent : IDomainEvent
     {

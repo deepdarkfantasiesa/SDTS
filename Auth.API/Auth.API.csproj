@@ -37,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\DomainEventHandlers\RoleAggregate\" />
     <Folder Include="Proto\" />
   </ItemGroup>
 
