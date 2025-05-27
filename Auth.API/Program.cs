@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Service.Framework.ConfigurationCenter.Consul;
 using Service.Framework.ServiceRegistry.Consul;
 using Domain.Abstraction;
+using Serilog;
 
 namespace Auth.API
 {
@@ -13,6 +14,10 @@ namespace Auth.API
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Host.ConfigureConfigurationCenter();
+
+            //配置Serilog
+            builder.Host.UseSerilog((context, logConfig) =>
+                logConfig.ReadFrom.Configuration(builder.Configuration));
 
             // Add services to the container.
 
@@ -83,6 +88,8 @@ namespace Auth.API
 
             var app = builder.Build();
 
+            app.UseSerilogRequestLogging();
+
             // 在使用路由、终结点、中间件之前，添加此中间件
             app.Use(async (context, next) =>
             {
@@ -109,7 +116,6 @@ namespace Auth.API
             //app.UseHttpsRedirection();//如果不禁用这行，http请求都会被重定向到https并报307 Temporary Redirect
 
             app.UseAuthorization();
-
 
             app.MapControllers();
             app.UseRouting();
