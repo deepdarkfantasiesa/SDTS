@@ -65,7 +65,7 @@ namespace Auth.API.Application.Behaviors
             //运行数据库查询逻辑
             response = await next();
 
-            _logger.LogInformation("开始进行下一个Behavior执行完成");
+            _logger.LogInformation("下一个Behavior执行完成");
 
             #region 插入缓存
 

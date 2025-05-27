@@ -32,7 +32,7 @@ namespace Service.Framework.ServiceRegistry.Consul.Services
                 Check = new AgentServiceCheck()
                 {
                     DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(0),//服务挂掉后多久注销，0是不注销
-                    Interval = TimeSpan.FromSeconds(10),    //健康检查的时间间隔
+                    Interval = TimeSpan.FromMinutes(10),    //健康检查的时间间隔
                     HTTP = //健康检查的地址
                     $"http://{_consulRegisterOptions?.Ip}:" +
                     $"{_consulRegisterOptions?.Port}" +

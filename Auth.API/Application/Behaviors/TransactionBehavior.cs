@@ -57,29 +57,40 @@ namespace Auth.API.Application.Behaviors
             {
                 if (_context.HasActiveTransaction)
                 {
+                    _logger.LogInformation("执行命令 {CommandName} {@Command}", request.GetGenericTypeName(), request);
+
                     response = await next();
+
+                    _logger.LogInformation("持久化聚合并分发领域事件 {@Response}", response);
 
                     //持久化聚合并分发领域事件
                     await _context.SaveEntitiesAsync(cancellationToken);
+
                 }
                 else
                 {
+                    _logger.LogInformation("显示开启数据库事务 {CommandName} {@Command}", request.GetGenericTypeName(), request);
+
                     //开启事务
                     _context.BeginTransaction(_capPublisher, cancellationToken);
 
                     response = await next();
+
+                    _logger.LogInformation("持久化聚合并分发领域事件");
 
                     //持久化聚合并分发领域事件，假如领域事件触发了新的command在这里会有一个递归
                     await _context.SaveEntitiesAsync(cancellationToken);
 
                     //提交事务
                     await _context.CommitTransactionAsync(cancellationToken);
+
+                    _logger.LogInformation("提交数据库事务 {@Response}", response);
                 }
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"处理事务出错 {request.GetGenericTypeName()} ({@request})");
+                _logger.LogError(ex, "处理事务出错 {CommandName} ({@request})", request.GetGenericTypeName(), request);
                 await _context.RollbackTransaction(cancellationToken);
                 throw;
             }
