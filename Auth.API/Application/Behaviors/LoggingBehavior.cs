@@ -12,9 +12,9 @@ namespace Auth.API.Application.Behaviors
         }
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Handling command {CommandName} ({@Command})", request.GetGenericTypeName(), request);
+            _logger.LogInformation("处理请求中 {CommandName} ({@Command})", request.GetGenericTypeName(), request);
             var response = await next();
-            _logger.LogInformation("Command {CommandName} handled - response: {@Response}", request.GetGenericTypeName(), response);
+            _logger.LogInformation("请求 {CommandName} 完成 - 响应: {@Response}", request.GetGenericTypeName(), response);
 
             return response;
         }
