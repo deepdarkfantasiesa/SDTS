@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -42,6 +44,72 @@ namespace Domain.Abstraction
     }
 
     /// <summary>
+    /// 强类型 ID 转换器
+    /// </summary>
+    /// <typeparam name="T">强类型 ID 类型</typeparam>
+    public class StronglyTypedIdConverterV2<T> : TypeConverter where T : IEntityTypeId<Guid>
+    {
+        private static readonly Func<Guid, T> _factory;
+
+        static StronglyTypedIdConverterV2()
+        {
+            // 使用表达式树缓存构造函数，避免反射性能开销
+            var constructor = typeof(T).GetConstructor(new[] { typeof(Guid) });
+            if (constructor == null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).Name} must have a constructor with a single Guid parameter.");
+            }
+
+            var parameter = Expression.Parameter(typeof(Guid), "guid");
+            var newExpression = Expression.New(constructor, parameter);
+            _factory = Expression.Lambda<Func<Guid, T>>(newExpression, parameter).Compile();
+        }
+
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string) || sourceType == typeof(Guid) || base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            if (value is string stringValue && Guid.TryParse(stringValue, out var guid))
+            {
+                return _factory(guid);
+            }
+
+            if (value is Guid guidValue)
+            {
+                return _factory(guidValue);
+            }
+
+            throw new NotSupportedException($"Cannot convert from {value?.GetType().Name ?? "null"} to {typeof(T).Name}.");
+        }
+
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+        {
+            return destinationType == typeof(string) || destinationType == typeof(Guid) || base.CanConvertTo(context, destinationType);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        {
+            if (value is T stronglyTypedId)
+            {
+                if (destinationType == typeof(string))
+                {
+                    return stronglyTypedId.Value.ToString();
+                }
+
+                if (destinationType == typeof(Guid))
+                {
+                    return stronglyTypedId.Value;
+                }
+            }
+
+            throw new NotSupportedException($"Cannot convert from {typeof(T).Name} to {destinationType.Name}.");
+        }
+    }
+
+    /// <summary>
     /// 拓展方法
     /// </summary>
     public static class ServiceExtension
@@ -66,7 +134,7 @@ namespace Domain.Abstraction
 
             foreach (var type in stronglyTypedIdTypes)
             {
-                TypeDescriptor.AddAttributes(type, new TypeConverterAttribute(typeof(StronglyTypedIdConverter<>).MakeGenericType(type)));
+                TypeDescriptor.AddAttributes(type, new TypeConverterAttribute(typeof(StronglyTypedIdConverterV2<>).MakeGenericType(type)));
             }
 
             return services;
