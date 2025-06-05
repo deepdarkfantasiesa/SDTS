@@ -1,13 +1,12 @@
 using Auth.API.Extension;
+using Auth.API.Filters;
 using Auth.API.Services;
+using Auth.Domain.AggregatesModel.RoleAggregate;
+using Domain.Abstraction;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Serilog;
 using Service.Framework.ConfigurationCenter.Consul;
 using Service.Framework.ServiceRegistry.Consul;
-using Domain.Abstraction;
-using Serilog;
-using System.Reflection;
-using System.Text.Json.Serialization;
-using System.Runtime.Loader;
 
 namespace Auth.API
 {
@@ -25,30 +24,16 @@ namespace Auth.API
             // Add services to the container.
 
             builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    //var assembly = Assembly.GetExecutingAssembly();
-                    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("Auth.Domain"));
-                    var types = assembly.GetTypes()
-                        .Where(t => t.GetInterfaces().Any(i =>
-                            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>) &&
-                            i.GetGenericArguments()[0] == typeof(Guid)));
-
-                    foreach (var type in types)
-                    {
-                        var converterType = typeof(StronglyTypedIdJsonConverter<>).MakeGenericType(type);
-                        var converter = Activator.CreateInstance(converterType) as JsonConverter;
-                        options.JsonSerializerOptions.Converters.Add(converter);
-                    }
-                });
-            //.AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverter<RoleId>());
-            //});
+                .AddStrongTypeIdJsonConverter("Auth.Domain");//注册强类型Id的Json转换器
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services
+                .AddSwaggerGen(options =>
+                {
+                    options.SchemaFilter<StronglyTypedIdSchemaFilter<RoleId>>();
+                });
+            //.AddCustomSwaggerGen("Auth.Domain");
 
             //注册强类型id转换器
             builder.Services.AddStrongTypeConverter("Auth.Domain");

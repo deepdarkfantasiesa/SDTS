@@ -111,6 +111,10 @@ namespace Domain.Abstraction
         }
     }
 
+    /// <summary>
+    /// 强类型Id的json转换器
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class StronglyTypedIdJsonConverter<T> : JsonConverter<T> where T : IEntityTypeId<Guid>
     {
         private static readonly Func<Guid, T> _factory;

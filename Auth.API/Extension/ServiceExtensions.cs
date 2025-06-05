@@ -9,6 +9,7 @@ using Auth.Infrastructure.Interceptors;
 using Auth.Infrastructure.QueryContext;
 using Auth.Infrastructure.Repositories;
 using Auth.Infrastructure.Settings;
+using Domain.Abstraction;
 using FluentValidation;
 using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,9 @@ using OpenTelemetry.Trace;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Service.Framework.ServiceRegistry.Consul.Configs;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Text.Json.Serialization;
 
 namespace Auth.API.Extension
 {
@@ -262,7 +266,7 @@ namespace Auth.API.Extension
         /// <param name="services"></param>
         /// <param name="configuration"></param>
         /// <returns></returns>
-        public static IServiceCollection AddTracing(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddTracing(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOpenTelemetry()
                 .ConfigureResource(resource => resource.AddService("Auth.API"))
@@ -276,6 +280,79 @@ namespace Auth.API.Extension
 
                     tracing.AddOtlpExporter();
                 });
+
+            return services;
+        }
+
+        /// <summary>
+        /// 注册强类型Id的Json转换器
+        /// </summary>
+        /// <param name="mvcBuilder"></param>
+        /// <param name="assemblyName">程序集名称</param>
+        /// <returns></returns>
+        public static IMvcBuilder AddStrongTypeIdJsonConverter(this IMvcBuilder mvcBuilder, string assemblyName)
+        {
+            mvcBuilder.AddJsonOptions(options =>
+             {
+                 var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
+                 var types = assembly.GetTypes()
+                     .Where(t => t.GetInterfaces().Any(i =>
+                         i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>) &&
+                         i.GetGenericArguments()[0] == typeof(Guid)));
+
+                 foreach (var type in types)
+                 {
+                     var converterType = typeof(StronglyTypedIdJsonConverter<>).MakeGenericType(type);
+                     var converter = Activator.CreateInstance(converterType) as JsonConverter;
+                     options.JsonSerializerOptions.Converters.Add(converter);
+                 }
+             });
+
+            return mvcBuilder;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddCustomSwaggerGen(this IServiceCollection services, string assemblyName)
+        {
+            //services.AddSwaggerGen(options =>
+            //{
+            //    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
+            //    var types = assembly.GetTypes()
+            //        .Where(t => t.GetInterfaces().Any(i =>
+            //            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>) &&
+            //            i.GetGenericArguments()[0] == typeof(Guid)));
+
+            //    foreach (var type in types)
+            //    {
+            //        var schemaFilterType = typeof(StronglyTypedIdSchemaFilter<>).MakeGenericType(type);
+            //        options.SchemaFilter(schemaFilterType);
+            //    }
+            //});
+
+            //services.AddSwaggerGen(options =>
+            //{
+            //    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
+            //    var types = assembly.GetTypes()
+            //        .Where(t => t.GetInterfaces().Any(i => i.IsGenericType
+            //            && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>)
+            //            && i.GetGenericArguments()[0] == typeof(Guid)));
+
+            //    foreach (var type in types)
+            //    {
+            //        var schemaFilterType = typeof(StronglyTypedIdSchemaFilter<>).MakeGenericType(type);
+            //        var schemaFilterInstance = Activator.CreateInstance(schemaFilterType) as ISchemaFilter;
+
+            //        if (schemaFilterInstance != null)
+            //        {
+            //            options.SchemaFilter<ISchemaFilter>(schemaFilterInstance);
+            //        }
+            //    }
+            //});
 
             return services;
         }
