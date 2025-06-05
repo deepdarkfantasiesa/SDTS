@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Domain.Abstraction
 {
@@ -106,6 +108,40 @@ namespace Domain.Abstraction
             }
 
             throw new NotSupportedException($"Cannot convert from {typeof(T).Name} to {destinationType.Name}.");
+        }
+    }
+
+    public class StronglyTypedIdJsonConverter<T> : JsonConverter<T> where T : IEntityTypeId<Guid>
+    {
+        private static readonly Func<Guid, T> _factory;
+
+        static StronglyTypedIdJsonConverter()
+        {
+            // 使用表达式树缓存构造函数，避免反射性能开销
+            var constructor = typeof(T).GetConstructor(new[] { typeof(Guid) });
+            if (constructor == null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).Name} must have a constructor with a single Guid parameter.");
+            }
+
+            var parameter = Expression.Parameter(typeof(Guid), "guid");
+            var newExpression = Expression.New(constructor, parameter);
+            _factory = Expression.Lambda<Func<Guid, T>>(newExpression, parameter).Compile();
+        }
+
+        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String && Guid.TryParse(reader.GetString(), out var guid))
+            {
+                return _factory(guid);
+            }
+
+            throw new JsonException($"Invalid JSON value for {typeof(T).Name}. Expected a GUID string.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.Value.ToString());
         }
     }
 
