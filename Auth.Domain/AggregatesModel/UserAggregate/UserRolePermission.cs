@@ -31,7 +31,6 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
             Name = name;
             Description = description;
             Url = url;
-            UpdateAt = DateTime.UtcNow;
         }
 
         public string Name { get; private set; }

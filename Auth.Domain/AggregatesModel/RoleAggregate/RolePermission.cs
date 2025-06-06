@@ -23,7 +23,6 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
             Name = name;
             Description = description;
             Url = url;
-            UpdateAt = DateTime.UtcNow;
         }
 
         public string Name { get; private set; }

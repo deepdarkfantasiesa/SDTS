@@ -109,12 +109,7 @@ namespace Infrastructure.Core
         /// <returns></returns>
         public virtual TEntity Update(TEntity entity)
         {
-            entity.UpdateAt = DateTime.UtcNow;
-            //if (autoSetUpdateAt)
-            //{
-            //    var entry = _uow.Entry(entity);
-            //    SetUpdateAt(entry);
-            //}
+            SetUpdateAt();
             return _uow.Update(entity).Entity;
         }
 
@@ -130,7 +125,6 @@ namespace Infrastructure.Core
             return await Task.FromResult(Update(entity));
         }
 
-
         /// <summary>
         /// 批量更新
         /// </summary>
@@ -138,6 +132,7 @@ namespace Infrastructure.Core
         /// <returns></returns>
         public virtual void UpdateRange(IEnumerable<TEntity> entities)
         {
+            SetUpdateAt();
             _uow.UpdateRange(entities);
         }
 
@@ -178,37 +173,16 @@ namespace Infrastructure.Core
         }
 
         /// <summary>
-        /// 递归遍历所有导航属性并设置UpdateAt值
+        /// 设置状态为Modified实体的UpdateAt字段
         /// </summary>
-        /// <param name="entry"></param>
-        /// <exception cref="InvalidOperationException"></exception>
-        private void SetUpdateAt(EntityEntry entry)
+        private void SetUpdateAt()
         {
-            foreach (var collection in entry.Collections)
+            var modifiedEntities = _uow.ChangeTracker.Entries<BaseEntity>()
+                .Where(p => p.State == EntityState.Modified)
+                .Select(p => p.Entity);
+            foreach (var modifiedEntity in modifiedEntities)
             {
-                if (collection.CurrentValue == null)
-                    continue;
-
-                var subEntities = collection.CurrentValue as IEnumerable<BaseEntity>
-                    ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
-                foreach (var subEntity in subEntities)
-                {
-                    subEntity.UpdateAt = DateTime.Now;
-                    var subEntry = _uow.Entry(subEntity);
-                    SetUpdateAt(subEntry);
-                }
-            }
-
-            foreach (var navigation in entry.Navigations)
-            {
-                if (navigation.CurrentValue == null)
-                    continue;
-
-                var subEntity = navigation.CurrentValue as BaseEntity
-                    ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
-                subEntity.UpdateAt = DateTime.Now;
-                var subEntry = _uow.Entry(subEntity);
-                SetUpdateAt(subEntry);
+                modifiedEntity.UpdateAt = DateTime.UtcNow;
             }
         }
 

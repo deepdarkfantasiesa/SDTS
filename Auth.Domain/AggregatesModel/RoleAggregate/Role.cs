@@ -31,7 +31,6 @@ namespace Auth.Domain.AggregatesModel.RoleAggregate
         {
             Name = name;
             Description = description;
-            UpdateAt = DateTime.UtcNow;
             AddDomainEvent(new UpdateRolePermissionDomainEvent(this));
         }
 
