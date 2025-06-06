@@ -91,11 +91,7 @@ namespace Infrastructure.Core
         /// <returns></returns>
         public virtual async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (!entity.IsDeleted)
-                throw new ArgumentException("聚合根未标记为已删除");
-
-            var entry = _uow.Entry(entity);
-            await CheckSubEntitiesDeleteStatus(entry);
+            CheckIsDeleted();
 
             await Task.Run(() => { _uow.Update(entity); }, cancellationToken);
             return true;
@@ -187,50 +183,18 @@ namespace Infrastructure.Core
         }
 
         /// <summary>
-        /// 检查子实体的删除情况
+        /// 检查所有实体的软删除字段
         /// </summary>
-        /// <param name="entry"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        private async Task CheckSubEntitiesDeleteStatus(EntityEntry entry)
+        private void CheckIsDeleted()
         {
-            foreach (var collection in entry.Collections)
-            {
-                if (!collection.IsLoaded) // 检查导航属性是否已加载
-                    throw new ArgumentNullException($"{collection.GetGenericTypeName()}子实体集未被加载");
+            var hasUnDeleteEntity = _uow.ChangeTracker.Entries<BaseEntity>()
+                .Where(p => p.Entity.IsDeleted == false 
+                    && p.State == EntityState.Modified)
+                .Any();
 
-                if (collection.CurrentValue == null)
-                    continue;
-
-                var subEntities = collection.CurrentValue as IEnumerable<BaseEntity>
-                    ?? throw new InvalidOperationException($"{collection.CurrentValue.GetGenericTypeName()}无法转换为Entity");
-                foreach (var subEntity in subEntities)
-                {
-                    if (!subEntity.IsDeleted)
-                        throw new ArgumentException("子实体未被标记为已删除");
-                    var subEntry = _uow.Entry(subEntity);
-                    await CheckSubEntitiesDeleteStatus(subEntry);
-                }
-            }
-
-            foreach (var navigation in entry.Navigations)
-            {
-                if (!navigation.IsLoaded)
-                    throw new ArgumentNullException($"{navigation.GetGenericTypeName()}子实体未被加载");
-
-                if (navigation.CurrentValue == null)
-                    continue;
-
-                var subEntity = navigation.CurrentValue as BaseEntity
-                    ?? throw new InvalidOperationException($"{navigation.CurrentValue.GetGenericTypeName()}无法转换为Entity");
-
-                if (!subEntity.IsDeleted)
-                    throw new ArgumentException("子实体未被标记为已删除");
-                var subEntry = _uow.Entry(subEntity);
-                await CheckSubEntitiesDeleteStatus(subEntry);
-            }
+            if (hasUnDeleteEntity)
+                throw new ArgumentException("当前聚合有实体未被标记为已删除");
         }
     }
 }
