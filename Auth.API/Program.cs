@@ -1,7 +1,5 @@
 using Auth.API.Extension;
-using Auth.API.Filters;
 using Auth.API.Services;
-using Auth.Domain.AggregatesModel.RoleAggregate;
 using Domain.Abstraction;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
@@ -28,12 +26,7 @@ namespace Auth.API
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services
-                .AddSwaggerGen(options =>
-                {
-                    options.SchemaFilter<StronglyTypedIdSchemaFilter<RoleId>>();
-                });
-            //.AddCustomSwaggerGen("Auth.Domain");
+            builder.Services.AddCustomSwaggerGen("Auth.Domain");//注册swagger中强类型Id显示为string类型
 
             //注册强类型id转换器
             builder.Services.AddStrongTypeConverter("Auth.Domain");

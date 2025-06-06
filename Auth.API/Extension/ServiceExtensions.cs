@@ -13,6 +13,7 @@ using Domain.Abstraction;
 using FluentValidation;
 using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -312,47 +313,26 @@ namespace Auth.API.Extension
         }
 
         /// <summary>
-        /// 
+        /// 注册swagger中强类型Id显示为string类型
         /// </summary>
         /// <param name="services"></param>
         /// <param name="assemblyName"></param>
         /// <returns></returns>
         public static IServiceCollection AddCustomSwaggerGen(this IServiceCollection services, string assemblyName)
         {
-            //services.AddSwaggerGen(options =>
-            //{
-            //    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
-            //    var types = assembly.GetTypes()
-            //        .Where(t => t.GetInterfaces().Any(i =>
-            //            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>) &&
-            //            i.GetGenericArguments()[0] == typeof(Guid)));
+            services.AddSwaggerGen(options =>
+            {
+                var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
+                var types = assembly.GetTypes()
+                    .Where(t => t.GetInterfaces().Any(i => i.IsGenericType
+                        && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>)
+                        && i.GetGenericArguments()[0] == typeof(Guid)));
 
-            //    foreach (var type in types)
-            //    {
-            //        var schemaFilterType = typeof(StronglyTypedIdSchemaFilter<>).MakeGenericType(type);
-            //        options.SchemaFilter(schemaFilterType);
-            //    }
-            //});
-
-            //services.AddSwaggerGen(options =>
-            //{
-            //    var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName));
-            //    var types = assembly.GetTypes()
-            //        .Where(t => t.GetInterfaces().Any(i => i.IsGenericType
-            //            && i.GetGenericTypeDefinition() == typeof(IEntityTypeId<>)
-            //            && i.GetGenericArguments()[0] == typeof(Guid)));
-
-            //    foreach (var type in types)
-            //    {
-            //        var schemaFilterType = typeof(StronglyTypedIdSchemaFilter<>).MakeGenericType(type);
-            //        var schemaFilterInstance = Activator.CreateInstance(schemaFilterType) as ISchemaFilter;
-
-            //        if (schemaFilterInstance != null)
-            //        {
-            //            options.SchemaFilter<ISchemaFilter>(schemaFilterInstance);
-            //        }
-            //    }
-            //});
+                foreach (var type in types)
+                {
+                    options.MapType(type, () => new OpenApiSchema { Type = typeof(string).Name.ToLower() });
+                }
+            });
 
             return services;
         }
