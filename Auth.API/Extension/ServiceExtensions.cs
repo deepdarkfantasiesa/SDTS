@@ -1,4 +1,5 @@
 ﻿using Auth.API.Application.Behaviors;
+using Auth.API.Application.Commands.Test;
 using Auth.API.BackgroundHosts;
 using Auth.API.Extension;
 using Auth.Infrastructure;
@@ -10,6 +11,7 @@ using Auth.Infrastructure.QueryContext;
 using Auth.Infrastructure.Repositories;
 using Auth.Infrastructure.Settings;
 using Domain.Abstraction;
+using Domain.Abstraction.Mediator;
 using FluentValidation;
 using Infrastructure.Core;
 using Microsoft.EntityFrameworkCore;
@@ -333,6 +335,14 @@ namespace Auth.API.Extension
                     options.MapType(type, () => new OpenApiSchema { Type = typeof(string).Name.ToLower() });
                 }
             });
+
+            return services;
+        }
+
+        public static IServiceCollection AddMediator(this IServiceCollection services)
+        {
+            services.AddScoped<IRequestHandler<TestCommand, string>, TestCommandHandler>();
+            services.AddMediatorR();
 
             return services;
         }

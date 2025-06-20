@@ -1,6 +1,7 @@
 using Auth.API.Extension;
 using Auth.API.Services;
 using Domain.Abstraction;
+using Domain.Abstraction.Mediator;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 using Service.Framework.ConfigurationCenter.Consul;
@@ -33,6 +34,8 @@ namespace Auth.API
 
             //×¢²áÖÐ½éÕß
             builder.Services.AddMediatR(builder.Configuration);
+
+            builder.Services.AddMediator();
 
             //×¢²á»º´æ
             builder.Services.AddCaches(builder.Configuration);
