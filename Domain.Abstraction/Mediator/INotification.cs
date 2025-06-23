@@ -10,7 +10,7 @@ namespace Domain.Abstraction.Mediator
     /// 通知处理者
     /// </summary>
     /// <typeparam name="TNotification">通知</typeparam>
-    public interface NotificationHandler<in TNotification>
+    public interface INotificationHandler<in TNotification>
         where TNotification : INotification
     {
         /// <summary>

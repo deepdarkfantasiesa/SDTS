@@ -11,10 +11,13 @@ namespace Domain.Abstraction.Mediator
         /// <returns></returns>
         public static IServiceCollection AddMediatorR(this IServiceCollection services)
         {
+            //注册通知发布者
             services.AddScoped<INotificationPublisher, NotificationPublisher>();
+
+            //注册请求发送者
             services.AddScoped<IRequestSender, RequestSender>();
-            //services.AddScoped(provider => provider.GetRequiredService<IRequestSender>() as IMediator);
-            //services.AddScoped(provider => provider.GetRequiredService<INotificationPublisher>() as IMediator);
+
+            //注册中介者
             services.AddScoped<IMediator, Mediator>();
 
             return services;

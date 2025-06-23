@@ -30,26 +30,26 @@ namespace Auth.API.Extension
 {
     public static class ServiceExtensions
     {
-        /// <summary>
-        /// 注册中介者
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddMediatR(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
-                cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
-                cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
-                cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
-                cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
-                cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
-            });
+        ///// <summary>
+        ///// 注册中介者
+        ///// </summary>
+        ///// <param name="services"></param>
+        ///// <param name="configuration"></param>
+        ///// <returns></returns>
+        //public static IServiceCollection AddMediatR(this IServiceCollection services, IConfiguration configuration)
+        //{
+        //    services.AddMediatR(cfg =>
+        //    {
+        //        cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
+        //        cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+        //        cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+        //        cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
+        //        cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
+        //        cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
+        //    });
 
-            return services;
-        }
+        //    return services;
+        //}
 
         /// <summary>
         /// 注册数据库上下文
@@ -341,7 +341,13 @@ namespace Auth.API.Extension
 
         public static IServiceCollection AddMediator(this IServiceCollection services)
         {
-            services.AddScoped<IRequestHandler<TestCommand, string>, TestCommandHandler>();
+            services.AddScoped<IRequestHandler<TestCommandB, bool>, TestCommandHandlerB>();
+            services.AddScoped<INotificationHandler<TestDomainEventB>, TestDomainEventHandlerB1>();
+            services.AddScoped<INotificationHandler<TestDomainEventB>, TestDomainEventHandlerB2>();
+
+            services.AddScoped<INotificationHandler<TestDomainEventA>, TestDomainEventHandlerA1>();
+            services.AddScoped<INotificationHandler<TestDomainEventA>, TestDomainEventHandlerA2>();
+            services.AddScoped<IRequestHandler<TestCommandA, string>, TestCommandHandlerA>();
             services.AddMediatorR();
 
             return services;

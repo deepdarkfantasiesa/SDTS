@@ -16,11 +16,11 @@ namespace Auth.API.Controllers
         }
 
         [HttpPost]
-        public async Task<string> Test(CancellationToken cancellationToken=default)
+        public async Task<IActionResult> Test(CancellationToken cancellationToken=default)
         {
-            var command = new TestCommand();
+            var command = new TestCommandA();
             var res = await _mediator.SendAsync(command, cancellationToken);
-            return res;
+            return Ok("114");
         }
     }
 }

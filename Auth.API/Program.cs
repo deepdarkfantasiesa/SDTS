@@ -1,3 +1,4 @@
+using Auth.API.Application.Behaviors;
 using Auth.API.Extension;
 using Auth.API.Services;
 using Domain.Abstraction;
@@ -33,7 +34,16 @@ namespace Auth.API
             builder.Services.AddStrongTypeConverter("Auth.Domain");
 
             //×¢²áÖÐ½éÕß
-            builder.Services.AddMediatR(builder.Configuration);
+            //builder.Services.AddMediatR(builder.Configuration);
+            builder.Services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
+                cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+                cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+                cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
+                cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
+                cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
+            });
 
             builder.Services.AddMediator();
 
