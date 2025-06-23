@@ -34,7 +34,6 @@ namespace Auth.API
             builder.Services.AddStrongTypeConverter("Auth.Domain");
 
             //×¢²áÖÐ½éÕß
-            //builder.Services.AddMediatR(builder.Configuration);
             builder.Services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
@@ -45,6 +44,7 @@ namespace Auth.API
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
 
+            //×¢²áÖÐ½éÕß
             builder.Services.AddMediator();
 
             //×¢²á»º´æ

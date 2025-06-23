@@ -1,8 +1,9 @@
 ﻿using Auth.API.Application.Commands.RoleAggregate;
 using Auth.API.Application.Queries.Role.Page;
+using Domain.Abstraction.Mediator;
 using Infrastructure.Core;
 using Infrastructure.Core.Query.Page;
-using MediatR;
+//using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers
@@ -14,9 +15,9 @@ namespace Auth.API.Controllers
     [Route("[controller]/[action]")]
     public class RoleController : ControllerBase
     {
-        private readonly ISender _sender;
+        private readonly IMediator _sender;
 
-        public RoleController(ISender sender)
+        public RoleController(IMediator sender)
         {
             _sender = sender;
         }
@@ -29,7 +30,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         public async Task<bool> Create([FromBody] CreateRoleCommand command)
         {
-            return await _sender.Send(command);
+            return await _sender.SendAsync(command);
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Auth.API.Controllers
         [HttpPut]
         public async Task<bool> Update([FromBody] UpdateRoleCommand command)
         {
-            return await _sender.Send(command);
+            return await _sender.SendAsync(command);
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Auth.API.Controllers
                 PreferCacheLevel = cacheLevel.HasValue ? cacheLevel.Value : QueryCacheLevel.None,
                 KeyContext = request.GetCacheKeyContext()
             };
-            return await _sender.Send<PageResponse<QueryResult>>(query);
+            return await _sender.SendAsync<PageResponse<QueryResult>>(query);
         }
     }
 }

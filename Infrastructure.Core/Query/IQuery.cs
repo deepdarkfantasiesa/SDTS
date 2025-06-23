@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿//using MediatR;
+
+using Domain.Abstraction.Mediator;
 
 namespace Infrastructure.Core.Query
 {

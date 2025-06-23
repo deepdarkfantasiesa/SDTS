@@ -20,7 +20,7 @@
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken);
+        Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        public async Task SendAsync(IRequest request, CancellationToken cancellationToken)
+        public async Task SendAsync(IRequest request, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

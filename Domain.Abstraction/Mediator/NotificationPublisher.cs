@@ -13,7 +13,7 @@ namespace Domain.Abstraction.Mediator
         /// <param name="notification">通知</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        Task PublishAsync(INotification notification, CancellationToken cancellationToken);
+        Task PublishAsync(INotification notification, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ namespace Domain.Abstraction.Mediator
         /// <param name="notification">通知</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        public async Task PublishAsync(INotification notification, CancellationToken cancellationToken)
+        public async Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
         {
             var handlerType = typeof(INotificationHandler<>).MakeGenericType(notification.GetType());
 

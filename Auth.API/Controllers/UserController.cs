@@ -1,5 +1,8 @@
 ﻿using Auth.API.Application.Commands.UserAggregate;
-using MediatR;
+using Domain.Abstraction.Mediator;
+
+
+//using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers
@@ -8,9 +11,9 @@ namespace Auth.API.Controllers
     [Route("[controller]/[action]")]
     public class UserController: ControllerBase
     {
-        private readonly ISender _sender;
+        private readonly IMediator _sender;
 
-        public UserController(ISender sender)
+        public UserController(IMediator sender)
         {
             _sender = sender;
         }
@@ -18,7 +21,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         public async Task<bool> Create([FromBody] CreateUserCommand command)
         {
-            return await _sender.Send(command);
+            return await _sender.SendAsync(command);
         }
     }
 }
