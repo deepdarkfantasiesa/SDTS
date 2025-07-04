@@ -1,11 +1,11 @@
 ﻿using DotNetCore.CAP;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.DatabaseContext
 {
     /// <summary>
     /// 数据库事务接口
     /// </summary>
-    public interface IDbTransaction: IUnitOfWork
+    public interface IDbTransaction : IUnitOfWork, ITransactionSetting
     {
         /// <summary>
         /// 是否开启事务
@@ -17,7 +17,7 @@ namespace Infrastructure.Core
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>事务对象</returns>
-        void BeginTransaction(ICapPublisher capPublisher,CancellationToken cancellationToken = default);
+        void BeginTransaction(ICapPublisher capPublisher, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 提交事务

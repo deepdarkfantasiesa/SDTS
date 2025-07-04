@@ -1,7 +1,7 @@
 ﻿using Auth.API.Application.Commands.UserAggregate;
 using Auth.API.Application.Queries.User;
 using FluentValidation;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
 using MediatR;
 using System.Text;
 

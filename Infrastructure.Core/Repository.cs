@@ -1,4 +1,5 @@
 ﻿using Domain.Abstraction;
+using Infrastructure.Core.DatabaseContext;
 using Infrastructure.Core.Extension;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -150,9 +151,7 @@ namespace Infrastructure.Core
         /// <returns>聚合根对象</returns>
         public virtual TEntity GetById(TKey id)
         {
-            return _uow.Set<TEntity>()
-                .Where(p => p.Id.Equals(id))
-                .Single();
+            return _uow.Set<TEntity>().Find(id);
         }
 
         /// <summary>
@@ -163,9 +162,7 @@ namespace Infrastructure.Core
         /// <returns>聚合根对象</returns>
         public virtual async Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken)
         {
-            return await _uow.Set<TEntity>()
-                .Where(p => p.Id.Equals(id))
-                .SingleAsync(cancellationToken);
+            return await _uow.Set<TEntity>().FindAsync(id);
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using Auth.Domain.AggregatesModel.UserAggregate;
 using Domain.Abstraction;
 using DotNetCore.CAP;
-using Infrastructure.Core;
+using Infrastructure.Core.DatabaseContext;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -125,7 +125,7 @@ namespace Auth.Infrastructure
                 return;
 
             //开启并与cap共享事务（这里有个惊天大坑，一定不要用异步的，如果用异步的会导致领域事件注入的cap发布者没有事务对象）
-            _currentTransaction = Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead, capPublisher, autoCommit: false);
+            _currentTransaction = Database.BeginTransaction(IsolationLevel, capPublisher, autoCommit: false);
 
         }
 
@@ -161,6 +161,43 @@ namespace Auth.Infrastructure
             {
                 await _currentTransaction.DisposeAsync();
                 _currentTransaction = null;
+            }
+        }
+
+        #endregion
+
+        #region 设置
+
+        /// <summary>
+        /// 事务隔离等级
+        /// </summary>
+        public System.Data.IsolationLevel IsolationLevel { get; set; }
+
+        /// <summary>
+        /// 事务超时时间（秒）
+        /// </summary>
+        public int? Timeout
+        { 
+            get
+            {
+                return Database.GetCommandTimeout();
+            }
+            set 
+            {
+                Database.SetCommandTimeout(value);
+            } 
+        }
+
+        /// <summary>
+        /// 是否已设置事务隔离等级和超时时间
+        /// </summary>
+        public bool IsSet
+        {
+            get
+            {
+                if (Timeout == default && IsolationLevel == default)
+                    return false;
+                return true;
             }
         }
 

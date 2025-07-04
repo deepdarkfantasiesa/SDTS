@@ -1,4 +1,4 @@
-﻿using Infrastructure.Core;
+﻿using Infrastructure.Core.Cache;
 using Infrastructure.Core.Query;
 using Infrastructure.Core.Query.Page;
 

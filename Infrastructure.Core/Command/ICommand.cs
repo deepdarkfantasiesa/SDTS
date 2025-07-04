@@ -1,6 +1,6 @@
-﻿//using MediatR;
+﻿using MediatR;
 
-using Domain.Abstraction.Mediator;
+//using Domain.Abstraction.Mediator;
 
 namespace Domain.Abstraction
 {
@@ -8,5 +8,5 @@ namespace Domain.Abstraction
     /// 命令
     /// </summary>
     /// <typeparam name="TResponse">返回类型</typeparam>
-    public interface ICommand<TResponse> : IRequest<TResponse> { }
+    public interface ICommand<TResponse> : IRequest<TResponse>;
 }

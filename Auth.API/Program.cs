@@ -41,6 +41,7 @@ namespace Auth.API
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
                 cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
                 cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
+                cfg.AddOpenBehavior(typeof(TransactionSettingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
             });
 

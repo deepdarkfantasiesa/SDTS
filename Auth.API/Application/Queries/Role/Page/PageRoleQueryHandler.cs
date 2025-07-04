@@ -1,4 +1,4 @@
-﻿using Infrastructure.Core;
+﻿using Infrastructure.Core.DatabaseContext;
 using Infrastructure.Core.Query;
 using Infrastructure.Core.Query.Page;
 using System.Text;

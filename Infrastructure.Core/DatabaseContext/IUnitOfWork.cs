@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Core
+﻿namespace Infrastructure.Core.DatabaseContext
 {
     /// <summary>
     /// 工作单元

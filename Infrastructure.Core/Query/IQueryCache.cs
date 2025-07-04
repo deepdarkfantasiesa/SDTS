@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Infrastructure.Core.Cache;
+using MediatR;
 
 namespace Infrastructure.Core.Query
 {

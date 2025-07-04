@@ -1,6 +1,6 @@
 ﻿using Auth.Infrastructure.Caches;
 using Auth.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
 using Infrastructure.Core.Query;
 using MediatR;
 

@@ -1,4 +1,6 @@
-﻿namespace Domain.Abstraction.Mediator
+﻿using System.Collections;
+
+namespace Domain.Abstraction.Mediator
 {
     /// <summary>
     /// 管道行为
@@ -14,7 +16,7 @@
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        Task<TResponse> Before(TRequest request,CancellationToken cancellationToken);
+        Task<TResponse> Before(TRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// 执行命令后的行为
@@ -23,5 +25,17 @@
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
         Task<TResponse> After(TRequest request, CancellationToken cancellationToken);
+    }
+
+    public interface IPipelineBehaviorList:IEnumerable<IPipelineBehavior<IRequest<object>, object>>
+    {
+
+    }
+
+    public sealed class PipelineBehaviorList :
+        List<IPipelineBehavior<IRequest<object>, object>>,
+        IPipelineBehaviorList
+    {
+
     }
 }

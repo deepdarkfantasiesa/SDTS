@@ -1,6 +1,7 @@
-﻿//using MediatR;
+﻿using Infrastructure.Core.DatabaseContext;
+using MediatR;
 
-using Domain.Abstraction.Mediator;
+//using Domain.Abstraction.Mediator;
 
 namespace Infrastructure.Core.Query
 {

@@ -2,17 +2,21 @@
 using Auth.Domain.AggregatesModel.UserAggregate;
 using Auth.Infrastructure.Repositories;
 using Domain.Abstraction;
+using Infrastructure.Core.Command;
+using Infrastructure.Core.DatabaseContext;
+using System.Data;
 
 namespace Auth.API.Application.Commands.UserAggregate
 {
-    public record CreateUserCommand : ICommand<bool>
+    public record CreateUserCommand : ICommand<bool>, ICommandTransactionSetting
     {
         public string Name { get; init; }
 
         public string? Description { get; init; }
 
         public IEnumerable<CreateUserRoleSubCommand> Roles { get; init; }
-
+        public IsolationLevel IsolationLevel { get; set; }
+        public int? Timeout { get; set; }
     }
 
     public record CreateUserRoleSubCommand

@@ -3,9 +3,34 @@ using Domain.Abstraction;
 
 namespace Auth.Domain.AggregatesModel.UserAggregate
 {
+    /// <summary>
+    /// 强类型id
+    /// </summary>
+    /// <param name="Value"></param>
     public record UserRoleId(Guid Value) : IEntityTypeId<Guid>;
 
-    public class UserRole : Entity<UserRoleId>
+    /// <summary>
+    /// 实体属性
+    /// </summary>
+    public partial class UserRole : Entity<UserRoleId>
+    {
+        public string Name { get; private set; }
+
+        public string? Description { get; private set; }
+
+        public UserId UserId { get; private set; }
+
+        public virtual User User { get; private set; }
+
+        public RoleId OriginalRoleId { get; private set; }
+
+        public virtual ICollection<UserRolePermission> Permissions { get; private set; } = [];
+    }
+
+    /// <summary>
+    /// 实体动作
+    /// </summary>
+    public partial class UserRole : Entity<UserRoleId>
     {
         public UserRole()
         {
@@ -29,17 +54,5 @@ namespace Auth.Domain.AggregatesModel.UserAggregate
             Name = name;
             Description = description;
         }
-
-        public string Name { get; private set; }
-
-        public string? Description { get; private set; }
-
-        public UserId UserId { get; private set; }
-
-        public virtual User User { get; private set; }
-
-        public RoleId OriginalRoleId { get; private set; }
-
-        public virtual ICollection<UserRolePermission> Permissions { get; private set; } = [];
     }
 }

@@ -5,7 +5,7 @@ using Auth.Domain.AggregatesModel.UserAggregate;
 using Auth.Infrastructure;
 using Auth.Infrastructure.Caches;
 using Auth.Infrastructure.Repositories;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

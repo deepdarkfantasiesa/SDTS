@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.DatabaseContext
 {
     /// <summary>
     /// 查询上下文接口

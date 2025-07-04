@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using Infrastructure.Core;
+using Infrastructure.Core.DatabaseContext;
 using Npgsql;
 using System.Data;
 

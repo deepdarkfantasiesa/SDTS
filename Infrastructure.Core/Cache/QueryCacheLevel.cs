@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.Cache
 {
     /// <summary>
     /// 查询缓存等级枚举

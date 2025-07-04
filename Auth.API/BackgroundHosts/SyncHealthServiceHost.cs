@@ -1,7 +1,7 @@
 ﻿using Auth.Infrastructure.Caches;
 using Auth.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
 using Auth.Infrastructure.Settings;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
 using Microsoft.Extensions.Options;
 using Service.Framework.ServiceRegistry;
 

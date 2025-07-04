@@ -1,6 +1,6 @@
 ﻿using Domain.Abstraction;
 using DotNetCore.CAP;
-using Infrastructure.Core;
+using Infrastructure.Core.DatabaseContext;
 using Infrastructure.Core.Extension;
 using MediatR;
 

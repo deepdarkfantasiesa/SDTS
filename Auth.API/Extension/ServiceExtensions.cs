@@ -9,7 +9,7 @@ using Auth.Infrastructure.Repositories;
 using Auth.Infrastructure.Settings;
 using Domain.Abstraction;
 using FluentValidation;
-using Infrastructure.Core;
+using Infrastructure.Core.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Npgsql;

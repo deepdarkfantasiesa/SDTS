@@ -1,5 +1,6 @@
 ﻿using Auth.Infrastructure.Caches;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
+using Infrastructure.Core.DatabaseContext;
 using Infrastructure.Core.Extension;
 using Infrastructure.Core.Query;
 using MediatR;

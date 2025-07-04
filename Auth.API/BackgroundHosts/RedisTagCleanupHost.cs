@@ -1,5 +1,5 @@
 ﻿using Auth.Infrastructure.Caches;
-using Infrastructure.Core;
+using Infrastructure.Core.Cache;
 using Infrastructure.Core.Extension;
 using RedLockNet.SERedis;
 

@@ -1,13 +1,15 @@
 ﻿using Auth.Domain.AggregatesModel.RoleAggregate;
 using Auth.Infrastructure.Repositories;
 using Domain.Abstraction;
+using Infrastructure.Core.Command;
+using System.Data;
 
 namespace Auth.API.Application.Commands.RoleAggregate
 {
     /// <summary>
     /// 创建角色命令
     /// </summary>
-    public record CreateRoleCommand : ICommand<bool>
+    public record CreateRoleCommand : ICommand<bool>, ICommandTransactionSetting
     {
         /// <summary>
         /// 角色名称
@@ -23,6 +25,10 @@ namespace Auth.API.Application.Commands.RoleAggregate
         /// 权限列表
         /// </summary>
         public IEnumerable<RolePermissionSubCommand> Permissions { get; init; }
+
+        public IsolationLevel IsolationLevel { get; set; } = IsolationLevel.ReadCommitted;
+
+        public int? Timeout { get; set; } = 5;
     }
 
     /// <summary>

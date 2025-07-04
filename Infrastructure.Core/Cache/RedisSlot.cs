@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Infrastructure.Core
+namespace Infrastructure.Core.Cache
 {
     /// <summary>
     /// redis槽枚举

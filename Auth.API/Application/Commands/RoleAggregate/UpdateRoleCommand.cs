@@ -1,10 +1,12 @@
 ﻿using Auth.Domain.AggregatesModel.RoleAggregate;
 using Auth.Infrastructure.Repositories;
 using Domain.Abstraction;
+using Infrastructure.Core.Command;
+using System.Data;
 
 namespace Auth.API.Application.Commands.RoleAggregate
 {
-    public record UpdateRoleCommand : ICommand<bool>
+    public record UpdateRoleCommand : ICommand<bool>, ICommandTransactionSetting
     {
         public RoleId RoleId { get; init; }
 
@@ -13,6 +15,8 @@ namespace Auth.API.Application.Commands.RoleAggregate
         public string? Description { get; init; }
 
         public IEnumerable<UpdateRolePermission>? Permissions { get; init; }
+        public IsolationLevel IsolationLevel { get; } = IsolationLevel.ReadCommitted;
+        public int? Timeout { get; } = 1;
     }
 
     public record UpdateRolePermission

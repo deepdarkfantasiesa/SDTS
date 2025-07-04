@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Infrastructure.Core.Cache;
+using System.Reflection;
 
 namespace Infrastructure.Core.Query.Page
 {

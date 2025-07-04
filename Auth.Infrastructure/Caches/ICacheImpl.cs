@@ -1,4 +1,4 @@
-﻿using Infrastructure.Core;
+﻿using Infrastructure.Core.Cache;
 using StackExchange.Redis;
 
 namespace Auth.Infrastructure.Caches

@@ -1,8 +1,8 @@
 ﻿using Auth.API.Application.Commands.UserAggregate;
-using Domain.Abstraction.Mediator;
+//using Domain.Abstraction.Mediator;
 
 
-//using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers
@@ -21,7 +21,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         public async Task<bool> Create([FromBody] CreateUserCommand command)
         {
-            return await _sender.SendAsync(command);
+            return await _sender.Send<bool>(command);
         }
     }
 }
