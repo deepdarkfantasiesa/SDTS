@@ -30,7 +30,8 @@ namespace Auth.API.Controllers
         [HttpPost]
         public async Task<bool> Create([FromBody] CreateRoleCommand command)
         {
-            return await _sender.Send<bool>(command);
+            //return await _sender.Send<bool>(command);
+            return false;
         }
 
         /// <summary>
@@ -41,7 +42,8 @@ namespace Auth.API.Controllers
         [HttpPut]
         public async Task<bool> Update([FromBody] UpdateRoleCommand command)
         {
-            return await _sender.Send<bool>(command);
+            //return await _sender.Send<bool>(command);
+            return false;
         }
 
         /// <summary>

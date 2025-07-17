@@ -19,7 +19,7 @@ namespace Auth.API.Controllers
         public async Task<IActionResult> Test(CancellationToken cancellationToken=default)
         {
             var command = new TestCommandA();
-            var res = await _mediator.SendAsync(command, cancellationToken);
+            var res = await _mediator.SendAsync<TestCommandA,string>(command, cancellationToken);
             return Ok("114");
         }
     }

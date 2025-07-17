@@ -1,4 +1,7 @@
-﻿namespace Domain.Abstraction.Mediator
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+
+namespace Domain.Abstraction.Mediator
 {
     /// <summary>
     /// 请求发送者
@@ -20,7 +23,7 @@
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
+        Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<TResponse>;
     }
 
     /// <summary>
@@ -53,25 +56,62 @@
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+            where TRequest : IRequest<TResponse>
         {
-            var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse));
+            var requestType = request.GetType();
 
-            var handler = _serviceProvider.GetService(handlerType);
+            // 1. 全部接口
+            var allIfaces = requestType.GetInterfaces();
 
-            if (handler == null)
-            {
-                throw new InvalidOperationException($"No handler found for {request.GetType().Name}");
-            }
+            // 2. 被继承的接口
+            var inheritedIfaces = allIfaces
+                .SelectMany(i => i.GetInterfaces())
+                .Distinct().ToList();
 
-            // 使用反射调用 Handle 方法
-            var handleMethod = handlerType.GetMethod("Handle");
-            if (handleMethod == null)
-            {
-                throw new InvalidOperationException($"Handle method not found on {handlerType.Name}");
-            }
+            // 3. 直接实现
+            var directIfaces = allIfaces.Except(inheritedIfaces);
 
-            var response = await (Task<TResponse>)handleMethod.Invoke(handler, new object[] { request, cancellationToken });
+            // 4. 找到子接口：IRequest<TResponse> 或其子接口
+            var targetInterface = directIfaces
+                .FirstOrDefault(i =>
+                    i.IsGenericType
+                    && i.GenericTypeArguments[0] == typeof(TResponse)
+                    && typeof(IRequest<>)
+                        .MakeGenericType(typeof(TResponse))
+                        .IsAssignableFrom(i)
+                );
+
+            var closedBehaviorType = typeof(IPipelineBehavior<,>)
+                .MakeGenericType(targetInterface, typeof(TResponse));
+
+            //var behaviors = _serviceProvider
+            //    .GetServices(closedBehaviorType);
+            ////.Cast<object>();
+            var behaviors2 = _serviceProvider
+                .GetServices<IPipelineBehavior<TRequest, TResponse>>()
+                .ToList();
+
+            var handler = _serviceProvider
+                .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
+
+            //foreach (var behavior in behaviors2)
+            //{
+            //    var behaviorResponse = await behavior.Before(request, cancellationToken);
+            //    if (behaviorResponse != null)
+            //        return behaviorResponse;
+            //}
+
+            var response = await handler.Handle(request, cancellationToken);
+
+            //behaviors2.Reverse();
+            //foreach (var behavior in behaviors2)
+            //{
+            //    var behaviorResponse = await behavior.After(request, cancellationToken);
+            //    if (behaviorResponse != null)
+            //        return behaviorResponse;
+            //}
+
             return response;
         }
     }

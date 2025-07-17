@@ -1,8 +1,9 @@
-﻿using Domain.Abstraction.Mediator;
+﻿using Domain.Abstraction;
+using Domain.Abstraction.Mediator;
 
 namespace Auth.API.Application.Commands.Test
 {
-    public sealed record TestCommandA : IRequest<string>
+    public sealed record TestCommandA : ICommand<string>
     {
     }
 
@@ -29,7 +30,7 @@ namespace Auth.API.Application.Commands.Test
         {
             Console.WriteLine("TestDomainEventHandler 1");
             var command = new TestCommandB();
-            await mediator.SendAsync(command, cancellationToken);
+            await mediator.SendAsync<TestCommandB, bool>(command, cancellationToken);
         }
     }
 

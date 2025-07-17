@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Domain.Abstraction.Mediator
 {
@@ -9,7 +10,7 @@ namespace Domain.Abstraction.Mediator
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddMediator(this IServiceCollection services)
+        public static IServiceCollection AddMediator(this IServiceCollection services,params Type[] pipelineBehaviors)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -63,6 +64,28 @@ namespace Domain.Abstraction.Mediator
 
             //注册中介者
             services.AddScoped<IMediator, Mediator>();
+
+            // 目标接口的泛型定义
+            var pipelineInterface = typeof(IPipelineBehavior<,>);
+
+            var registeringBehaviors = new List<Type>();
+
+            foreach (var behavior in pipelineBehaviors)
+            {
+                var typeInfo = behavior.GetTypeInfo();
+
+                var directly = typeInfo
+                    .GetInterfaces()
+                    .Any(i => i.IsGenericType
+                       && i.GetGenericTypeDefinition() == pipelineInterface);
+
+                if (!directly)
+                    throw new Exception("企图注册非管道行为类");
+
+                registeringBehaviors.Add(behavior);
+
+                services.AddTransient(typeof(IPipelineBehavior<,>), behavior);
+            }
 
             return services;
         }

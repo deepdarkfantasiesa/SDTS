@@ -1,6 +1,6 @@
-﻿using MediatR;
+﻿//using MediatR;
 
-//using Domain.Abstraction.Mediator;
+using Domain.Abstraction.Mediator;
 
 namespace Domain.Abstraction
 {

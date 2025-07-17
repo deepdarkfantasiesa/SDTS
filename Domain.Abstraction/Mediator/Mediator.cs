@@ -42,9 +42,9 @@ namespace Domain.Abstraction.Mediator
             await _sender.SendAsync(request, cancellationToken);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
+        public Task<TResponse> SendAsync<TRequest,TResponse>(TRequest  request, CancellationToken cancellationToken) where TRequest: IRequest<TResponse>
         {
-            return _sender.SendAsync(request, cancellationToken);
+            return _sender.SendAsync<TRequest, TResponse>(request, cancellationToken);
         }
     }
 }

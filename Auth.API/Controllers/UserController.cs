@@ -21,7 +21,8 @@ namespace Auth.API.Controllers
         [HttpPost]
         public async Task<bool> Create([FromBody] CreateUserCommand command)
         {
-            return await _sender.Send<bool>(command);
+            //return await _sender.Send<bool>(command);
+            return false;
         }
     }
 }
