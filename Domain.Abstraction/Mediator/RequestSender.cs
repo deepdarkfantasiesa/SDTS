@@ -13,7 +13,7 @@ namespace Domain.Abstraction.Mediator
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        Task SendAsync(IRequest request, CancellationToken cancellationToken = default);
+        Task SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest;
 
         /// <summary>
         /// 异送发送
@@ -38,12 +38,13 @@ namespace Domain.Abstraction.Mediator
         }
 
         /// <summary>
-        /// 异送发送
+        /// 异步发送
         /// </summary>
+        /// <typeparam name="TRequest">请求类型</typeparam>
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        public async Task SendAsync(IRequest request, CancellationToken cancellationToken = default)
+        public async Task SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
         {
             throw new NotImplementedException();
         }
@@ -51,6 +52,7 @@ namespace Domain.Abstraction.Mediator
         /// <summary>
         /// 异步发送
         /// </summary>
+        /// <typeparam name="TRequest">请求类型</typeparam>
         /// <typeparam name="TResponse">响应类型</typeparam>
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
@@ -58,7 +60,9 @@ namespace Domain.Abstraction.Mediator
         public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
             where TRequest : IRequest<TResponse>
         {
-            var behaviors = await GetPiplineBehaviors<TRequest, TResponse>(request);
+            var behaviors = _serviceProvider
+                .GetServices<IPipelineBehavior<TRequest, TResponse>>()
+                .ToList();
 
             var handler = _serviceProvider
                 .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
@@ -81,46 +85,6 @@ namespace Domain.Abstraction.Mediator
             }
 
             return response;
-        }
-
-        /// <summary>
-        /// 获取管道行为
-        /// </summary>
-        /// <typeparam name="TRequest"></typeparam>
-        /// <typeparam name="TResponse"></typeparam>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private async Task<IEnumerable<IPipelineBehavior<TRequest, TResponse>>> GetPiplineBehaviors<TRequest, TResponse>(TRequest request)
-            where TRequest : IRequest<TResponse>
-        {
-            var requestType = request.GetType();
-
-            // 1. 全部接口
-            var allIfaces = requestType.GetInterfaces();
-
-            // 2. 被继承的接口
-            var inheritedIfaces = allIfaces
-                .SelectMany(i => i.GetInterfaces())
-                .Distinct().ToList();
-
-            // 3. 直接实现
-            var directIfaces = allIfaces.Except(inheritedIfaces);
-
-            // 4. 找到子接口：IRequest<TResponse> 或其子接口
-            var targetInterface = directIfaces
-                .FirstOrDefault(i =>
-                    i.IsGenericType
-                    && i.GenericTypeArguments[0] == typeof(TResponse)
-                    && typeof(IRequest<>)
-                        .MakeGenericType(typeof(TResponse))
-                        .IsAssignableFrom(i)
-                );
-
-            var behaviors = _serviceProvider
-                .GetServices<IPipelineBehavior<TRequest, TResponse>>()
-                .ToList();
-
-            return behaviors;
         }
     }
 }
