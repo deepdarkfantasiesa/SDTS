@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Domain.Abstraction.Mediator
 {
@@ -50,13 +49,48 @@ namespace Domain.Abstraction.Mediator
         }
 
         /// <summary>
-        /// 异送发送
+        /// 异步发送
         /// </summary>
         /// <typeparam name="TResponse">响应类型</typeparam>
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
         public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+            where TRequest : IRequest<TResponse>
+        {
+            var behaviors = await GetPiplineBehaviors<TRequest, TResponse>(request);
+
+            var handler = _serviceProvider
+                .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
+
+            foreach (var behavior in behaviors)
+            {
+                var behaviorResponse = await behavior.Before(request, cancellationToken);
+                if (behaviorResponse != null)
+                    return behaviorResponse.Response;
+            }
+
+            var response = await handler.Handle(request, cancellationToken);
+
+            behaviors.Reverse();
+            foreach (var behavior in behaviors)
+            {
+                var behaviorResponse = await behavior.After(request, cancellationToken);
+                if (behaviorResponse != null)
+                    return behaviorResponse.Response;
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// 获取管道行为
+        /// </summary>
+        /// <typeparam name="TRequest"></typeparam>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task<IEnumerable<IPipelineBehavior<TRequest, TResponse>>> GetPiplineBehaviors<TRequest, TResponse>(TRequest request)
             where TRequest : IRequest<TResponse>
         {
             var requestType = request.GetType();
@@ -82,37 +116,11 @@ namespace Domain.Abstraction.Mediator
                         .IsAssignableFrom(i)
                 );
 
-            var closedBehaviorType = typeof(IPipelineBehavior<,>)
-                .MakeGenericType(targetInterface, typeof(TResponse));
-
-            //var behaviors = _serviceProvider
-            //    .GetServices(closedBehaviorType);
-            ////.Cast<object>();
-            var behaviors2 = _serviceProvider
+            var behaviors = _serviceProvider
                 .GetServices<IPipelineBehavior<TRequest, TResponse>>()
                 .ToList();
 
-            var handler = _serviceProvider
-                .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
-
-            //foreach (var behavior in behaviors2)
-            //{
-            //    var behaviorResponse = await behavior.Before(request, cancellationToken);
-            //    if (behaviorResponse != null)
-            //        return behaviorResponse;
-            //}
-
-            var response = await handler.Handle(request, cancellationToken);
-
-            //behaviors2.Reverse();
-            //foreach (var behavior in behaviors2)
-            //{
-            //    var behaviorResponse = await behavior.After(request, cancellationToken);
-            //    if (behaviorResponse != null)
-            //        return behaviorResponse;
-            //}
-
-            return response;
+            return behaviors;
         }
     }
 }

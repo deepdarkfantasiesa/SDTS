@@ -37,7 +37,7 @@ namespace Domain.Abstraction.Mediator
 
                 if (implementationType != null)
                 {
-                    services.AddScoped(handlerType, implementationType);
+                    services.AddTransient(handlerType, implementationType);
                 }
             }
 
@@ -52,18 +52,18 @@ namespace Domain.Abstraction.Mediator
 
                 foreach (var implementationType in implementationTypes)
                 {
-                    services.AddScoped(handlerType, implementationType);
+                    services.AddTransient(handlerType, implementationType);
                 }
             }
 
             //注册通知发布者
-            services.AddScoped<INotificationPublisher, NotificationPublisher>();
+            services.AddTransient<INotificationPublisher, NotificationPublisher>();
 
             //注册请求发送者
-            services.AddScoped<IRequestSender, RequestSender>();
+            services.AddTransient<IRequestSender, RequestSender>();
 
             //注册中介者
-            services.AddScoped<IMediator, Mediator>();
+            services.AddTransient<IMediator, Mediator>();
 
             // 目标接口的泛型定义
             var pipelineInterface = typeof(IPipelineBehavior<,>);
