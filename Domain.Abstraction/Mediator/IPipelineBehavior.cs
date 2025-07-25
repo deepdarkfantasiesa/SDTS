@@ -1,5 +1,4 @@
-﻿
-namespace Domain.Abstraction.Mediator
+﻿namespace Domain.Abstraction.Mediator
 {
     /// <summary>
     /// 前管道行为
@@ -7,6 +6,7 @@ namespace Domain.Abstraction.Mediator
     /// <typeparam name="TRequest">请求类型</typeparam>
     /// <typeparam name="TResponse">响应类型</typeparam>
     public interface IPipelineBehaviorBefore<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
         /// <summary>
         /// 执行请求前的行为
@@ -20,9 +20,10 @@ namespace Domain.Abstraction.Mediator
     /// <summary>
     /// 后管道行为
     /// </summary>
-    /// <typeparam name="TRequest"></typeparam>
-    /// <typeparam name="TResponse"></typeparam>
+    /// <typeparam name="TRequest">请求</typeparam>
+    /// <typeparam name="TResponse">取消token</typeparam>
     public interface IPipelineBehaviorAfter<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
         /// <summary>
         /// 执行请求后的行为
@@ -41,21 +42,7 @@ namespace Domain.Abstraction.Mediator
     public interface IPipelineBehavior<TRequest, TResponse> : IPipelineBehaviorBefore<TRequest, TResponse>, IPipelineBehaviorAfter<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
-        /// <summary>
-        /// 执行请求前的行为
-        /// </summary>
-        /// <param name="request">请求</param>
-        /// <param name="cancellationToken">取消token</param>
-        /// <returns></returns>
-        Task<PipelineResponse<TResponse>?> Before(TRequest request, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 执行请求后的行为
-        /// </summary>
-        /// <param name="request">请求</param>
-        /// <param name="cancellationToken">取消token</param>
-        /// <returns></returns>
-        Task<PipelineResponse<TResponse>?> After(TRequest request, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -84,6 +71,27 @@ namespace Domain.Abstraction.Mediator
         public PipelineResponse(TResponse response)
         {
             Response = response;
+        }
+    }
+
+    /// <summary>
+    /// 管道行为优先级特性
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public sealed class PipelineBehaviorPriorityAttribute : Attribute
+    {
+        /// <summary>
+        /// 优先级
+        /// </summary>
+        public int Number { get; }
+
+        /// <summary>
+        /// 管道行为优先级
+        /// </summary>
+        /// <param name="number">优先级</param>
+        public PipelineBehaviorPriorityAttribute(int number)
+        {
+            Number = number;
         }
     }
 }

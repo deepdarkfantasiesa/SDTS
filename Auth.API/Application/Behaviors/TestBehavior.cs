@@ -4,7 +4,8 @@ using Infrastructure.Core.Query;
 
 namespace Auth.API.Application.Behaviors
 {
-    public class TestBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    [PipelineBehaviorPriority(1)]
+    public sealed class TestBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : ICommand<TResponse>
     {
         public async Task<PipelineResponse<TResponse>?> After(TRequest request, CancellationToken cancellationToken)
@@ -20,7 +21,8 @@ namespace Auth.API.Application.Behaviors
         }
     }
 
-    public class TestBehaviorV2<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    [PipelineBehaviorPriority(2)]
+    public sealed class TestBehaviorV2<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
         public async Task<PipelineResponse<TResponse>?> After(TRequest request, CancellationToken cancellationToken)
@@ -36,7 +38,8 @@ namespace Auth.API.Application.Behaviors
         }
     }
 
-    public class TestBehaviorV3<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    [PipelineBehaviorPriority(3)]
+    public sealed class TestBehaviorV3<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IQueryReplicaV2<TResponse>
     {
         public async Task<PipelineResponse<TResponse>?> After(TRequest request, CancellationToken cancellationToken)

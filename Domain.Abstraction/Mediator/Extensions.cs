@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Domain.Abstraction.Mediator
 {
@@ -10,7 +9,7 @@ namespace Domain.Abstraction.Mediator
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddMediator(this IServiceCollection services,params Type[] pipelineBehaviors)
+        public static IServiceCollection AddMediator(this IServiceCollection services, params Type[] pipelineBehaviors)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -66,25 +65,40 @@ namespace Domain.Abstraction.Mediator
             services.AddTransient<IMediator, Mediator>();
 
             // 目标接口的泛型定义
-            var pipelineInterface = typeof(IPipelineBehavior<,>);
-
-            var registeringBehaviors = new List<Type>();
+            var pipelineInterfaceTypes = new List<Type>()
+            {
+                typeof(IPipelineBehavior<,>),
+                typeof(IPipelineBehaviorBefore<,>),
+                typeof(IPipelineBehaviorAfter<,>)
+            };
 
             foreach (var behavior in pipelineBehaviors)
             {
-                var typeInfo = behavior.GetTypeInfo();
+                if (!behavior.IsSealed)
+                    throw new Exception($"管道行为{behavior}非密封类");
 
-                var directly = typeInfo
-                    .GetInterfaces()
-                    .Any(i => i.IsGenericType
-                       && i.GetGenericTypeDefinition() == pipelineInterface);
+                // 获取所有的接口（包括接口的接口）
+                var allIfaces = behavior.GetInterfaces().ToList();
 
-                if (!directly)
-                    throw new Exception("企图注册非管道行为类");
+                // 获取除直接继承接口以外的接口
+                var inheritedIfaces = allIfaces
+                    .SelectMany(i => i.GetInterfaces())
+                    .Distinct()
+                    .ToList();
 
-                registeringBehaviors.Add(behavior);
+                //筛选出管道行为的所有直接继承接口
+                var directIfaces = allIfaces.Except(inheritedIfaces).ToList();
 
-                services.AddTransient(typeof(IPipelineBehavior<,>), behavior);
+                //检查直接继承接口的数量（必须只继承一个）
+                if (directIfaces == null || !directIfaces.Any() && directIfaces.Count != 1)
+                    throw new Exception($"{behavior}只继承一种管道行为接口");
+
+                var targetInterfaceType = directIfaces.First().GetGenericTypeDefinition();
+
+                if (!pipelineInterfaceTypes.Contains(targetInterfaceType))
+                    throw new Exception("管道行为的直接继承接口不合法");
+
+                services.AddTransient(targetInterfaceType, behavior);
             }
 
             return services;
