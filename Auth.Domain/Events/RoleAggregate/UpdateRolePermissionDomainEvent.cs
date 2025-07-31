@@ -3,5 +3,5 @@ using Domain.Abstraction;
 
 namespace Auth.Domain.Events.RoleAggregate
 {
-    public record UpdateRolePermissionDomainEvent(Role Role) : IDomainEvent;
+    public sealed record UpdateRolePermissionDomainEvent(Role Role) : IDomainEvent;
 }

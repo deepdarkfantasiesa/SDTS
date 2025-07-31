@@ -64,7 +64,7 @@ namespace Domain.Abstraction.Mediator
         /// <param name="request">请求</param>
         /// <param name="cancellationToken">取消token</param>
         /// <returns></returns>
-        public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken) 
+        public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken)
             where TRequest : IRequest<TResponse>
         {
             return await _sender.SendAsync<TRequest, TResponse>(request, cancellationToken);

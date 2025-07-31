@@ -1,9 +1,9 @@
 ﻿using Auth.API.Application.Commands.RoleAggregate;
 using Auth.API.Application.Queries.Role.Page;
-//using Domain.Abstraction.Mediator;
+using Domain.Abstraction.Mediator;
 using Infrastructure.Core.Cache;
 using Infrastructure.Core.Query.Page;
-using MediatR;
+//using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers
@@ -42,8 +42,8 @@ namespace Auth.API.Controllers
         [HttpPut]
         public async Task<bool> Update([FromBody] UpdateRoleCommand command)
         {
-            //return await _sender.Send<bool>(command);
-            return false;
+            return await _sender.SendAsync<UpdateRoleCommand,bool>(command);
+            //return false;
         }
 
         /// <summary>
@@ -60,7 +60,8 @@ namespace Auth.API.Controllers
                 PreferCacheLevel = cacheLevel.HasValue ? cacheLevel.Value : QueryCacheLevel.None,
                 KeyContext = request.GetCacheKeyContext()
             };
-            return await _sender.Send<PageResponse<QueryResult>>(query);
+            //return await _sender.Send<PageResponse<QueryResult>>(query);
+            return null;
         }
     }
 }

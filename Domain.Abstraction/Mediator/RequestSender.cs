@@ -50,74 +50,33 @@ namespace Domain.Abstraction.Mediator
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// 异步发送
-        /// </summary>
-        /// <typeparam name="TRequest">请求类型</typeparam>
-        /// <typeparam name="TResponse">响应类型</typeparam>
-        /// <param name="request">请求</param>
-        /// <param name="cancellationToken">取消token</param>
-        /// <returns></returns>
         public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
             where TRequest : IRequest<TResponse>
         {
-            var behaviors = _serviceProvider
-                .GetServices<IPipelineBehavior<TRequest, TResponse>>()
+            var response = default(TResponse);
+
+            var behaviors = _serviceProvider.GetServices<IPipelineBehaviorNext<TRequest, TResponse>>()
                 .Select(p => new
                 {
                     Behavior = p,
                     Priority = p.GetType().GetCustomAttribute<PipelineBehaviorPriorityAttribute>() ?? throw new Exception($"请为管道行为{p.GetType()}指定优先级")
                 })
+                .OrderByDescending(p => p.Priority.Number)
+                .Select(p => p.Behavior)
                 .ToList();
-
-            var beforeBehaviors = _serviceProvider
-                .GetServices<IPipelineBehaviorBefore<TRequest, TResponse>>()
-                .Select(p => new
-                {
-                    Behavior = p,
-                    Priority = p.GetType().GetCustomAttribute<PipelineBehaviorPriorityAttribute>() ?? throw new Exception($"请为管道行为{p.GetType()}指定优先级")
-                })
-                .ToList();
-
-            var afterBehaviors = _serviceProvider
-                .GetServices<IPipelineBehaviorAfter<TRequest, TResponse>>()
-                .Select(p => new
-                {
-                    Behavior = p,
-                    Priority = p.GetType().GetCustomAttribute<PipelineBehaviorPriorityAttribute>() ?? throw new Exception($"请为管道行为{p.GetType()}指定优先级")
-                })
-                .ToList();
-
-            beforeBehaviors.AddRange(behaviors.Select(p => new
-            {
-                Behavior = (IPipelineBehaviorBefore<TRequest, TResponse>)p.Behavior,
-                p.Priority
-            }));
-
-            afterBehaviors.AddRange(behaviors.Select(p => new
-            {
-                Behavior = (IPipelineBehaviorAfter<TRequest, TResponse>)p.Behavior,
-                p.Priority
-            }));
 
             var handler = _serviceProvider
                 .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
 
-            foreach (var behavior in beforeBehaviors.OrderBy(p => p.Priority.Number).Select(p => p.Behavior))
+            NextHandlerDelegate<TResponse> finalHandler = async cancellationToken => await handler.Handle(request, cancellationToken);
+
+            foreach(var behavior in behaviors)
             {
-                var behaviorResponse = await behavior.Before(request, cancellationToken);
-                if (behaviorResponse != null)
-                    return behaviorResponse.Response;
+                var previousNext = finalHandler;
+                finalHandler = async cancellationToken => await behavior.HandleAsync(request, previousNext, cancellationToken);
             }
 
-            var response = await handler.Handle(request, cancellationToken);
-
-            foreach (var behavior in afterBehaviors.OrderByDescending(p => p.Priority.Number).Select(p => p.Behavior))
-            {
-                var behaviorResponse = await behavior.After(request, cancellationToken);
-                if (behaviorResponse != null)
-                    return behaviorResponse.Response;
-            }
+            response = await finalHandler();
 
             return response;
         }

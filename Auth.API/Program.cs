@@ -47,16 +47,7 @@ namespace Auth.API
 
             //×¢²áÖÐ½éÕß
             builder.Services.AddMediator(
-                //typeof(LoggingBehavior<,>),
-                //typeof(ValidatorBehavior<,>),
-                //typeof(QueryCacheBehavior<,>),
-                //typeof(QueryReplicaBehavior<,>),
-                //typeof(TransactionSettingBehavior<,>),
-                //typeof(TransactionBehavior<,>),
-                typeof(TestBehavior<,>),
-                typeof(TestBehaviorV2<,>),
-                typeof(TestBehaviorV3<,>));
-            //builder.Services.AddMediator();
+                typeof(TransactionBehaviorNext<,>));
 
             //×¢²á»º´æ
             builder.Services.AddCaches(builder.Configuration);

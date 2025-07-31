@@ -1,5 +1,7 @@
 ﻿using Domain.Abstraction;
-using MediatR;
+using Domain.Abstraction.Mediator;
+
+//using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Infrastructure
@@ -33,7 +35,7 @@ namespace Auth.Infrastructure
 
             //分发领域事件
             foreach (var domainEvent in domainEvents)
-                await mediator.Publish(domainEvent, cancellationToken);
+                await mediator.PublishAsync(domainEvent, cancellationToken);
         }
     }
 }

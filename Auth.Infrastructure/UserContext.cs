@@ -1,9 +1,10 @@
 ﻿using Auth.Domain.AggregatesModel.RoleAggregate;
 using Auth.Domain.AggregatesModel.UserAggregate;
 using Domain.Abstraction;
+using Domain.Abstraction.Mediator;
 using DotNetCore.CAP;
 using Infrastructure.Core.DatabaseContext;
-using MediatR;
+//using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Expressions;
@@ -125,7 +126,8 @@ namespace Auth.Infrastructure
                 return;
 
             //开启并与cap共享事务（这里有个惊天大坑，一定不要用异步的，如果用异步的会导致领域事件注入的cap发布者没有事务对象）
-            _currentTransaction = Database.BeginTransaction(IsolationLevel, capPublisher, autoCommit: false);
+            //_currentTransaction = Database.BeginTransaction(IsolationLevel, capPublisher, autoCommit: false);
+            _currentTransaction = Database.BeginTransaction(System.Data.IsolationLevel.ReadCommitted, capPublisher, autoCommit: false);
 
         }
 

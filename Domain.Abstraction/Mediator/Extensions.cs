@@ -67,9 +67,7 @@ namespace Domain.Abstraction.Mediator
             // 目标接口的泛型定义
             var pipelineInterfaceTypes = new List<Type>()
             {
-                typeof(IPipelineBehavior<,>),
-                typeof(IPipelineBehaviorBefore<,>),
-                typeof(IPipelineBehaviorAfter<,>)
+                typeof(IPipelineBehaviorNext<,>)
             };
 
             foreach (var behavior in pipelineBehaviors)
