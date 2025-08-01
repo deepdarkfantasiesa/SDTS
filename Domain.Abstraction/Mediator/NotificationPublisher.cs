@@ -49,9 +49,10 @@ namespace Domain.Abstraction.Mediator
                     throw new InvalidOperationException($"Handle method not found on {handlerType.Name}");
                 }
 
-                handleMethod.Invoke(handler, new object[] { notification, cancellationToken });
-            }
+                var task = (Task)handleMethod.Invoke(handler, new object[] { notification, cancellationToken }) ?? throw new Exception("");
 
+                await task;
+            }
         }
     }
 }

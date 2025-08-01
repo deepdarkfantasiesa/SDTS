@@ -6,11 +6,11 @@ using Domain.Abstraction.Mediator;
 
 namespace Auth.API.Application.DomainEventHandlers.RoleAggregate
 {
-    public class UpdateRolePermissionDomainEventHandler(IRequestSender _sender) : IDomainEventHandler<UpdateRolePermissionDomainEvent>
+    public class UpdateRolePermissionDomainEventHandler(IMediator _mediator) : IDomainEventHandler<UpdateRolePermissionDomainEvent>
     {
         public async Task Handle(UpdateRolePermissionDomainEvent notification, CancellationToken cancellationToken)
         {
-            await _sender.SendAsync<UpdateUserRoleCommand,bool>(new UpdateUserRoleCommand(notification.Role));
+            await _mediator.SendAsync<UpdateUserRoleCommand,bool>(new UpdateUserRoleCommand(notification.Role));
         }
     }
 }

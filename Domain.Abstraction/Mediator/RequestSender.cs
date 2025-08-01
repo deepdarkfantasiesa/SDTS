@@ -76,7 +76,7 @@ namespace Domain.Abstraction.Mediator
                 finalHandler = async cancellationToken => await behavior.HandleAsync(request, previousNext, cancellationToken);
             }
 
-            response = await finalHandler();
+            response = await finalHandler(cancellationToken);
 
             return response;
         }
