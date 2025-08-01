@@ -39,7 +39,7 @@ namespace Auth.API
                 cfg.RegisterServicesFromAssemblyContaining(typeof(Program));
                 cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
-                cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
+                //cfg.AddOpenBehavior(typeof(QueryCacheBehavior<,>));
                 cfg.AddOpenBehavior(typeof(QueryReplicaBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionSettingBehavior<,>));
                 cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
@@ -47,6 +47,7 @@ namespace Auth.API
 
             //×¢²áÖÐ½éÕß
             builder.Services.AddMediator(
+                typeof(QueryCacheBehavior<,>),
                 typeof(TransactionBehaviorNext<,>));
 
             //×¢²á»º´æ

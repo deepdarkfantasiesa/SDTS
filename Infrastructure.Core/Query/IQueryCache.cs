@@ -1,5 +1,6 @@
-﻿using Infrastructure.Core.Cache;
-using MediatR;
+﻿using Domain.Abstraction.Mediator;
+using Infrastructure.Core.Cache;
+//using MediatR;
 
 namespace Infrastructure.Core.Query
 {

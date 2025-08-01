@@ -1,17 +1,17 @@
 ﻿using Auth.API.Application.Commands.UserAggregate;
 using Auth.API.Application.Queries.User;
+using Domain.Abstraction.Mediator;
 using FluentValidation;
 using Infrastructure.Core.Cache;
-using MediatR;
-using System.Text;
+//using MediatR;
 
 namespace Auth.API.Application.Validations.UserAggregate
 {
     public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     {
-        private readonly ISender _sender;
+        private readonly IRequestSender _sender;
 
-        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger, ISender sender)
+        public CreateUserCommandValidator(ILogger<CreateUserCommand> logger, IRequestSender sender)
         {
             _sender = sender;
 
@@ -30,7 +30,7 @@ namespace Auth.API.Application.Validations.UserAggregate
         /// <returns></returns>
         private async Task<bool> UniqueCheck(string UserName, CancellationToken cancellationToken)
         {
-            var res = await _sender.Send<bool>(new CheckUserExistsByQuery()
+            var res = await _sender.SendAsync<CheckUserExistsByQuery, bool>(new CheckUserExistsByQuery()
             {
                 Params = new CheckUserExistParams { UserName = UserName },
                 PreferCacheLevel = QueryCacheLevel.Local,

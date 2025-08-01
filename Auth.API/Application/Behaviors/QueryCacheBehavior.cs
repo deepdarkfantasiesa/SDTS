@@ -1,8 +1,9 @@
 ﻿using Auth.Infrastructure.Caches;
 using Auth.Infrastructure.Caches.Models.SyncMemoryCacheCommds;
+using Domain.Abstraction.Mediator;
 using Infrastructure.Core.Cache;
 using Infrastructure.Core.Query;
-using MediatR;
+//using MediatR;
 
 namespace Auth.API.Application.Behaviors
 {
@@ -11,7 +12,8 @@ namespace Auth.API.Application.Behaviors
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
-    public class QueryCacheBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IQueryCache<TResponse>
+    [PipelineBehaviorPriority(1)]
+    public sealed class QueryCacheBehavior<TRequest, TResponse> : IPipelineBehaviorNext<TRequest, TResponse> where TRequest : IQueryCache<TResponse>
     {
         /// <summary>
         /// 缓存上下文
@@ -30,7 +32,7 @@ namespace Auth.API.Application.Behaviors
             _logger = logger;
         }
 
-        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+        public async Task<TResponse> HandleAsync(TRequest request, NextHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             var response = default(TResponse);
 

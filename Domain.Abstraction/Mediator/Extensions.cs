@@ -13,17 +13,12 @@ namespace Domain.Abstraction.Mediator
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+            #region 注册Request
             // 筛选出继承自 IRequest<TRequest,TResponse> 和 INotification 的类型
             var requestTypes = assemblies.SelectMany(t => t.GetTypes())
                 .Where(t => t.IsClass
                     && !t.IsAbstract
                     && t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>)))
-                .ToList();
-
-            var notificationTypes = assemblies.SelectMany(t => t.GetTypes())
-                .Where(t => t.IsClass
-                    && !t.IsAbstract
-                    && t.GetInterfaces().Any(i => i == typeof(INotification)))
                 .ToList();
 
             // 遍历所有 IRequest 类型，注册对应的 IRequestHandler
@@ -39,6 +34,14 @@ namespace Domain.Abstraction.Mediator
                     services.AddTransient(handlerType, implementationType);
                 }
             }
+            #endregion
+
+            #region 注册Notification
+            var notificationTypes = assemblies.SelectMany(t => t.GetTypes())
+                .Where(t => t.IsClass
+                    && !t.IsAbstract
+                    && t.GetInterfaces().Any(i => i == typeof(INotification)))
+                .ToList();
 
             // 遍历所有 INotification 类型，注册对应的 INotificationHandler
             foreach (var notificationType in notificationTypes)
@@ -54,16 +57,9 @@ namespace Domain.Abstraction.Mediator
                     services.AddTransient(handlerType, implementationType);
                 }
             }
+            #endregion
 
-            //注册通知发布者
-            services.AddTransient<INotificationPublisher, NotificationPublisher>();
-
-            //注册请求发送者
-            services.AddTransient<IRequestSender, RequestSender>();
-
-            //注册中介者
-            services.AddTransient<IMediator, Mediator>();
-
+            #region 注册管道
             // 目标接口的泛型定义
             var pipelineInterfaceTypes = new List<Type>()
             {
@@ -98,6 +94,18 @@ namespace Domain.Abstraction.Mediator
 
                 services.AddTransient(targetInterfaceType, behavior);
             }
+            #endregion
+
+            #region 发送、发布的对象
+            //注册通知发布者
+            services.AddTransient<INotificationPublisher, NotificationPublisher>();
+
+            //注册请求发送者
+            services.AddTransient<IRequestSender, RequestSender>();
+
+            //注册中介者
+            services.AddTransient<IMediator, Mediator>();
+            #endregion
 
             return services;
         }

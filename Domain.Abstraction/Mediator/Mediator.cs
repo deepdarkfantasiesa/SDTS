@@ -43,6 +43,12 @@ namespace Domain.Abstraction.Mediator
             await _publisher.PublishAsync(notification, cancellationToken);
         }
 
+        public async Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default) 
+            where TNotification : INotification
+        {
+            await _publisher.PublishAsync(notification, cancellationToken);
+        }
+
         /// <summary>
         /// 异步发送请求
         /// </summary>

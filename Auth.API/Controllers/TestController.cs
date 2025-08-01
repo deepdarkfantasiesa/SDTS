@@ -1,20 +1,18 @@
-﻿using Auth.API.Application.Commands;
-using Auth.API.Application.Queries.User;
+﻿using Auth.API.Application.Queries.User;
 using Auth.API.Filters;
 using Auth.Domain.AggregatesModel.UserAggregate;
 using Auth.Infrastructure;
 using Auth.Infrastructure.Caches;
 using Auth.Infrastructure.Repositories;
+using Domain.Abstraction.Mediator;
 using Infrastructure.Core.Cache;
-using MediatR;
+//using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Service.Framework.Models;
 using StackExchange.Redis;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 
 namespace Auth.API.Controllers
@@ -40,13 +38,13 @@ namespace Auth.API.Controllers
         [HttpGet("{userid}")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> QueryGetById([FromRoute] string userid, [FromHeader] QueryCacheLevel queryCacheLevel, [FromHeader] bool useReplica, [FromServices] ISender _sender, [FromServices] ICacheImpl cache)
+        public async Task<IActionResult> QueryGetById([FromRoute] string userid, [FromHeader] QueryCacheLevel queryCacheLevel, [FromHeader] bool useReplica, [FromServices] ICacheImpl cache)
         {
             try
             {
                 //var result = await _mediator.Send(new GetUserByIdQuery { Id = userid });
 
-                var res = await _sender.Send<bool>(new CheckUserExistsByQuery()
+                var res = await _mediator.SendAsync<CheckUserExistsByQuery, bool>(new CheckUserExistsByQuery()
                 {
                     Params = new CheckUserExistParams { UserName = userid.ToString() },
                     PreferCacheLevel = queryCacheLevel,

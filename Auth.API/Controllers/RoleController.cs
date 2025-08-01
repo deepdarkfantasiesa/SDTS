@@ -15,9 +15,9 @@ namespace Auth.API.Controllers
     [Route("[controller]/[action]")]
     public class RoleController : ControllerBase
     {
-        private readonly IMediator _sender;
+        private readonly IRequestSender _sender;
 
-        public RoleController(IMediator sender)
+        public RoleController(IRequestSender sender)
         {
             _sender = sender;
         }
@@ -60,8 +60,7 @@ namespace Auth.API.Controllers
                 PreferCacheLevel = cacheLevel.HasValue ? cacheLevel.Value : QueryCacheLevel.None,
                 KeyContext = request.GetCacheKeyContext()
             };
-            //return await _sender.Send<PageResponse<QueryResult>>(query);
-            return null;
+            return await _sender.SendAsync<PageRoleQuery, PageResponse<QueryResult>>(query);
         }
     }
 }
